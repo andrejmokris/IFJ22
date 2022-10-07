@@ -55,15 +55,3 @@ bool stringAppend(String_t *str, char c) {
 void stringClear(String_t *str) {
     free(str->string);
 }
-
-int main() {
-    String_t myString;
-    StringInit(&myString);
-    for (int i = 48; i < 123; i++) {
-        stringAppend(&myString, i);
-    }
-    printf("Velkost: %d\n", myString.allocSize);
-    printf("String: %s\n", myString.string);
-    stringClear(&myString);
-    return 0;
-}
