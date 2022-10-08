@@ -16,7 +16,11 @@ typedef enum{
     ID_FUN_STATE, // function identifier
     /*ID0_TYPE_STATE, //with optional ? before
     ID1_TYPE_STATE,*/
+<<<<<<< HEAD
+    STRING0_STATE,
+=======
     //STRING0_STATE,
+>>>>>>> 6b16f02dafbd91c04af44559ec3b8ebad042125b
     STRING1_STATE,
     /*STRING21_STATE,
     STRING22_STATE,
@@ -73,6 +77,19 @@ typedef struct{
     LEX_FLOAT,  // float
     LEX_STRING  // String
     }Type_of_lexeme; //>>>>>>>>>>>>>>>>>>>>>>>>>>> kind u lakmatiol <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+<<<<<<< HEAD
+    size_t data;
+}Lexemes; //tokens
+
+
+FSM_States transition(FSM_States input, int edge_sign);
+
+Lexemes make_lexemes(FSM_States End_state, char* Token);
+
+Lexemes get_lexemes();
+
+char *output_lexeme_str(Lexemes input);
+=======
     union{
         char* string;
         int value;
@@ -86,3 +103,4 @@ typedef struct{
 Lexemes make_lexemes(FSM_States End_state, char* Token);
 
 Lexemes get_lexemes(FSM_States input);
+>>>>>>> 6b16f02dafbd91c04af44559ec3b8ebad042125b

@@ -15,3 +15,5 @@
 
 #include <string.h>
 #include <stdbool.h>
+
+#include "scanner.h"
