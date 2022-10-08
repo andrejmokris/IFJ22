@@ -6,7 +6,7 @@
 * Scanner library
 */
 
-#include <stdio.h>
+#include "dynamic_string.h"
 
 typedef enum{
     START_STATE,
@@ -16,9 +16,9 @@ typedef enum{
     ID_FUN_STATE, // function identifier
     /*ID0_TYPE_STATE, //with optional ? before
     ID1_TYPE_STATE,*/
-    /*STRING0_STATE,
+    //STRING0_STATE,
     STRING1_STATE,
-    STRING21_STATE,
+    /*STRING21_STATE,
     STRING22_STATE,
     STRING3_STATE,*/
     /*INT_PLUS_STATE, //int with + before
@@ -58,17 +58,31 @@ typedef struct{
     LEX_NEQ,    // !=
     LEX_ASSIGN, // =
     LEX_COMMA,  // ,
+    LEX_SEMICOL,// ;
     LEX_RPAR,   // )
     LEX_LPAR,   // (
     LEX_EOL,    // '\n'
     LEX_EOF,    // EOF
     LEX_ID,     // Identifier
-    LEX_KEY,    // Keyword (if, while...)
+    LEX_FUNID,  // Function identifier
+    //LEX_KEY,    // Keyword (if, while...)
+    LEX_IF,
+    LEX_WHILE,
+    LEX_DO,
     LEX_INT,    // int
     LEX_FLOAT,  // float
     LEX_STRING  // String
-    }Type;
-}Lexeme_Type;
+    }Type_of_lexeme; //>>>>>>>>>>>>>>>>>>>>>>>>>>> kind u lakmatiol <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    union{
+        char* string;
+        int value;
+        int symtable_index;
+    };
+}Lexemes; //tokens
 
 
-FSM_States transition(FSM_States input, int edge_sign);
+//FSM_States transition(FSM_States input, int edge_sign);
+
+Lexemes make_lexemes(FSM_States End_state, char* Token);
+
+Lexemes get_lexemes(FSM_States input);
