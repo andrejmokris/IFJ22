@@ -10,7 +10,6 @@
 #include <stdlib.h>
 #include "scanner.h"
 
-<<<<<<< HEAD
 FILE *source_to_parse;
 
 String_t *dyn_string; // Inicialization of dynamic string
