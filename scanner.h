@@ -13,20 +13,20 @@ typedef enum{
 
     VAR0_STATE, // variable identifier
     VAR_STATE,
-    ID_FUN_STATE, // function identifier
-    /*ID0_TYPE_STATE, //with optional ? before
-    ID1_TYPE_STATE,*/
+    ID_STATE, // function, or keyword, variable identifier
+    ID_OF_TYPE0, // string, float, int or ?string, ?float, ?int 
+    ID_OF_TYPE1,
     STRING0_STATE,
     STRING1_STATE,
-    /*STRING21_STATE,
-    STRING22_STATE,
-    STRING3_STATE,*/
-    /*INT_PLUS_STATE, //int with + before
-    INT_STATE,*/
-    /*FLOAT0_STATE,
-    FLOAT1_STATE,
-    FLOAT_eE_STATE,
-    FLOAT_FINAL_STATE,*/
+    STRING_ESCAPE_STATE, //escape sequences
+    STRING_ESCAPE_STATE1,
+    STRING_ESCAPE_STATE2,
+    EMPTY_STRING_STATE, // String "" - empty
+
+    COMM_LINE_STATE,
+    COMM_BLOCK_STATE,
+    COMM_BLOCK_STATE_FIN,
+
     SUM_STATE,      // +
     SUB_STATE,      // -
     DIV_STATE,      // *
@@ -40,6 +40,7 @@ typedef enum{
     DOT_STATE,      // .
     COMMMA_STATE,   // ,
     SEMICOL_STATE,  // ;
+    EOF_STATE,
     ERROR_STATE
 } FSM_States;
 
@@ -72,7 +73,7 @@ typedef struct{
     LEX_INT,    // int
     LEX_FLOAT,  // float
     LEX_STRING  // String
-    }Type_of_lexeme; //>>>>>>>>>>>>>>>>>>>>>>>>>>> kind u lakmatiol <<<<<<<<<<<<<<<<<<<<<<<<<<<<<<
+    }Type_of_lexeme;
     size_t data;
 }Lexemes; //tokens
 

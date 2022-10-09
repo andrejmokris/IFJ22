@@ -17,8 +17,8 @@ String_t *dyn_string; // Inicialization of dynamic string
 // inicialization of variables which we will use
 String_t work_string;
 String_t *str = &work_string;
-char escape_seq_oct[5]; //Field for octal escape sequnces
-char escape_seq_hex[5]; //Field for hex escape sequnces
+char escape_seq_oct[5]; // Field for octal escape sequnces
+char escape_seq_hex[5]; // Field for hex escape sequnces
 
 FSM_States state_transition(FSM_States input, int edge_sign)
 {
@@ -30,7 +30,7 @@ FSM_States state_transition(FSM_States input, int edge_sign)
         else if (isalpha(edge_sign) || edge_sign == '_')
             return ID_STATE; // function, or keyword, variable identifier
         else if (isalpha(edge_sign) || edge_sign == '_')
-            return ID_OF_TYPE0; //string, float, int or ?string, ?float, ?int    
+            return ID_OF_TYPE0; // string, float, int or ?string, ?float, ?int
         else if (edge_sign == '+')
             return SUM_STATE;
         else if (edge_sign == '-')
@@ -57,7 +57,7 @@ FSM_States state_transition(FSM_States input, int edge_sign)
             return DOT_STATE;
         else if (edge_sign == ';')
             return SEMICOL_STATE;
-        else if (edge_sign == '"') //String
+        else if (edge_sign == '"') // String
             return STRING0_STATE;
         else if (edge_sign == EOF)
             return EOF_STATE;
@@ -65,7 +65,7 @@ FSM_States state_transition(FSM_States input, int edge_sign)
             return ERROR_STATE;
         break;
 
-    //VARIABLES
+    // VARIABLES
     case VAR0_STATE:
         if (isalpha(edge_sign) || edge_sign == '_')
             return VAR_STATE;
@@ -78,10 +78,10 @@ FSM_States state_transition(FSM_States input, int edge_sign)
         else
             return ERROR_STATE;
         break;
-        
-    break;
 
-    //STRINGS
+        break;
+
+    // STRINGS
     case STRING0_STATE:
         if (edge_sign < 31 || edge_sign == '\n' || edge_sign == EOF)
         {
@@ -92,7 +92,7 @@ FSM_States state_transition(FSM_States input, int edge_sign)
             return STRING_ESCAPE_STATE;
         }
         else if (edge_sign == '"') // empty string literal
-        {   //final state
+        {                          // final state
             return EMPTY_STRING_STATE;
         }
         else
@@ -100,7 +100,7 @@ FSM_States state_transition(FSM_States input, int edge_sign)
             return STRING0_STATE;
         }
         break;
-    
+
     case STRING_ESCAPE_STATE:
         if (edge_sign == '"')
         {
@@ -121,68 +121,124 @@ FSM_States state_transition(FSM_States input, int edge_sign)
         else if (edge_sign == 'x')
         {
             return STRING_ESCAPE_STATE1;
-        }else if (edge_sign >= '0' && edge_sign <= '7')
+        }
+        else if (edge_sign >= '0' && edge_sign <= '7')
         {
-            escape_seq_oct[0] = (char) edge_sign;
+            escape_seq_oct[0] = (char)edge_sign;
             return STRING_ESCAPE_STATE1;
         }
-        else if (edge_sign >= 'A' && edge_sign <= 'F' )
+        else if (edge_sign >= 'A' && edge_sign <= 'F')
         {
-            escape_seq_hex[0] = (char) edge_sign;
+            escape_seq_hex[0] = (char)edge_sign;
             return STRING_ESCAPE_STATE1;
-        }else
+        }
+        else
         {
             return ERROR_STATE;
         }
         break;
 
-     case STRING_ESCAPE_STATE1:
-        if ( edge_sign >= '0' && edge_sign <= '7')
+    case STRING_ESCAPE_STATE1:
+        if (edge_sign >= '0' && edge_sign <= '7')
         {
-            escape_seq_oct[1] = (char) edge_sign;
+            escape_seq_oct[1] = (char)edge_sign;
             return STRING_ESCAPE_STATE2;
         }
-        else if ( edge_sign >= 'A' && edge_sign <= 'F')
+        else if (edge_sign >= 'A' && edge_sign <= 'F')
         {
-            escape_seq_hex[1] = (char) edge_sign;
+            escape_seq_hex[1] = (char)edge_sign;
             return STRING_ESCAPE_STATE2;
-        }else
+        }
+        else
         {
             return ERROR_STATE;
         }
         break;
 
-     case STRING_ESCAPE_STATE2:
-        if ( edge_sign >= '0' && edge_sign <= '7')
+    case STRING_ESCAPE_STATE2:
+        if (edge_sign >= '0' && edge_sign <= '7')
         {
             char *ptr_octal_helper = NULL;
-            escape_seq_oct[2] = (char) edge_sign;
+            escape_seq_oct[2] = (char)edge_sign;
             escape_seq_oct[3] = '\0';
-            int octal = strtol(escape_seq_oct, &ptr_octal_helper, 8); //konvert string literal to long integer 
-            if(octal == 0) //escape octal sequence \000 is invalid
+            int octal = strtol(escape_seq_oct, &ptr_octal_helper, 8); // convert string literal to long integer
+            if (octal == 0)                                           // escape octal sequence \000 is invalid
             {
                 return ERROR_STATE;
             }
             return STRING0_STATE;
         }
-        else if ( edge_sign >= 'A' && edge_sign <= 'F')
+        else if (edge_sign >= 'A' && edge_sign <= 'F')
         {
             char *ptr_hex_helper = NULL;
-            escape_seq_hex[2] = (char) edge_sign;
+            escape_seq_hex[2] = (char)edge_sign;
             escape_seq_hex[3] = '\0';
-            int hex = strtol(escape_seq_oct, &ptr_hex_helper, 8); //konvert string literal to long integer 
-            if(hex == 0) //escape octal sequence \000 is invalid
+            int hex = strtol(escape_seq_oct, &ptr_hex_helper, 8); // convert string literal to long integer
+            if (hex == 0)                                         // escape octal sequence \000 is invalid
             {
                 return ERROR_STATE;
             }
             return STRING0_STATE;
-        }else
+        }
+        else
         {
             return ERROR_STATE;
         }
         break;
 
-    //KEYWORD OR FUNCTIONS
+    // COMMENT LINE, COMMENT BLOCK
+    case DIV_STATE:
+        if (edge_sign == '/')
+        {
+            return COMM_LINE_STATE;
+        }
+        else if (edge_sign == '*')
+        {
+            return COMM_BLOCK_STATE;
+        }
+        else
+        {
+            return 0; // return division ?????????????????????????????????????????????????????????????????????????
+        }
+        break;
+
+    case COMM_LINE_STATE:
+        if (edge_sign == EOF || edge_sign == '\n')
+        {
+            return START_STATE;
+        }
+        break;
+
+    case COMM_BLOCK_STATE:
+        if (edge_sign == EOF)
+        {
+            return ERROR_STATE;
+        }
+        else if (edge_sign == '*')
+        {
+            return COMM_BLOCK_STATE_FIN;
+        }
+        break;
+
+    case COMM_BLOCK_STATE_FIN:
+        if (edge_sign == EOF)
+        {
+            return ERROR_STATE;
+        }
+        else if (edge_sign == '/')
+        {
+            return START_STATE;
+        }
+        else if (edge_sign == '*')
+        {
+            return COMM_BLOCK_STATE_FIN;
+        }else
+        {
+            return COMM_BLOCK_STATE;
+        }
+        break;
+
+    // KEYWORD OR FUNCTIONS
     case ID_STATE:
         if (isalpha(edge_sign) || edge_sign == '_')
             return ID_STATE;
@@ -194,6 +250,7 @@ FSM_States state_transition(FSM_States input, int edge_sign)
         fprintf(stderr, "Scenner error.");
         return ERROR_STATE;
         break;
+
     } // switch
     return ERROR_STATE;
 } // function
@@ -225,7 +282,7 @@ Lexemes make_lexemes(FSM_States End_state, char *Token)
 
     case VAR_STATE:
         return (Lexemes){.Type_of_lexeme = LEX_ID};
-    
+
     case EMPTY_STRING_STATE:
         return (Lexemes){.Type_of_lexeme = LEX_STRING};
 
@@ -300,7 +357,7 @@ char *output_lexeme_str(Lexemes input)
     case LEX_ID:
         return work_string.string + input.data;
     case LEX_ERR:
-    fprintf(stderr,"Lexikalny error");
+        fprintf(stderr, "Lexikalny error");
     }
     return "ERROR";
 }
