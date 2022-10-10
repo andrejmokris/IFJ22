@@ -232,7 +232,8 @@ FSM_States state_transition(FSM_States input, int edge_sign)
         else if (edge_sign == '*')
         {
             return COMM_BLOCK_STATE_FIN;
-        }else
+        }
+        else
         {
             return COMM_BLOCK_STATE;
         }
@@ -271,10 +272,27 @@ Lexemes make_lexemes(FSM_States End_state, char *Token)
     case ASSIGN_STATE:
         return (Lexemes){.Type_of_lexeme = LEX_ASSIGN};
 
+    case SUM_STATE:
+        return (Lexemes){.Type_of_lexeme = LEX_ADD};
+
+    case SUB_STATE:
+        return (Lexemes){.Type_of_lexeme = LEX_SUB};
+
+    case MUL_STATE:
+        return (Lexemes){.Type_of_lexeme = LEX_MUL};
+
+    case DIV_STATE:
+        return (Lexemes){.Type_of_lexeme = LEX_DIV};
+
+
+
     case ID_STATE:
         return (Lexemes){.Type_of_lexeme = LEX_FUNID};
 
     case STRING0_STATE:
+        return (Lexemes){.Type_of_lexeme = LEX_STRING};
+
+    case EMPTY_STRING_STATE:
         return (Lexemes){.Type_of_lexeme = LEX_STRING};
 
     case VAR0_STATE:
@@ -282,9 +300,6 @@ Lexemes make_lexemes(FSM_States End_state, char *Token)
 
     case VAR_STATE:
         return (Lexemes){.Type_of_lexeme = LEX_ID};
-
-    case EMPTY_STRING_STATE:
-        return (Lexemes){.Type_of_lexeme = LEX_STRING};
 
     case ERROR_STATE:
         return (Lexemes){.Type_of_lexeme = LEX_ERR};
@@ -347,6 +362,18 @@ char *output_lexeme_str(Lexemes input)
 
     case LEX_ASSIGN:
         return "=";
+
+    case LEX_ADD:
+        return "+";
+
+    case LEX_SUB:
+        return "-";
+
+    case LEX_MUL:
+        return "*";
+
+    case LEX_DIV:
+        return "/";
 
     case LEX_FUNID:
         return work_string.string + input.data;

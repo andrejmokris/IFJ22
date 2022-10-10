@@ -1,0 +1,6 @@
+$x = 123;
+//komentar
+/*block koment
+wewewewe
+*/
+$ahoj = 45;
