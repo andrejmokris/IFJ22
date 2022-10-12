@@ -12,10 +12,6 @@
 #include <stdio.h>
 #include "main.h"
 
-void _testik()
-{
-}
-
 int main()
 {
     Lexemes l = {0};

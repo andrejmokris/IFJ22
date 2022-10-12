@@ -27,6 +27,15 @@ typedef enum{
     COMM_BLOCK_STATE,
     COMM_BLOCK_STATE_FIN,
 
+    INT0_STATE,
+    INT1_STATE,
+    FLOAT0_STATE,
+    FLOAT1_STATE,
+    EXPONENT_STATE0,
+    EXPONENT_STATE1,
+    EXPONENT_STATE2,
+    EXPONENT_NUM_STATE,
+
     SUM_STATE,      // +
     SUB_STATE,      // -
     DIV_STATE,      // *
@@ -46,33 +55,34 @@ typedef enum{
 
 typedef struct{
     enum{
-    LEX_ERR,    // Error
-    LEX_ADD,    // +
-    LEX_SUB,    // -
-    LEX_MUL,    // *
-    LEX_DIV,    // /
-    LEX_GT,     // >
-    LEX_LE,     // <
-    LEX_GTQ,    // >=
-    LEX_LEQ,    // <=
-    LEX_EQ,     // ==
-    LEX_NEQ,    // !=
-    LEX_ASSIGN, // =
-    LEX_COMMA,  // ,
-    LEX_SEMICOL,// ;
-    LEX_RPAR,   // )
-    LEX_LPAR,   // (
-    LEX_EOL,    // '\n'
-    LEX_EOF,    // EOF
-    LEX_ID,     // Identifier
-    LEX_FUNID,  // Function identifier
-    //LEX_KEY,    // Keyword (if, while...)
+    LEX_ERR,     // Error
+    LEX_ADD,     // +
+    LEX_SUB,     // -
+    LEX_MUL,     // *
+    LEX_DIV,     // /
+    LEX_GT,      // >
+    LEX_LE,      // <
+    LEX_GTQ,     // >=
+    LEX_LEQ,     // <=
+    LEX_EQ,      // ==
+    LEX_NEQ,     // !=
+    LEX_ASSIGN,  // =
+    LEX_COMMA,   // ,
+    LEX_SEMICOL, // ;
+    LEX_RPAR,    // )
+    LEX_LPAR,    // (
+    LEX_EOL,     // '\n'
+    LEX_EOF,     // EOF
+    LEX_ID,      // Identifier
+    LEX_FUNID,   // Function identifier
+    //LEX_KEY,   // Keyword (if, while...)
     LEX_IF,
     LEX_WHILE,
     LEX_DO,
-    LEX_INT,    // int
-    LEX_FLOAT,  // float
-    LEX_STRING  // String
+    LEX_INT,     // int
+    LEX_FLOAT,   // float
+    LEX_EXPONENT,// exponent number
+    LEX_STRING   // String
     }Type_of_lexeme;
     size_t data;
 }Lexemes; //tokens

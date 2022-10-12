@@ -3,6 +3,7 @@
  *
  * File: scanner.c
  *
+ * 
  */
 #include <stdio.h>
 #include <ctype.h>
@@ -25,46 +26,164 @@ FSM_States state_transition(FSM_States input, int edge_sign)
     switch (input)
     {
     case START_STATE:
-        if (edge_sign == '$')
+        if (isspace(edge_sign))
+        {
+            return START_STATE;
+        }
+        else if (edge_sign == '$')
+        {
             return VAR0_STATE;
+        }
         else if (isalpha(edge_sign) || edge_sign == '_')
+        {
             return ID_STATE; // function, or keyword, variable identifier
+        }
         else if (isalpha(edge_sign) || edge_sign == '_')
-            return ID_OF_TYPE0; // string, float, int or ?string, ?float, ?int
+        {
+            return ID_OF_TYPE0;      // string, float, int or ?string, ?float, ?int
+        }
+        else if (isdigit(edge_sign)) // First sign is a number
+        {
+            return INT0_STATE;
+        }
         else if (edge_sign == '+')
+        {
             return SUM_STATE;
+        }
         else if (edge_sign == '-')
+        {
             return SUB_STATE;
+        }
         else if (edge_sign == '*')
+        {
             return MUL_STATE;
+        }
         else if (edge_sign == '/')
+        {
             return DIV_STATE;
+        }
         else if (edge_sign == '=')
+        {
             return ASSIGN_STATE;
+        }
         else if (edge_sign == '!')
+        {
             return NOT_STATE;
+        }
         else if (edge_sign == '(')
+        {
             return LPAR_STATE;
+        }
         else if (edge_sign == ')')
+        {
             return RPAR_STATE;
+        }
         else if (edge_sign == '>')
+        {
             return GREATER_STATE;
+        }
         else if (edge_sign == '<')
+        {
             return LESSER_STATE;
+        }
         else if (edge_sign == ',')
+        {
             return COMMMA_STATE;
+        }
         else if (edge_sign == '.')
+        {
             return DOT_STATE;
+        }
         else if (edge_sign == ';')
+        {
             return SEMICOL_STATE;
+        }
         else if (edge_sign == '"') // String
+        {
             return STRING0_STATE;
+        }
         else if (edge_sign == EOF)
+        {
             return EOF_STATE;
+        }
         else
+        {
             return ERROR_STATE;
+        }
         break;
 
+    // NUMBERS, INT, FLOATS
+    case INT0_STATE:
+        if (isdigit(edge_sign))
+        {
+            return INT1_STATE;
+        }
+        else if (edge_sign == '.')
+        {
+            return FLOAT0_STATE;
+        }
+        else if (edge_sign == 'E' || edge_sign == 'e')
+        {
+            return EXPONENT_STATE0;
+        }
+        else // Final state
+        {
+            return INT1_STATE;
+        }
+        break;
+
+    case FLOAT0_STATE:
+        if (isdigit(edge_sign))
+        {
+            return FLOAT1_STATE;
+        }
+        else if(edge_sign == 'E' || edge_sign == 'e')
+        {
+            return EXPONENT_STATE0;
+        }
+        else //Final state
+        {
+            return FLOAT1_STATE;
+        }
+        break;
+
+    case EXPONENT_STATE0:
+        if (edge_sign == '-' || edge_sign == '+')
+        {
+            return EXPONENT_STATE1;
+        }
+        else if (isdigit(edge_sign))
+        {
+            return EXPONENT_STATE2;
+        }
+        else
+        {
+            return ERROR_STATE;   
+        }
+        break;
+    
+    case EXPONENT_STATE1:
+        if (isdigit(edge_sign))
+        {
+            return EXPONENT_STATE2;
+        }    
+        else
+        {
+            return ERROR_STATE;
+        }
+        break;
+
+    case EXPONENT_STATE2:
+        if (isdigit(edge_sign))
+        {
+            stringAppend(str, edge_sign); /////return 0???????????
+        }else
+        {
+            FLOAT1_STATE;
+        }
+        
+        break;
+    
     // VARIABLES
     case VAR0_STATE:
         if (isalpha(edge_sign) || edge_sign == '_')
@@ -198,7 +317,7 @@ FSM_States state_transition(FSM_States input, int edge_sign)
         }
         else
         {
-            return 0; // return division ?????????????????????????????????????????????????????????????????????????
+            return START_STATE; // return 0 division ?????????????????????????????????????????????????????????????????????????
         }
         break;
 
@@ -284,8 +403,6 @@ Lexemes make_lexemes(FSM_States End_state, char *Token)
     case DIV_STATE:
         return (Lexemes){.Type_of_lexeme = LEX_DIV};
 
-
-
     case ID_STATE:
         return (Lexemes){.Type_of_lexeme = LEX_FUNID};
 
@@ -304,6 +421,14 @@ Lexemes make_lexemes(FSM_States End_state, char *Token)
     case ERROR_STATE:
         return (Lexemes){.Type_of_lexeme = LEX_ERR};
 
+    case INT1_STATE:
+        return (Lexemes){.Type_of_lexeme = LEX_INT};
+
+    case FLOAT1_STATE:
+        return (Lexemes){.Type_of_lexeme = LEX_FLOAT};    
+
+    case EXPONENT_NUM_STATE:
+        return (Lexemes){.Type_of_lexeme = LEX_EXPONENT};   
     default:
         exit(99); // TODO ERROR HANDLING
         break;
@@ -335,14 +460,20 @@ Lexemes get_lexemes()
         }
 
         FSM_States FSM_next_state = state_transition(FSM_current_state, edge);
+
         if (FSM_next_state == ERROR_STATE)
         {
             ungetc(edge, stdin); // we havent used edge sign to built a lexeme, so we need to return it back
             resizeString(str);
             return make_lexemes(FSM_current_state, start_of_lexeme);
         }
+
         // if we proceeded and used a char to create a lexeme, we will add this char to our dynamic string
         stringAppend(str, edge);
+        /*-if (FSM_next_state == START_STATE) // e.g. in case we had before write("myString") or \n we need to delete it from dynamic string before we start analyzing another token
+        {
+            stringClear(str);
+        }*/
         FSM_current_state = FSM_next_state; // next state
     }
 }
@@ -375,6 +506,15 @@ char *output_lexeme_str(Lexemes input)
     case LEX_DIV:
         return "/";
 
+    case LEX_EXPONENT:
+        return work_string.string + input.data;
+
+    case LEX_FLOAT:
+        return work_string.string + input.data;
+
+    case LEX_INT:
+        return work_string.string + input.data;
+
     case LEX_FUNID:
         return work_string.string + input.data;
 
@@ -383,19 +523,9 @@ char *output_lexeme_str(Lexemes input)
 
     case LEX_ID:
         return work_string.string + input.data;
+        
     case LEX_ERR:
         fprintf(stderr, "Lexikalny error");
     }
     return "ERROR";
 }
-
-/*int main()
-{
-    Lexemes l = {0};
-    while (l.Type_of_lexeme != LEX_EOF)
-    {
-        l = get_lexemes();
-        puts(output_lexeme_str(l));
-    }
-    return 0;
-}*/
