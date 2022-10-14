@@ -1,9 +1,4 @@
-#ifndef STRING_H
-#define STRING_H
-
 #define DEFAULT_ARR_SIZE 8 //Default string length
-
-#include <stdbool.h>
 
 typedef struct 
 {
@@ -15,7 +10,5 @@ typedef struct
 
 bool StringInit(String_t *str);
 bool resizeString(String_t *str);
-bool stringAppend(String_t *str, char c);
+bool stringAppend(String_t *str, int c);
 void stringClear(String_t *str);
-
-#endif

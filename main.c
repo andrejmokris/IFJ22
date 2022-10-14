@@ -14,11 +14,21 @@
 
 int main()
 {
-    Lexemes l = {0};
-    while (l.Type_of_lexeme != LEX_EOF)
+    String_t string;
+    StringInit(&string);
+    int res;
+    while (((res = get_Token(&string)) != LEX_EOF))
     {
-        l = get_lexemes();
-        puts(output_lexeme_str(l));
+        if (res == LEX_ERR)
+        {
+            printf("CHYBA\n");
+            return 1;
+        }
+        printf("RESULT: %d\n", res);
+        if (string.length > 0)
+        {
+            printf("STRING VALUE: %s\n", string.string);
+        }
     }
     return 0;
 }
