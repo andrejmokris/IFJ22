@@ -30,5 +30,6 @@ int main()
             printf("STRING VALUE: %s\n", string.string);
         }
     }
+    stringDeconstruct(&string);
     return 0;
 }

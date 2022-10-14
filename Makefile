@@ -2,7 +2,7 @@ CC = gcc
 PROJECT = ifj22
 CFLAGS = -g -std=c11 -pedantic -Wall -Wextra
 
-OBJS = main.o
+OBJS = main.o dynamic_string.o scanner.o
 
 $(PROJECT): $(OBJS)
 		$(CC) $(CFLAGS) $(OBJS) -o $@

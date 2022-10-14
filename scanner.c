@@ -22,7 +22,7 @@ int get_Token(String_t *str)
     char escape_seq_oct[5]; // Field for octal escape sequnces
     char escape_seq_hex[5]; // Field for hex escape sequnces
 
-    // stringClear(str);
+    stringClear(str);
 
     while (true)
     {
