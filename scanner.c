@@ -61,7 +61,9 @@ int get_Token(String_t *str)
                 case ',':
                     return LEX_COMMA;
                 case '?':
-                    return LEX_QM;
+                    //return LEX_QM;
+                    input_state = ID_STATE;
+                    break;
                 case ':':
                     return LEX_COLON;
                 case '/':
@@ -90,6 +92,11 @@ int get_Token(String_t *str)
                     {
                         input_state = ID_STATE;
                         stringAppend(str, edge_sign);
+                    }
+                    else if (edge_sign == '?')
+                    {
+                        input_state = ID_STATE;
+                                                stringAppend(str, edge_sign);
                     }
                     else if (isdigit(edge_sign))
                     {
@@ -296,7 +303,7 @@ int get_Token(String_t *str)
             break;
 
         // IDENTIFIERS
-        case ID_STATE:
+        case ID_STATE: //TO DO ?string ... to detect as LEX_STRING not aj LEX_FUNID
             if (isalnum(edge_sign) || edge_sign == '_')
             {
                 stringAppend(str, edge_sign);
