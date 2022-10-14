@@ -17,7 +17,6 @@ int get_Token(String_t *str)
     int edge_sign = 0;
     int input_state = START_STATE;
 
-    bool exponentFound = false;
     bool numInDecPart = false; // check if any number is after . in decimal part
 
     char escape_seq_oct[5]; // Field for octal escape sequnces
@@ -350,7 +349,7 @@ int get_Token(String_t *str)
                 return LEX_FUNID;
             }
 
-        // ASSIGN STATES
+        // =, ==, !=
         case ASSIGN_STATE:
             if (edge_sign == '=')
             {
@@ -360,6 +359,18 @@ int get_Token(String_t *str)
             ungetc(edge_sign, stdin);
             input_state = START_STATE;
             return LEX_ASSIGN;
+
+        case NOT_STATE:
+            if (edge_sign == '=')
+            {
+                input_state = START_STATE;
+                return LEX_NEQ;
+            }
+            else
+            {
+                input_state = START_STATE;
+                return LEX_ERR;
+            }
 
         case ASSIGN_STATE1:
             if (edge_sign == '=')
