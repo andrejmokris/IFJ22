@@ -12,3 +12,4 @@ bool StringInit(String_t *str);
 bool resizeString(String_t *str);
 bool stringAppend(String_t *str, int c);
 void stringClear(String_t *str);
+void stringDeconstruct(String_t *str);

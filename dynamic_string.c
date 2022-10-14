@@ -53,5 +53,11 @@ bool stringAppend(String_t *str, int c) {
 }
 
 void stringClear(String_t *str) {
+    str->length = 0;
+    memset(str->string,0,strlen(str->string));
+    str->string[0] = '\0';
+}
+
+void stringDeconstruct(String_t *str) {
     free(str->string);
 }
