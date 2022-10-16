@@ -96,7 +96,7 @@ int get_Token(String_t *str)
                     else if (edge_sign == '?')
                     {
                         input_state = ID_STATE;
-                                                stringAppend(str, edge_sign);
+                        stringAppend(str, edge_sign);
                     }
                     else if (isdigit(edge_sign))
                     {
@@ -370,6 +370,11 @@ int get_Token(String_t *str)
         case NOT_STATE:
             if (edge_sign == '=')
             {
+                int new_char = fgetc(stdin);
+                if(new_char != '=') {
+                    input_state = START_STATE;
+                    return LEX_ERR;
+                }
                 input_state = START_STATE;
                 return LEX_NEQ;
             }
@@ -453,6 +458,15 @@ int get_Token(String_t *str)
             {
                 input_state = START_STATE;
                 return LEX_ERR;
+            } else if (edge_sign == 'e' || edge_sign == 'E') {
+                if (numInDecPart) {
+                    stringAppend(str, edge_sign);
+                    input_state = EXPONENT_STATE0;
+                    break;
+                } else {
+                    input_state = START_STATE;
+                    return LEX_ERR;
+                }
             }
             else
             {
@@ -473,7 +487,7 @@ int get_Token(String_t *str)
                 stringAppend(str, edge_sign);
                 break;
             }
-            else if (edge_sign == 'e' || edge_sign == 'E')
+            else if (edge_sign == 'e' || edge_sign == 'E' || !isdigit(edge_sign))
             {
                 input_state = START_STATE;
                 return LEX_ERR;
@@ -483,6 +497,9 @@ int get_Token(String_t *str)
                 input_state = EXPONENT_STATE2;
                 stringAppend(str, edge_sign);
                 break;
+            } else {
+                input_state = START_STATE;
+                return LEX_ERR;
             }
             break;
 
