@@ -1,18 +1,18 @@
 /*
-* IFJ 2022 PROJECT
-*
-* File: dynamic_string.c
-*
-* Dynamic string file
-*/
+ * IFJ 2022 PROJECT
+ *
+ * File: dynamic_string.c
+ *
+ * Dynamic string file
+ */
 
 #include "dynamic_string.h"
 
-bool StringInit(String_t *str)
-{
-    if ((str->string = malloc(DEFAULT_ARR_SIZE * sizeof(char))) == NULL)
-    {
-        fprintf(stderr,"Internal error while allocating dynamic string.\n");
+#include "error.h"
+
+bool StringInit(String_t *str) {
+    if ((str->string = malloc(DEFAULT_ARR_SIZE * sizeof(char))) == NULL) {
+        errorExit(INTERNAL_ERROR, "Memory could not be allocated\n");
         return false;
     }
     str->length = 0;
@@ -22,11 +22,12 @@ bool StringInit(String_t *str)
 }
 
 bool resizeString(String_t *str) {
-    str->string = (char *) realloc(str->string, str->length * 2);
-    if(str->string != NULL) {
+    str->string = (char *)realloc(str->string, str->length * 2);
+    if (str->string != NULL) {
         str->allocSize = str->allocSize * 2;
         return true;
     }
+    errorExit(INTERNAL_ERROR, "Memory could not be allocated\n");
     return false;
 }
 
@@ -50,10 +51,8 @@ bool stringAppend(String_t *str, int c) {
 
 void stringClear(String_t *str) {
     str->length = 0;
-    memset(str->string,0,strlen(str->string));
+    memset(str->string, 0, strlen(str->string));
     str->string[0] = '\0';
 }
 
-void stringDeconstruct(String_t *str) {
-    free(str->string);
-}
+void stringDeconstruct(String_t *str) { free(str->string); }

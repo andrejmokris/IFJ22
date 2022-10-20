@@ -13,18 +13,19 @@
 
 #include <stdio.h>
 
+#include "error.h"
+
 int main() {
     String_t string;
     StringInit(&string);
     if (!checkProlog(&string)) {
-        printf("CHYBA\n");
+        errorExit(LEX_ERROR, "Wrong prolog\n");
         return 1;
     }
     int res;
     while (((res = get_Token(&string)) != LEX_EOF)) {
         if (res == LEX_ERR) {
-            printf("CHYBA\n");
-            return 1;
+            errorExit(LEX_ERROR, "Wrong lex\n");
         }
         printf("RESULT: %d\n", res);
         if (string.length > 0) {
