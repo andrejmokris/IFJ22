@@ -9,24 +9,25 @@
  * Adam Pap: xpapad11
  *
  */
-#include <stdio.h>
 #include "main.h"
 
-int main()
-{
+#include <stdio.h>
+
+int main() {
     String_t string;
     StringInit(&string);
+    if (!checkProlog(&string)) {
+        printf("CHYBA\n");
+        return 1;
+    }
     int res;
-    while (((res = get_Token(&string)) != LEX_EOF))
-    {
-        if (res == LEX_ERR)
-        {
+    while (((res = get_Token(&string)) != LEX_EOF)) {
+        if (res == LEX_ERR) {
             printf("CHYBA\n");
             return 1;
         }
         printf("RESULT: %d\n", res);
-        if (string.length > 0)
-        {
+        if (string.length > 0) {
             printf("STRING VALUE: %s\n", string.string);
         }
     }

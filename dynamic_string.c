@@ -6,10 +6,6 @@
 * Dynamic string file
 */
 
-#include <stdio.h>
-#include <stdlib.h>
-#include <stdbool.h>
-#include <string.h>
 #include "dynamic_string.h"
 
 bool StringInit(String_t *str)
