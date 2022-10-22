@@ -15,6 +15,7 @@ StackElement *createElement(int tokenID, String_t tokenVal) {
     }
     newElement->tokenVal = newString;
     newElement->tokenID = tokenID;
+    newElement->dataType = tokenID;
     return newElement;
 }
 
@@ -43,16 +44,58 @@ bool stackPush(Stack *stack, int tokenID, String_t tokenVal) {
         return false;
     }
     if (stack->elementCount < stack->stackSize) {
+        newElement->arrayIndex = stack->elementCount;
         stack->items[stack->elementCount] = newElement;
         stack->elementCount++;
         stack->topElement = newElement;
-        // for debug purpose - true to be deleted, when we know element
-        if (true) {
+        // check if item is non-terminal
+        if (tokenID >= 1 && tokenID <= 14 && tokenID != LEX_BEG_HANDLE) {
             stack->topNonTerm = newElement;
         }
         return true;
     }
     return false;
+}
+
+void setTopNoTerm(Stack *stack) {
+    for(int i = stack->elementCount - 1; i >= 0; i--) {
+        int tokenID = stack->items[i]->tokenID;
+        if (tokenID >= 1 && tokenID <= 14 && tokenID != LEX_BEG_HANDLE) {
+            stack->topNonTerm = stack->items[i];
+            return;
+        }
+    }
+}
+
+bool stackPushElement(Stack *stack, StackElement *newElement) {
+    if (newElement == NULL || stack == NULL) {
+        return false;
+    }
+    if (stack->elementCount < stack->stackSize) {
+        newElement->arrayIndex = stack->elementCount;
+        stack->items[stack->elementCount] = newElement;
+        stack->elementCount++;
+        stack->topElement = newElement;
+        return true;
+    }
+    return false;
+}
+
+bool stackInsertHandle(Stack *stack) {
+    String_t string;
+    StringInit(&string);
+    stringAppend(&string, '<');
+    StackElement *newElement = createElement(LEX_BEG_HANDLE, string);
+    if (newElement == NULL || stack == NULL) {
+        return false;
+    }
+    for (size_t i = stack->topElement->arrayIndex;
+         i > stack->topNonTerm->arrayIndex; i--) {
+            stack->items[i+1] = stack->items[i];
+    }
+    stack->items[stack->topNonTerm->arrayIndex + 1] = newElement;
+    stack->elementCount++;
+    return true;
 }
 
 StackElement *stackPop(Stack *stack) {
@@ -69,9 +112,10 @@ StackElement *stackPop(Stack *stack) {
 
 void printStack(Stack *stack) {
     for (size_t i = 0; i < stack->elementCount; i++) {
-        printf("ID: %d  |   VAL: %s\n", stack->items[i]->tokenID,
+        printf("(ID: %d | VAL: %s) ", stack->items[i]->tokenID,
                stack->items[i]->tokenVal.string);
     }
+    printf("\n");
 }
 
 void stackDeconstruct(Stack *stack) {

@@ -9,6 +9,12 @@
 #ifndef _SCANNER
 #define _SCANNER
 
+#include <ctype.h>
+#include <stdbool.h>
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
 #include "dynamic_string.h"
 
 typedef enum {
@@ -51,47 +57,49 @@ typedef enum {
     EOF_STATE
 } FSM_States;
 
-typedef struct {
-    enum {
-        LEX_ERR,       // Error   0
-        LEX_ADD,       // +       1
-        LEX_SUB,       // -       2
-        LEX_MUL,       // *       3
-        LEX_DIV,       // /       4
-        LEX_GT,        // >       5
-        LEX_LE,        // <       6
-        LEX_GTQ,       // >=      7
-        LEX_LEQ,       // <=      8
-        LEX_EQ,        // ==      9
-        LEX_NEQ,       // !=      10
-        LEX_ASSIGN,    // =       11
-        LEX_COMMA,     // ,       12
-        LEX_SEMICOL,   // ;       13
-        LEX_RPAR,      // )       14
-        LEX_LPAR,      // (       15
-        LEX_RCRB,      // }       16
-        LEX_LCRB,      // {       17
-        LEX_QM,        // ?       18
-        LEX_COLON,     // :       19
-        LEX_DOT,       // .       20
-        LEX_EOL,       // '\n'    21
-        LEX_EOF,       // EOF     22
-        LEX_ID,        // Identifier  23
-        LEX_FUNID,     // Function identifier 24
-        LEX_IF,        //         25
-        LEX_ELSE,      //         26
-        LEX_WHILE,     //         27
-        LEX_DO,        //         28
-        LEX_INT,       // int     29
-        LEX_FLOAT,     // float   30
-        LEX_EXPONENT,  // exponent number 31
-        LEX_STRING,    // String  32
-        LEX_VOID,      //         33
-        LEX_NULL,      //         34
-        LEX_RETURN     //         35
-    } Type_of_lexeme;
-    size_t data;
-} Lexemes;  // tokens
+enum {
+    LEX_ERR,       // Error   0
+    LEX_ADD,       // +       1
+    LEX_SUB,       // -       2
+    LEX_MUL,       // *       3
+    LEX_DIV,       // /       4
+    LEX_EQ,        // ===     5
+    LEX_NEQ,       // !==     6
+    LEX_LE,        // <       7
+    LEX_GT,        // >       8
+    LEX_LEQ,       // <=      9
+    LEX_GTQ,       // >=      10
+    LEX_LPAR,      // (       11
+    LEX_RPAR,      // )       12
+    LEX_I,         // i       13 
+    LEX_DOLLAR,    // $       14
+    LEX_ASSIGN,    // =       15
+    LEX_COMMA,     // ,       16
+    LEX_SEMICOL,   // ;       17
+    LEX_RCRB,      // }       18
+    LEX_LCRB,      // {       19
+    LEX_QM,        // ?       20
+    LEX_COLON,     // :       21
+    LEX_DOT,       // .       22
+    LEX_EOL,       // '\n'    23
+    LEX_EOF,       // EOF     24
+    LEX_ID,        // ID      25
+    LEX_FUNID,     //         26
+    LEX_FUNKW,     // Func    27
+    LEX_IF,        //         28
+    LEX_ELSE,      //         29
+    LEX_WHILE,     //         30
+    LEX_DO,        //         31
+    LEX_INT,       // int     32
+    LEX_FLOAT,     // float   33
+    LEX_EXPONENT,  //         34
+    LEX_STRING,    // String  35
+    LEX_VOID,      //         36
+    LEX_NULL,      //         37
+    LEX_RETURN,    //         38
+    LEX_BEG_HANDLE,//         39
+    LEX_E          //         40
+} Type_of_lexeme;
 
 int get_Token(String_t *str);
 bool checkProlog(String_t *str);

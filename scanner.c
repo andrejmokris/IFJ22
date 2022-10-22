@@ -6,13 +6,6 @@
  *
  */
 #include "scanner.h"
-#include "error.h"
-
-#include <ctype.h>
-#include <stdbool.h>
-#include <stdio.h>
-#include <stdlib.h>
-#include <string.h>
 
 int get_Token(String_t *str) {
     int edge_sign = 0;
@@ -94,7 +87,6 @@ int get_Token(String_t *str) {
                                 stringAppend(str, edge_sign);
                             } else {
                                 input_state = START_STATE;
-                                errorExit(LEX_ERROR, "LEX_ERROR\n");
                                 return LEX_ERR;
                             }
                     }
@@ -263,7 +255,7 @@ int get_Token(String_t *str) {
                     } else if (!strcmp(str->string, "else")) {
                         return LEX_ELSE;
                     } else if (!strcmp(str->string, "function")) {
-                        return LEX_FUNID;
+                        return LEX_FUNKW;
                     } else if (!strcmp(str->string, "while")) {
                         return LEX_WHILE;
                     } else if (!strcmp(str->string, "void")) {
@@ -437,16 +429,16 @@ bool checkProlog(String_t *str) {
         return false;
     }
     ungetc(curChar, stdin);
-    if ((get_Token(str) != 24 || strcmp(str->string, "declare")) ||
-        (get_Token(str) != 15)) {
+    if ((get_Token(str) != LEX_FUNID || strcmp(str->string, "declare")) ||
+        (get_Token(str) != LEX_LPAR)) {
         return false;
     }
-    if ((get_Token(str) != 24 || strcmp(str->string, "strict_types")) ||
-        (get_Token(str) != 11)) {
+    if ((get_Token(str) != LEX_FUNID || strcmp(str->string, "strict_types")) ||
+        (get_Token(str) != LEX_ASSIGN)) {
         return false;
     }
-    if ((get_Token(str) != 29 || strcmp(str->string, "1")) ||
-        (get_Token(str) != 14) || (get_Token(str) != 13)) {
+    if ((get_Token(str) != LEX_INT || strcmp(str->string, "1")) ||
+        (get_Token(str) != LEX_RPAR) || (get_Token(str) != LEX_SEMICOL)) {
         return false;
     }
     return true;
