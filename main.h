@@ -19,5 +19,6 @@
 #include <string.h>
 
 #include "scanner.h"
+#include "stack.h"
 
 #endif

@@ -17,21 +17,29 @@
 
 int main() {
     String_t string;
+    Stack *stack = initStack(5000);
     StringInit(&string);
     if (!checkProlog(&string)) {
+        stringDeconstruct(&string);
+        stackDeconstruct(stack);
         errorExit(LEX_ERROR, "Wrong prolog\n");
         return 1;
     }
     int res;
     while (((res = get_Token(&string)) != LEX_EOF)) {
         if (res == LEX_ERR) {
+            stringDeconstruct(&string);
+            stackDeconstruct(stack);
             errorExit(LEX_ERROR, "Wrong lex\n");
         }
-        printf("RESULT: %d\n", res);
-        if (string.length > 0) {
-            printf("STRING VALUE: %s\n", string.string);
+        if(!stackPush(stack, res, string)) {
+            stringDeconstruct(&string);
+            stackDeconstruct(stack);
+            errorExit(INTERNAL_ERROR, "STACKPUSH FAIL\n");
         }
     }
+    printf("DLZKA STACKU: %ld\n", stack->elementCount);
     stringDeconstruct(&string);
+    stackDeconstruct(stack);
     return 0;
 }

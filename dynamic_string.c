@@ -12,7 +12,6 @@
 
 bool StringInit(String_t *str) {
     if ((str->string = malloc(DEFAULT_ARR_SIZE * sizeof(char))) == NULL) {
-        errorExit(INTERNAL_ERROR, "Memory could not be allocated\n");
         return false;
     }
     str->length = 0;
@@ -46,6 +45,7 @@ bool stringAppend(String_t *str, int c) {
             }
         }
     }
+    //errorExit(INTERNAL_ERROR, "Memory could not be allocated\n");
     return false;
 }
 

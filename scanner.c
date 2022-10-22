@@ -6,6 +6,7 @@
  *
  */
 #include "scanner.h"
+#include "error.h"
 
 #include <ctype.h>
 #include <stdbool.h>
@@ -93,6 +94,7 @@ int get_Token(String_t *str) {
                                 stringAppend(str, edge_sign);
                             } else {
                                 input_state = START_STATE;
+                                errorExit(LEX_ERROR, "LEX_ERROR\n");
                                 return LEX_ERR;
                             }
                     }

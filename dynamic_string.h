@@ -6,7 +6,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#define DEFAULT_ARR_SIZE 8  // Default string length
+#define DEFAULT_ARR_SIZE 50  // Default string length
 
 typedef struct {
     char *string;
