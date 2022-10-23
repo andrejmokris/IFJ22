@@ -95,6 +95,7 @@ bool stackInsertHandle(Stack *stack) {
     }
     stack->items[stack->topNonTerm->arrayIndex + 1] = newElement;
     stack->elementCount++;
+    stringDeconstruct(&string);
     return true;
 }
 
@@ -112,8 +113,8 @@ StackElement *stackPop(Stack *stack) {
 
 void printStack(Stack *stack) {
     for (size_t i = 0; i < stack->elementCount; i++) {
-        printf("(ID: %d | VAL: %s) ", stack->items[i]->tokenID,
-               stack->items[i]->tokenVal.string);
+        printf("(ID: %d | VAL: %s | TYPE: %d) ", stack->items[i]->tokenID,
+               stack->items[i]->tokenVal.string, stack->items[i]->dataType);
     }
     printf("\n");
 }

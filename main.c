@@ -26,13 +26,11 @@ int main() {
             stringDeconstruct(&string);
             errorExit(LEX_ERROR, "Wrong lex\n");
         }
-        if(!stackPush(stack, res, string)) {
-            stringDeconstruct(&string);
-            errorExit(INTERNAL_ERROR, "STACKPUSH FAIL\n");
-        }
+        printf("CUR LEX: %d | STRING: %s\n", res, string.string);
     }
     */
-    parseExpression();
+    int error = parseExpression();
+    printf("ERROR: %d\n", error);
     stringDeconstruct(&string);
     return 0;
 }

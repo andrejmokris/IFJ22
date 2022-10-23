@@ -101,6 +101,7 @@ int get_Token(String_t *str) {
                 } else if (edge_sign == '*') {
                     input_state = COMM_BLOCK_STATE;
                 } else {
+                    ungetc(edge_sign, stdin);
                     return LEX_DIV;
                 }
                 break;
