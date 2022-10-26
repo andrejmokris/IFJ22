@@ -114,7 +114,7 @@ StackElement *stackPop(Stack *stack) {
 void printStack(Stack *stack) {
     for (size_t i = 0; i < stack->elementCount; i++) {
         printf("(ID: %d | VAL: %s | TYPE: %d) ", stack->items[i]->tokenID,
-               stack->items[i]->tokenVal.string, stack->items[i]->dataType);
+              stack->items[i]->tokenVal.string, stack->items[i]->dataType);
     }
     printf("\n");
 }

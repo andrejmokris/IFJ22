@@ -2,18 +2,28 @@
 
 bool addRule(Stack *stack, StackElement *op1, StackElement *op2) {
     if (op1->dataType == op2->dataType) {
-        op1->tokenID = LEX_E;
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
         return true;
-    } else if (op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) {
-        op1->tokenID = LEX_E;
+    } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
+               (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
         op1->dataType = LEX_FLOAT;
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
         return true;
-    } else if (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT) {
-        op1->tokenID = LEX_E;
+    }
+    elementDeconstruct(op1);
+    elementDeconstruct(op2);
+    return false;
+}
+
+bool mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
+    if (op1->dataType == op2->dataType) {
+        stackPushElement(stack, op1);
+        elementDeconstruct(op2);
+        return true;
+    } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
+               (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
         op1->dataType = LEX_FLOAT;
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
@@ -34,7 +44,7 @@ bool reduceExpression(Stack *stack) {
         cnt++;
     }
     elementDeconstruct(lastPopped);
-    
+
     // i -> E
     if (cnt == 1 && popArr[0]->tokenID == LEX_I) {
         popArr[0]->tokenID = LEX_E;
@@ -49,29 +59,39 @@ bool reduceExpression(Stack *stack) {
                 // E+E -> E
                 elementDeconstruct(popArr[1]);
                 if (addRule(stack, popArr[0], popArr[2])) {
-                    //elementDeconstruct(popArr[1]);
                     return true;
                 }
                 printf("semantic error\n");
                 return SEMANTIC_ERROR;
             case LEX_SUB:
                 // E-E -> E
-                popArr[0]->tokenID = LEX_E;
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
                 return true;
             case LEX_MUL:
                 // E*E -> E
-                popArr[0]->tokenID = LEX_E;
+                elementDeconstruct(popArr[1]);
+                if (mulRule(stack, popArr[0], popArr[2])) {
+                    return true;
+                }
+                printf("semantic error\n");
+                return SEMANTIC_ERROR;
+                return true;
+            case LEX_DIV:
+                // E/E -> E
+                popArr[0]->dataType = LEX_FLOAT;
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
                 return true;
-            case LEX_DIV:
-                // E/E -> E
-                popArr[0]->tokenID = LEX_E;
-                popArr[0]->dataType = LEX_FLOAT;
+            case LEX_NEQ:
+            case LEX_LEQ:
+            case LEX_GTQ:
+            case LEX_GT:
+            case LEX_LE:
+            case LEX_EQ:
+                popArr[0]->dataType = LEX_BOOL;
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
@@ -92,7 +112,7 @@ bool reduceExpression(Stack *stack) {
     return false;
 }
 
-int parseExpression() {
+int parseExpression(int endChar) {
     String_t string;
     Stack *stack = initStack(STACK_INIT_SIZE);
     bool endAnalysis = false;
@@ -103,8 +123,9 @@ int parseExpression() {
         stringDeconstruct(&string);
         return INTERNAL_ERROR;
     }
-    
+
     int curLex = get_Token(&string);
+    // when variable, find in symtab
     int dataType = curLex;
     if (curLex == LEX_ERR) {
         stackDeconstruct(stack);
@@ -113,7 +134,7 @@ int parseExpression() {
     }
     do {
         printStack(stack);
-        if (curLex == LEX_INT || curLex == LEX_FLOAT) {
+        if (curLex == LEX_INT || curLex == LEX_FLOAT || curLex == LEX_STRING) {
             curLex = LEX_I;
         }
         char operation = table[stack->topNonTerm->tokenID - 1][curLex - 1];
@@ -121,13 +142,20 @@ int parseExpression() {
             break;
         }
         if (operation == 'X') {
+            if(curLex == endChar) {
+                stackDeconstruct(stack);
+                stringDeconstruct(&string);
+                return NO_ERROR;
+            }
             printf("CHYBA\n");
+            stackDeconstruct(stack);
+            stringDeconstruct(&string);
             return SYNTAX_ERROR;
         } else if (operation == '<') {
             stackInsertHandle(stack);
             stackPush(stack, curLex, string);
             stack->topElement->dataType = dataType;
-            
+
             curLex = get_Token(&string);
             dataType = curLex;
             if (curLex == LEX_ERR) {
@@ -135,7 +163,7 @@ int parseExpression() {
                 stringDeconstruct(&string);
                 return LEX_ERROR;
             }
-            if (curLex == LEX_EOF || curLex == LEX_SEMICOL) {
+            if (curLex == LEX_EOF || curLex == endChar) {
                 curLex = LEX_DOLLAR;
             }
         } else if (operation == '>') {
@@ -156,7 +184,7 @@ int parseExpression() {
                 stringDeconstruct(&string);
                 return LEX_ERROR;
             }
-            if (curLex == LEX_EOF || curLex == LEX_SEMICOL) {
+            if (curLex == LEX_EOF || curLex == endChar) {
                 curLex = LEX_DOLLAR;
             }
         }

@@ -29,7 +29,7 @@ int main() {
         printf("CUR LEX: %d | STRING: %s\n", res, string.string);
     }
     */
-    int error = parseExpression();
+    int error = parseExpression(LEX_SEMICOL);
     printf("ERROR: %d\n", error);
     stringDeconstruct(&string);
     return 0;

@@ -31,14 +31,19 @@ int get_Token(String_t *str) {
                 } else {
                     switch (edge_sign) {
                         case '+':
+                            stringAppend(str, edge_sign);
                             return LEX_ADD;
                         case '-':
+                            stringAppend(str, edge_sign);
                             return LEX_SUB;
                         case '*':
+                            stringAppend(str, edge_sign);
                             return LEX_MUL;
                         case '(':
+                            stringAppend(str, edge_sign);
                             return LEX_LPAR;
                         case ')':
+                            stringAppend(str, edge_sign);
                             return LEX_RPAR;
                         case '}':
                             return LEX_RCRB;
@@ -48,12 +53,17 @@ int get_Token(String_t *str) {
                             return LEX_SEMICOL;
                         case ',':
                             return LEX_COMMA;
-                        case '?':
-                            // return LEX_QM;
-                            input_state = ID_STATE;
-                            break;
                         case ':':
                             return LEX_COLON;
+                        case '?':
+                            stringAppend(str, edge_sign);
+                            if ((edge_sign = fgetc(stdin)) == '>') {
+                                return LEX_EPILOG;
+                            } else {
+                                ungetc(edge_sign, stdin);
+                                input_state = ID_STATE;
+                                break;
+                            }
                         case '/':
                             input_state = DIV_STATE;
                             break;
@@ -77,9 +87,6 @@ int get_Token(String_t *str) {
                             break;
                         default:
                             if (isalpha(edge_sign) || edge_sign == '_') {
-                                input_state = ID_STATE;
-                                stringAppend(str, edge_sign);
-                            } else if (edge_sign == '?') {
                                 input_state = ID_STATE;
                                 stringAppend(str, edge_sign);
                             } else if (isdigit(edge_sign)) {
@@ -242,15 +249,24 @@ int get_Token(String_t *str) {
                 break;
 
             // IDENTIFIERS
-            case ID_STATE:  // TO DO ?string ... to detect as LEX_STRING not aj
-                            // LEX_FUNID
+            case ID_STATE:
                 if (isalnum(edge_sign) || edge_sign == '_') {
                     stringAppend(str, edge_sign);
                     break;
-                } else  // control if a identifier is key word
-                {
+                } else {
                     ungetc(edge_sign, stdin);
                     input_state = START_STATE;
+                    if (str->string[0] == '?') {
+                        if (!strcmp(str->string, "?int")) {
+                            return LEX_TYPE_INT_OPT;
+                        } else if (!strcmp(str->string, "?float")) {
+                            return LEX_TYPE_FLOAT_OPT;
+                        } else if (!strcmp(str->string, "?string")) {
+                            return LEX_TYPE_STRING_OPT;
+                        } else {
+                            return LEX_ERR;
+                        }
+                    }
                     if (!strcmp(str->string, "if")) {
                         return LEX_IF;
                     } else if (!strcmp(str->string, "else")) {
@@ -266,11 +282,11 @@ int get_Token(String_t *str) {
                     } else if (!strcmp(str->string, "return")) {
                         return LEX_RETURN;
                     } else if (!strcmp(str->string, "int")) {
-                        return LEX_INT;
+                        return LEX_TYPE_INT;
                     } else if (!strcmp(str->string, "float")) {
-                        return LEX_FLOAT;
+                        return LEX_TYPE_FLOAT;
                     } else if (!strcmp(str->string, "string")) {
-                        return LEX_STRING;
+                        return LEX_TYPE_STRING;
                     }
                     return LEX_FUNID;
                 }

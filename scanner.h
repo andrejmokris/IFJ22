@@ -98,7 +98,15 @@ enum {
     LEX_NULL,      //         37
     LEX_RETURN,    //         38
     LEX_BEG_HANDLE,//         39
-    LEX_E          //         40
+    LEX_E,         //         40
+    LEX_BOOL,      //         41
+    LEX_TYPE_STRING,//        42
+    LEX_TYPE_FLOAT,//         43
+    LEX_TYPE_INT, //          44
+    LEX_TYPE_STRING_OPT,//    45
+    LEX_TYPE_FLOAT_OPT,//     46
+    LEX_TYPE_INT_OPT,//       47
+    LEX_EPILOG,  //            48
 } Type_of_lexeme;
 
 int get_Token(String_t *str);
