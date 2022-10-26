@@ -113,8 +113,15 @@ StackElement *stackPop(Stack *stack) {
 
 void printStack(Stack *stack) {
     for (size_t i = 0; i < stack->elementCount; i++) {
-        printf("(ID: %d | VAL: %s | TYPE: %d) ", stack->items[i]->tokenID,
-              stack->items[i]->tokenVal.string, stack->items[i]->dataType);
+        //printf("(ID: %d | VAL: %s | TYPE: %d) ", stack->items[i]->tokenID,
+        //     stack->items[i]->tokenVal.string, stack->items[i]->dataType);
+        if(stack->items[i]->tokenID == LEX_E) {
+            printf("E ");
+        } else if(stack->items[i]->tokenID == LEX_I) {
+            printf("i ");
+        } else {
+            printf("%s ", stack->items[i]->tokenVal.string);
+        }
     }
     printf("\n");
 }

@@ -125,8 +125,8 @@ int parseExpression(int endChar) {
     }
 
     int curLex = get_Token(&string);
-    // when variable, find in symtab
     int dataType = curLex;
+
     if (curLex == LEX_ERR) {
         stackDeconstruct(stack);
         stringDeconstruct(&string);
@@ -134,24 +134,40 @@ int parseExpression(int endChar) {
     }
     do {
         printStack(stack);
-        if (curLex == LEX_INT || curLex == LEX_FLOAT || curLex == LEX_STRING) {
-            curLex = LEX_I;
-        }
-        char operation = table[stack->topNonTerm->tokenID - 1][curLex - 1];
-        if (operation == 'A' && stack->elementCount == 2) {
-            break;
-        }
-        if (operation == 'X') {
-            if(curLex == endChar) {
-                stackDeconstruct(stack);
-                stringDeconstruct(&string);
-                return NO_ERROR;
-            }
-            printf("CHYBA\n");
+        if (curLex == LEX_EOF) {
             stackDeconstruct(stack);
             stringDeconstruct(&string);
             return SYNTAX_ERROR;
-        } else if (operation == '<') {
+        }
+        if (dataType == LEX_INT || dataType == LEX_FLOAT ||
+            dataType == LEX_STRING) {
+            curLex = LEX_I;
+        }
+        if (curLex == LEX_EOF) {
+            stackDeconstruct(stack);
+            stringDeconstruct(&string);
+            return SYNTAX_ERROR;
+        }
+        if (curLex > 14) {
+            if (curLex == endChar) {
+                break;
+            } else {
+                stackDeconstruct(stack);
+                stringDeconstruct(&string);
+                return SYNTAX_ERROR;
+            }
+        }
+        char operation = table[stack->topNonTerm->tokenID - 1][curLex - 1];
+        if (operation == 'X') {
+            if (curLex == endChar) {
+                break;
+            } else {
+                stackDeconstruct(stack);
+                stringDeconstruct(&string);
+                return SYNTAX_ERROR;
+            }
+        }
+        if (operation == '<') {
             stackInsertHandle(stack);
             stackPush(stack, curLex, string);
             stack->topElement->dataType = dataType;
@@ -162,9 +178,6 @@ int parseExpression(int endChar) {
                 stackDeconstruct(stack);
                 stringDeconstruct(&string);
                 return LEX_ERROR;
-            }
-            if (curLex == LEX_EOF || curLex == endChar) {
-                curLex = LEX_DOLLAR;
             }
         } else if (operation == '>') {
             printf("REDUCE\n");
@@ -184,12 +197,8 @@ int parseExpression(int endChar) {
                 stringDeconstruct(&string);
                 return LEX_ERROR;
             }
-            if (curLex == LEX_EOF || curLex == endChar) {
-                curLex = LEX_DOLLAR;
-            }
         }
-        printf("\n");
-    } while (!endAnalysis);
+    } while (endAnalysis == false);
 
     printf("Vysledny datovy typ: %d\n", stack->items[1]->dataType);
     stackDeconstruct(stack);
