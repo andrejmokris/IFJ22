@@ -9,8 +9,9 @@
 #include "scanner.h"
 #include "stack.h"
 #include "error.h"
+#include "bst.h"
 
-#define STACK_INIT_SIZE 500
+#define STACK_INIT_SIZE 977
 
 static char table[14][14] = { 
    // +    -    *    /   ===  !==   <    >   <=  >=     (    )    i    $
@@ -30,6 +31,6 @@ static char table[14][14] = {
     {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'X', '<', 'A'}  // $
 };
 
-int parseExpression();
+int parseExpression(int endChar, int *resDataType);
 
 #endif

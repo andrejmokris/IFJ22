@@ -5,7 +5,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 
-#define NO_ERROR 420
+#define SUCCESS 420
 #define LEX_ERROR 1
 #define SYNTAX_ERROR 2
 #define SEMANTIC_ERROR 3

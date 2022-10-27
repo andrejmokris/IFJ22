@@ -6,10 +6,12 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bst.h"
 #include "error.h"
 #include "expression.h"
 #include "scanner.h"
 #include "stack.h"
-#include "bst.h"
+
+int mainParser();
 
 #endif

@@ -1,67 +1,70 @@
 #include "bst.h"
 
-node_t *insert(node_t **root, int val) {
-    if (*root == NULL) {
-        *root = malloc(sizeof(node_t));
-        if(*root != NULL) {
-            (*root)->data = val;
-            (*root)->left = (*root)->right = NULL;
-            return *root;
-        } else {
-            fprintf(stderr, "Memory not allocated\n");
+node_t createNode(int dataType, String_t NodeID) {
+    node_t newNode = malloc(sizeof(struct TreeNode));
+    String_t newString;
+
+    if (newNode == NULL || StringInit(&newString) == false) {
+        return NULL;
+    }
+
+    for (int i = 0; i < NodeID.length; i++) {
+        if (stringAppend(&newString, NodeID.string[i]) == false) {
             return NULL;
         }
     }
-    if(val < (*root)->data) {
-        return insert(&((*root)->left), val);
+    newNode->left = NULL;
+    newNode->right = NULL;
+    newNode->dataType = dataType;
+    newNode->NodeID = newString;
+    return newNode;
+}
+
+void deconstructNode(node_t node) {
+    stringDeconstruct(&node->NodeID);
+    free(node);
+}
+
+node_t TreeInsert(node_t *root, int dataType, String_t NodeID) {
+    if (*root == NULL) {
+        node_t newNode = createNode(dataType, NodeID);
+        if (newNode != NULL) {
+            *root = newNode;
+            return newNode;
+        } else {
+            return NULL;
+        }
+    } else if (strcmp(NodeID.string, (*root)->NodeID.string) == 0) {
+        (*root)->dataType = dataType;
+        return *root;
+    } else if (strcmp(NodeID.string, (*root)->NodeID.string) > 0) {
+        return TreeInsert(&((*root)->right), dataType, NodeID);
     } else {
-        return insert(&((*root)->right), val);
+        return TreeInsert(&((*root)->left), dataType, NodeID);
     }
 }
 
-node_t *find(node_t *root, int val) {
-    if(root == NULL) {
+node_t TreeFind(node_t root, char *string) {
+    if (root == NULL) {
         return NULL;
-    }
-    if (root->data == val) {
-        return root;
-    } else if (val > root->data) {
-        return find(root->right, val);
     } else {
-        return find(root->left, val);
+        if (strcmp(string, root->NodeID.string) == 0) {
+            return root;
+        } else if (strcmp(string, root->NodeID.string) > 0) {
+            return TreeFind(root->right, string);
+        } else {
+            return TreeFind(root->left, string);
+        }
     }
-    
+    return NULL;
 }
 
-void freeTree(node_t *root) {
-    if(root->left != NULL) {
-        freeTree(root->left);
-    }
-    if(root->right != NULL) {
-        freeTree(root->right);
-    }
-    free(root);
-}
-
-int demo() {
-    node_t *root = NULL;
-    time_t t;
-
-    srand((unsigned) time(&t));
-    for(int i = 0 ; i < 100 ; i++ ) {
-        insert(&root, rand() % 100);
-    }
-    insert(&root, 5);
-    insert(&root, 2);
-    insert(&root, 11);
-    insert(&root, 8);
-    
-    node_t *result = find(root, 2);
-    if (result) {
-        printf("NODE FOUND: %d\n", result->data);
+void TreeDeconstruct(node_t root) {
+    if(root == NULL) {
+        return;
     } else {
-        printf("NODE NOT FOUND\n");
+        TreeDeconstruct(root->left);
+        TreeDeconstruct(root->right);
+        deconstructNode(root);
     }
-    freeTree(root);
-    return 0;
 }

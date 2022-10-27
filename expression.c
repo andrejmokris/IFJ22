@@ -112,7 +112,16 @@ bool reduceExpression(Stack *stack) {
     return false;
 }
 
-int parseExpression(int endChar) {
+bool finishReducing(Stack *stack) {
+    bool res = true;
+    while (res == true && stack->elementCount > 2) {
+        printStack(stack);
+        res = reduceExpression(stack);
+    }
+    return res;
+}
+
+int parseExpression(int endChar, int *resDataType) {
     String_t string;
     Stack *stack = initStack(STACK_INIT_SIZE);
     bool endAnalysis = false;
@@ -134,6 +143,8 @@ int parseExpression(int endChar) {
     }
     do {
         printStack(stack);
+        printf("CUR CHAR: %d\n", curLex);
+        printf("\n");
         if (curLex == LEX_EOF) {
             stackDeconstruct(stack);
             stringDeconstruct(&string);
@@ -150,7 +161,15 @@ int parseExpression(int endChar) {
         }
         if (curLex > 14) {
             if (curLex == endChar) {
-                break;
+                printf("finish reduce\n");
+                if (finishReducing(stack)) {
+                    printStack(stack);
+                    break;
+                } else {
+                    stackDeconstruct(stack);
+                    stringDeconstruct(&string);
+                    return SYNTAX_ERROR;
+                }
             } else {
                 stackDeconstruct(stack);
                 stringDeconstruct(&string);
@@ -174,11 +193,6 @@ int parseExpression(int endChar) {
 
             curLex = get_Token(&string);
             dataType = curLex;
-            if (curLex == LEX_ERR) {
-                stackDeconstruct(stack);
-                stringDeconstruct(&string);
-                return LEX_ERROR;
-            }
         } else if (operation == '>') {
             printf("REDUCE\n");
             if (!reduceExpression(stack)) {
@@ -192,16 +206,12 @@ int parseExpression(int endChar) {
             stackPush(stack, curLex, string);
             curLex = get_Token(&string);
             dataType = curLex;
-            if (curLex == LEX_ERR) {
-                stackDeconstruct(stack);
-                stringDeconstruct(&string);
-                return LEX_ERROR;
-            }
         }
     } while (endAnalysis == false);
 
     printf("Vysledny datovy typ: %d\n", stack->items[1]->dataType);
+    *resDataType = stack->items[1]->dataType;
     stackDeconstruct(stack);
     stringDeconstruct(&string);
-    return NO_ERROR;
+    return SUCCESS;
 }
