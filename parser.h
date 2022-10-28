@@ -13,5 +13,6 @@
 #include "stack.h"
 
 int mainParser();
+int ParserLoop();
 
 #endif

@@ -71,7 +71,7 @@ int get_Token(String_t *str) {
                             input_state = LESSER_STATE;
                             break;
                         case '$':
-                            input_state = VAR_STATE;
+                            input_state = VAR0_STATE;
                             break;
                         case '>':
                             input_state = GREATER_STATE;

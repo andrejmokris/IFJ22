@@ -1,5 +1,6 @@
 #include "expression.h"
 
+// E = E + E
 bool addRule(Stack *stack, StackElement *op1, StackElement *op2) {
     if (op1->dataType == op2->dataType) {
         stackPushElement(stack, op1);
@@ -17,6 +18,25 @@ bool addRule(Stack *stack, StackElement *op1, StackElement *op2) {
     return false;
 }
 
+// E = E - E
+bool subRule(Stack *stack, StackElement *op1, StackElement *op2) {
+    if (op1->dataType == op2->dataType) {
+        stackPushElement(stack, op1);
+        elementDeconstruct(op2);
+        return true;
+    } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
+               (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
+        op1->dataType = LEX_FLOAT;
+        stackPushElement(stack, op1);
+        elementDeconstruct(op2);
+        return true;
+    }
+    elementDeconstruct(op1);
+    elementDeconstruct(op2);
+    return false;
+}
+
+// E = E * E
 bool mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
     if (op1->dataType == op2->dataType) {
         stackPushElement(stack, op1);
@@ -61,23 +81,21 @@ bool reduceExpression(Stack *stack) {
                 if (addRule(stack, popArr[0], popArr[2])) {
                     return true;
                 }
-                printf("semantic error\n");
-                return SEMANTIC_ERROR;
+                return false;
             case LEX_SUB:
                 // E-E -> E
-                stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
-                elementDeconstruct(popArr[2]);
-                return true;
+                if (subRule(stack, popArr[0], popArr[2])) {
+                    return true;
+                }
+                return false;
             case LEX_MUL:
                 // E*E -> E
                 elementDeconstruct(popArr[1]);
                 if (mulRule(stack, popArr[0], popArr[2])) {
                     return true;
                 }
-                printf("semantic error\n");
-                return SEMANTIC_ERROR;
-                return true;
+                return false;
             case LEX_DIV:
                 // E/E -> E
                 popArr[0]->dataType = LEX_FLOAT;
@@ -121,7 +139,7 @@ bool finishReducing(Stack *stack) {
     return res;
 }
 
-int parseExpression(int endChar, int *resDataType) {
+int parseExpression(int endChar, int *resDataType, node_t symTable) {
     String_t string;
     Stack *stack = initStack(STACK_INIT_SIZE);
     bool endAnalysis = false;
@@ -143,12 +161,21 @@ int parseExpression(int endChar, int *resDataType) {
     }
     do {
         printStack(stack);
-        printf("CUR CHAR: %d\n", curLex);
-        printf("\n");
         if (curLex == LEX_EOF) {
             stackDeconstruct(stack);
             stringDeconstruct(&string);
             return SYNTAX_ERROR;
+        } else if (curLex == LEX_ID) {
+            node_t curID = TreeFind(symTable, string.string);
+            if (curID == NULL) {
+                printf("variable not found\n");
+                stackDeconstruct(stack);
+                stringDeconstruct(&string);
+                return SEMANTIC_ERROR;
+            } else {
+                printf("VARIABLE FOUND : %d\n", curID->dataType);
+                dataType = curID->dataType;
+            }
         }
         if (dataType == LEX_INT || dataType == LEX_FLOAT ||
             dataType == LEX_STRING) {
@@ -159,9 +186,9 @@ int parseExpression(int endChar, int *resDataType) {
             stringDeconstruct(&string);
             return SYNTAX_ERROR;
         }
+        // Condition for ending the precendence analysis
         if (curLex > 14) {
             if (curLex == endChar) {
-                printf("finish reduce\n");
                 if (finishReducing(stack)) {
                     printStack(stack);
                     break;
@@ -209,7 +236,7 @@ int parseExpression(int endChar, int *resDataType) {
         }
     } while (endAnalysis == false);
 
-    printf("Vysledny datovy typ: %d\n", stack->items[1]->dataType);
+    printf("EXPRESSION PARSED SUCCESSFULLY\n");
     *resDataType = stack->items[1]->dataType;
     stackDeconstruct(stack);
     stringDeconstruct(&string);

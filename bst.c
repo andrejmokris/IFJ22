@@ -15,9 +15,51 @@ node_t createNode(int dataType, String_t NodeID) {
     }
     newNode->left = NULL;
     newNode->right = NULL;
+    newNode->function = NULL;
     newNode->dataType = dataType;
     newNode->NodeID = newString;
     return newNode;
+}
+
+node_t createFuncNode(int dataType, String_t NodeID) {
+    node_t newNode = createNode(dataType, NodeID);
+    func_t funcNode = malloc(sizeof(struct FunctionNode));
+    if (newNode == NULL || funcNode == NULL) {
+        return NULL;
+    }
+    newNode->function = funcNode;
+    funcNode->params = malloc(15 * sizeof(param_t));
+    funcNode->stackSize = 15;
+    funcNode->nOfParams = 0;
+    return newNode;
+}
+
+bool addParam(node_t node, int dataType, String_t pID) {
+    param_t newParam = malloc(sizeof(struct Param));
+    String_t paramID;
+    if (newParam == NULL || !StringInit(&paramID)) {
+        return false;
+    }
+    // string
+    newParam->ParamID = paramID;
+    newParam->dataType = dataType;
+    if (!stringCopy(&paramID, &pID)) {
+        return false;
+    }
+    if (node->function->nOfParams < node->function->stackSize) {
+        node->function->params[node->function->nOfParams] = newParam;
+        node->function->nOfParams++;
+    } else {
+        node->function->params =
+            realloc(node->function->params, node->function->stackSize * 2);
+        if(node->function->params == NULL) {
+            return false;
+        }
+        node->function->stackSize = node->function->stackSize * 2;
+        node->function->params[node->function->nOfParams] = newParam;
+        node->function->nOfParams++;
+    }
+    return true;
 }
 
 void deconstructNode(node_t node) {
@@ -44,6 +86,24 @@ node_t TreeInsert(node_t *root, int dataType, String_t NodeID) {
     }
 }
 
+node_t TreeInsertNode(node_t *root, node_t newNode) {
+    if (*root == NULL) {
+        if (newNode != NULL) {
+            *root = newNode;
+            return newNode;
+        } else {
+            return NULL;
+        }
+    } else if (strcmp(newNode->NodeID.string, (*root)->NodeID.string) == 0) {
+        (*root)->dataType = newNode->dataType;
+        return *root;
+    } else if (strcmp(newNode->NodeID.string, (*root)->NodeID.string) > 0) {
+        return TreeInsertNode(&((*root)->right), newNode);
+    } else {
+        return TreeInsertNode(&((*root)->left), newNode);
+    }
+}
+
 node_t TreeFind(node_t root, char *string) {
     if (root == NULL) {
         return NULL;
@@ -60,7 +120,7 @@ node_t TreeFind(node_t root, char *string) {
 }
 
 void TreeDeconstruct(node_t root) {
-    if(root == NULL) {
+    if (root == NULL) {
         return;
     } else {
         TreeDeconstruct(root->left);

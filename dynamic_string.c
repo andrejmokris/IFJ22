@@ -49,6 +49,18 @@ bool stringAppend(String_t *str, int c) {
     return false;
 }
 
+bool stringCopy(String_t *dest, String_t *source) {
+    if(dest == NULL || source == NULL) {
+        return false;
+    }
+    for (int i = 0; i < source->length; i++) {
+        if(!stringAppend(dest, source->string[i])) {
+            return false;
+        }
+    }
+    return true;
+}
+
 void stringClear(String_t *str) {
     str->length = 0;
     memset(str->string, 0, strlen(str->string));

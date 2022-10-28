@@ -31,6 +31,6 @@ static char table[14][14] = {
     {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'X', '<', 'A'}  // $
 };
 
-int parseExpression(int endChar, int *resDataType);
+int parseExpression(int endChar, int *resDataType, node_t symTable);
 
 #endif
