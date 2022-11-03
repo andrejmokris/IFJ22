@@ -52,7 +52,7 @@ bool addParam(node_t node, int dataType, String_t pID) {
     } else {
         node->function->params =
             realloc(node->function->params, node->function->stackSize * 2);
-        if(node->function->params == NULL) {
+        if (node->function->params == NULL) {
             return false;
         }
         node->function->stackSize = node->function->stackSize * 2;
@@ -64,6 +64,15 @@ bool addParam(node_t node, int dataType, String_t pID) {
 
 void deconstructNode(node_t node) {
     stringDeconstruct(&node->NodeID);
+    if (node->function != NULL) {
+        for (int i = 0; i < node->function->nOfParams; i++) {
+            param_t curParam = node->function->params[i];
+            stringDeconstruct(&curParam->ParamID);
+            free(curParam);
+        }
+        free(node->function->params);
+        free(node->function);
+    }
     free(node);
 }
 

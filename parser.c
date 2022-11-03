@@ -15,11 +15,24 @@ void initParser() {
 int endParser(int errCode) {
     stringDeconstruct(&string);
     TreeDeconstruct(symTable);
+    TreeDeconstruct(funcTable);
+    if (errCode != SUCCESS) {
+        errorExit(errCode, "Chyba\n");
+    }
     return errCode;
 }
 
-bool Type() {
+int getParsToken() {
     curToken = get_Token(&string);
+    if (curToken == LEX_ERR) {
+        endParser(LEX_ERROR);
+        errorExit(LEX_ERROR, "Lexikalna chyba\n");
+    }
+    return curToken;
+}
+
+bool Type() {
+    curToken = getParsToken();
     if (curToken == LEX_TYPE_STRING || curToken == LEX_TYPE_STRING_OPT) {
         return true;
     } else if (curToken == LEX_TYPE_INT || curToken == LEX_TYPE_INT_OPT) {
@@ -38,12 +51,14 @@ bool VarAssign() {
     if (newNode == NULL) {
         newNode = TreeInsert(&symTable, 0, string);
     }
-    if (get_Token(&string) != LEX_ASSIGN) {
+    if (getParsToken() != LEX_ASSIGN) {
         return false;
     }
     int resDataType;
-    if (parseExpression(LEX_SEMICOL, &resDataType, symTable) != SUCCESS) {
-        return false;
+    int parseExpressionRes;
+    if ((parseExpressionRes =
+             parseExpression(LEX_SEMICOL, &resDataType, symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
     }
     newNode->dataType = resDataType;
     return true;
@@ -53,28 +68,28 @@ bool getSingleParam(node_t funcNode) {
     bool lastComma = (curToken == LEX_COMMA);
     int dataType;
     if (!Type()) {
-        if(curToken == LEX_RPAR && !lastComma) {
+        if (curToken == LEX_RPAR && !lastComma) {
             return true;
         }
         return false;
     }
     dataType = curToken;
-    curToken = get_Token(&string);
+    curToken = getParsToken();
     if (curToken != LEX_ID) {
         return false;
     }
     addParam(funcNode, dataType, string);
-    curToken = get_Token(&string);
+    curToken = getParsToken();
     if (curToken == LEX_COMMA) {
         return getSingleParam(funcNode);
-    } else if(curToken == LEX_RPAR) {
+    } else if (curToken == LEX_RPAR) {
         return true;
     }
     return false;
 }
 
 bool getFuncParams(node_t funcNode) {
-    if (get_Token(&string) != LEX_LPAR) {
+    if (getParsToken() != LEX_LPAR) {
         return false;
     }
     return getSingleParam(funcNode);
@@ -82,38 +97,99 @@ bool getFuncParams(node_t funcNode) {
 
 bool functionDeclaration() {
     // get function id
-    curToken = get_Token(&string);
+    curToken = getParsToken();
     if (curToken != LEX_FUNID) {
         return false;
     }
-    if(TreeFind(funcTable, string.string) != NULL) {
-        printf("redefinition of function\n");
-        return false;
+    if (TreeFind(funcTable, string.string) != NULL) {
+        printf("Redefinition of a function\n");
+        endParser(SEMANTIC_ERROR);
     }
     node_t funcNode = createFuncNode(LEX_FUNID, string);
-    if(TreeInsertNode(&funcTable, funcNode) == NULL) {
+    if (TreeInsertNode(&funcTable, funcNode) == NULL) {
         return false;
     }
     if (!getFuncParams(funcNode)) {
         return false;
     }
-    if (get_Token(&string) != LEX_COLON) {
+    if (getParsToken() != LEX_COLON) {
         return false;
     }
     if (!Type()) {
         return false;
     }
     funcNode->function->returnType = curToken;
-    printf("FUNC NAME: %s\n", funcNode->NodeID.string);
-    for(int i = 0; i < funcNode->function->nOfParams; i++) {
-        printf("NAME: %s | TYPE: %d\n", funcNode->function->params[i]->ParamID.string, funcNode->function->params[i]->dataType);
-    }
-    printf("\n");
     return true;
 }
 
+/* op1 - ocakavany dt   op2 - prichadzajuci dt */
+bool parameterDataTypeVerify(int op1, int op2) {
+    if (op1 == LEX_TYPE_STRING_OPT) {
+        if (op2 == LEX_STRING || op2 == LEX_NULL) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (op1 == LEX_TYPE_STRING && op2 == LEX_STRING) {
+        return true;
+    }
+
+    if (op1 == LEX_TYPE_FLOAT_OPT) {
+        if (op2 == LEX_FLOAT || op2 == LEX_NULL) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (op1 == LEX_TYPE_FLOAT && op2 == LEX_FLOAT) {
+        return true;
+    }
+
+    if (op1 == LEX_TYPE_INT_OPT) {
+        if (op2 == LEX_INT || op2 == LEX_NULL) {
+            return true;
+        } else {
+            return false;
+        }
+    } else if (op1 == LEX_TYPE_INT && op2 == LEX_INT) {
+        return true;
+    }
+
+    return false;
+}
+
+bool functionCall() {
+    node_t funcNode = TreeFind(funcTable, string.string);
+    if (funcNode == NULL) {
+        printf("Undefined function\n");
+        endParser(SEMANTIC_ERROR);
+    }
+    int nOfParams = funcNode->function->nOfParams;
+    printf("N of params: %d\n", nOfParams);
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    // loading parameters and comparing data types
+    for (int i = 0; i < nOfParams; i++) {
+        getParsToken();
+        // verify if expected datatype of parameter arrives
+        if (!parameterDataTypeVerify(funcNode->function->params[i]->dataType,
+                                     curToken)) {
+            endParser(RUN_ERROR);
+        } else {
+            printf("Good param\n");
+        }
+        if (i < nOfParams - 1 && getParsToken() != LEX_COMMA) {
+            endParser(SYNTAX_ERROR);
+            return false;
+        } else if (i == nOfParams - 1 && getParsToken() == LEX_RPAR) {
+            break;
+        }
+    }
+    return getParsToken() == LEX_SEMICOL;
+}
+
 int ParserLoop() {
-    curToken = get_Token(&string);
+    curToken = getParsToken();
     switch (curToken) {
         case LEX_ID:
             if (VarAssign() == false) {
@@ -127,6 +203,13 @@ int ParserLoop() {
             return SUCCESS;
         case LEX_FUNKW:
             if (functionDeclaration() == false) {
+                return SYNTAX_ERROR;
+            } else {
+                return ParserLoop();
+            }
+        case LEX_FUNID:
+            printf("function call\n");
+            if (!functionCall()) {
                 return SYNTAX_ERROR;
             } else {
                 return ParserLoop();
@@ -148,6 +231,5 @@ int mainParser() {
         return endParser(SUCCESS);
     } else {
         return endParser(SYNTAX_ERROR);
-        ;
     }
 }

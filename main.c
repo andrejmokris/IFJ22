@@ -14,7 +14,7 @@
 /*
 int main() {
     String_t string;
-
+    int res;
     StringInit(&string);
     if (!checkProlog(&string)) {
         stringDeconstruct(&string);
@@ -25,13 +25,9 @@ int main() {
         if (res == LEX_ERR) {
             stringDeconstruct(&string);
             errorExit(LEX_ERROR, "Wrong lex\n");
-        } else if(res == LEX_ID) {
-            TreeInsert(&root, LEX_ID, string);
         }
         printf("CUR LEX: %d | STRING: %s\n", res, string.string);
     }
-    int error = parseExpression(LEX_SEMICOL);
-    printf("ERROR: %d\n", error);
     stringDeconstruct(&string);
     return 0;
 }
@@ -42,3 +38,4 @@ int main() {
     printf("RESULT: %d\n", res);
     return 0;
 }
+

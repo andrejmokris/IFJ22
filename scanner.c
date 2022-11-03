@@ -437,15 +437,18 @@ int get_Token(String_t *str) {
 }
 
 bool checkProlog(String_t *str) {
-    int curChar = fgetc(stdin);
-    for (int i = 0; i < 5; i++) {
-        stringAppend(str, curChar);
-        curChar = fgetc(stdin);
-    }
-    if (strcmp(str->string, "<?php")) {
+    int startLex = get_Token(str);
+    if(startLex != LEX_LE) {
         return false;
     }
-    ungetc(curChar, stdin);
+    startLex = fgetc(stdin);
+    if(startLex != '?') {
+        return false;
+    }
+    int curChar = get_Token(str);
+    if (curChar != LEX_FUNID || strcmp(str->string, "php")) {
+        return false;
+    }
     if ((get_Token(str) != LEX_FUNID || strcmp(str->string, "declare")) ||
         (get_Token(str) != LEX_LPAR)) {
         return false;

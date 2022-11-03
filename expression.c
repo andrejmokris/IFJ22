@@ -133,7 +133,7 @@ bool reduceExpression(Stack *stack) {
 bool finishReducing(Stack *stack) {
     bool res = true;
     while (res == true && stack->elementCount > 2) {
-        printStack(stack);
+        //printStack(stack);
         res = reduceExpression(stack);
     }
     return res;
@@ -160,7 +160,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
         return LEX_ERROR;
     }
     do {
-        printStack(stack);
+        //printStack(stack);
         if (curLex == LEX_EOF) {
             stackDeconstruct(stack);
             stringDeconstruct(&string);
@@ -168,12 +168,11 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
         } else if (curLex == LEX_ID) {
             node_t curID = TreeFind(symTable, string.string);
             if (curID == NULL) {
-                printf("variable not found\n");
+                printf("Undefined Variable\n");
                 stackDeconstruct(stack);
                 stringDeconstruct(&string);
-                return SEMANTIC_ERROR;
+                return UNDEFVAR_ERROR;
             } else {
-                printf("VARIABLE FOUND : %d\n", curID->dataType);
                 dataType = curID->dataType;
             }
         }
@@ -190,7 +189,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
         if (curLex > 14) {
             if (curLex == endChar) {
                 if (finishReducing(stack)) {
-                    printStack(stack);
+                    //printStack(stack);
                     break;
                 } else {
                     stackDeconstruct(stack);
@@ -221,7 +220,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             curLex = get_Token(&string);
             dataType = curLex;
         } else if (operation == '>') {
-            printf("REDUCE\n");
+            //printf("REDUCE\n");
             if (!reduceExpression(stack)) {
                 printf("CHYBA PRI REDUKCII\n");
                 stackDeconstruct(stack);
