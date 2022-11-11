@@ -39,6 +39,8 @@ bool Type() {
         return true;
     } else if (curToken == LEX_TYPE_FLOAT || curToken == LEX_TYPE_FLOAT_OPT) {
         return true;
+    } else if (curToken == LEX_VOID) {
+        return true;
     } else {
         return false;
     }
@@ -46,7 +48,6 @@ bool Type() {
 
 // ID = <expr>;
 bool VarAssign() {
-    printf("CALL ASSIGN\n");
     node_t newNode = TreeFind(symTable, string.string);
     if (newNode == NULL) {
         newNode = TreeInsert(&symTable, 0, string);
@@ -78,7 +79,9 @@ bool getSingleParam(node_t funcNode) {
     if (curToken != LEX_ID) {
         return false;
     }
-    addParam(funcNode, dataType, string);
+    if(!addParam(funcNode, dataType, string)) {
+        return false;
+    }
     curToken = getParsToken();
     if (curToken == LEX_COMMA) {
         return getSingleParam(funcNode);
@@ -122,8 +125,12 @@ bool functionDeclaration() {
     return true;
 }
 
+// check if functin call matches parameter data types
 /* op1 - ocakavany dt   op2 - prichadzajuci dt */
 bool parameterDataTypeVerify(int op1, int op2) {
+    if(op2 == LEX_ID) {
+        op2 = TreeFind(symTable, string.string)->dataType;
+    }
     if (op1 == LEX_TYPE_STRING_OPT) {
         if (op2 == LEX_STRING || op2 == LEX_NULL) {
             return true;

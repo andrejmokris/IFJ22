@@ -54,6 +54,24 @@ bool mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
     return false;
 }
 
+// E = E / E
+bool divRule(Stack *stack, StackElement *op1, StackElement *op2) {
+    if (op1->dataType == op2->dataType) {
+        stackPushElement(stack, op1);
+        elementDeconstruct(op2);
+        return true;
+    } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
+               (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
+        op1->dataType = LEX_FLOAT;
+        stackPushElement(stack, op1);
+        elementDeconstruct(op2);
+        return true;
+    }
+    elementDeconstruct(op1);
+    elementDeconstruct(op2);
+    return false;
+}
+
 bool reduceExpression(Stack *stack) {
     StackElement *popArr[3];
     int cnt = 0;
@@ -98,10 +116,11 @@ bool reduceExpression(Stack *stack) {
                 return false;
             case LEX_DIV:
                 // E/E -> E
-                popArr[0]->dataType = LEX_FLOAT;
-                stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
-                elementDeconstruct(popArr[2]);
+                if (divRule(stack, popArr[0], popArr[2])) {
+                    return true;
+                }
+                return false;
                 return true;
             case LEX_NEQ:
             case LEX_LEQ:
@@ -235,7 +254,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
         }
     } while (endAnalysis == false);
 
-    printf("EXPRESSION PARSED SUCCESSFULLY\n");
+    //printf("EXPRESSION PARSED SUCCESSFULLY\n");
     *resDataType = stack->items[1]->dataType;
     stackDeconstruct(stack);
     stringDeconstruct(&string);

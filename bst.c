@@ -34,7 +34,22 @@ node_t createFuncNode(int dataType, String_t NodeID) {
     return newNode;
 }
 
+// check if function declaration does not have more params with the same ID
+bool duplicateParamName(node_t node, String_t pID) {
+    int par_cnt = node->function->nOfParams;
+    for(int i = 0; i < par_cnt; i++) {
+        if(!strcmp(node->function->params[i]->ParamID.string, pID.string)) {
+            return false;
+        }
+    }
+    return true;
+}
+
 bool addParam(node_t node, int dataType, String_t pID) {
+    if(!duplicateParamName(node, pID)) {
+        printf("DUPLICATE PARAM NAME\n");
+        return false;
+    }
     param_t newParam = malloc(sizeof(struct Param));
     String_t paramID;
     if (newParam == NULL || !StringInit(&paramID)) {
