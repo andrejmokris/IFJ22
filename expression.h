@@ -8,6 +8,7 @@
 
 #include "scanner.h"
 #include "stack.h"
+#include "parser.h"
 #include "error.h"
 #include "bst.h"
 

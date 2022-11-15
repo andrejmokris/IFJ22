@@ -48,10 +48,14 @@ bool Type() {
 
 // ID = <expr>;
 bool VarAssign() {
+    //printf("VarAssign\n");
     node_t newNode = TreeFind(symTable, string.string);
     if (newNode == NULL) {
-        newNode = TreeInsert(&symTable, 0, string);
+        if((newNode = TreeInsert(&symTable, 0, string)) == NULL) {
+            endParser(INTERNAL_ERROR);
+        }
     }
+    //printf("NEW NODE: %s\n", newNode->NodeID.string);
     if (getParsToken() != LEX_ASSIGN) {
         return false;
     }
@@ -79,7 +83,7 @@ bool getSingleParam(node_t funcNode) {
     if (curToken != LEX_ID) {
         return false;
     }
-    if(!addParam(funcNode, dataType, string)) {
+    if (!addParam(funcNode, dataType, string)) {
         return false;
     }
     curToken = getParsToken();
@@ -128,7 +132,7 @@ bool functionDeclaration() {
 // check if functin call matches parameter data types
 /* op1 - ocakavany dt   op2 - prichadzajuci dt */
 bool parameterDataTypeVerify(int op1, int op2) {
-    if(op2 == LEX_ID) {
+    if (op2 == LEX_ID) {
         op2 = TreeFind(symTable, string.string)->dataType;
     }
     if (op1 == LEX_TYPE_STRING_OPT) {
@@ -183,6 +187,7 @@ bool functionCall() {
                                      curToken)) {
             endParser(RUN_ERROR);
         } else {
+            // PARAM HAS GOOD DATA TYPE, it can be pushed to stack or idk
             printf("Good param\n");
         }
         if (i < nOfParams - 1 && getParsToken() != LEX_COMMA) {
@@ -192,9 +197,71 @@ bool functionCall() {
             break;
         }
     }
+    if (nOfParams == 0) {
+        if (getParsToken() != LEX_RPAR) {
+            return false;
+        }
+    }
     return getParsToken() == LEX_SEMICOL;
 }
 
+bool ifRule() {
+    printf("IF RULE\n");
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+        return false;
+    }
+    int resDataType;
+    int parseExpressionRes;
+    if ((parseExpressionRes =
+             parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
+    }
+    // datatype of IF condition has to be BOOL
+    if (resDataType != LEX_BOOL) {
+        printf("Invalid expression in IF statement\n");
+        endParser(TYPECOMP_ERORR);
+        return false;
+    }
+    if (getParsToken() != LEX_LCRB) {
+        printf("Missing { after IF statement\n");
+        endParser(SYNTAX_ERROR);
+        return false;
+    }
+    return statementList();
+}
+
+bool statementList() {
+    curToken = getParsToken();
+    switch (curToken) {
+        case LEX_IF:
+            if(ifRule()) {
+                return statementList();
+            } else {
+                endParser(SYNTAX_ERROR);
+            }
+            break;
+        case LEX_WHILE:
+        case LEX_FUNID:
+            return functionCall();
+        case LEX_ID:
+            if(VarAssign()) {
+                return statementList();
+            } else {
+                endParser(SYNTAX_ERROR);
+            }
+            break;
+        case LEX_ERR:
+            return false;
+        case LEX_RCRB:
+            return true;
+        default:
+            return false;
+    }
+    return false;
+}
+
+// Global
 int ParserLoop() {
     curToken = getParsToken();
     switch (curToken) {
@@ -206,7 +273,6 @@ int ParserLoop() {
             }
             break;
         case LEX_EPILOG:
-            printf("EPILOG\n");
             return SUCCESS;
         case LEX_FUNKW:
             if (functionDeclaration() == false) {
@@ -217,6 +283,12 @@ int ParserLoop() {
         case LEX_FUNID:
             printf("function call\n");
             if (!functionCall()) {
+                return SYNTAX_ERROR;
+            } else {
+                return ParserLoop();
+            }
+        case LEX_IF:
+            if (!ifRule()) {
                 return SYNTAX_ERROR;
             } else {
                 return ParserLoop();

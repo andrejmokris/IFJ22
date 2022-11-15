@@ -171,13 +171,13 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
     }
 
     int curLex = get_Token(&string);
-    int dataType = curLex;
-
-    if (curLex == LEX_ERR) {
+    if(curLex == LEX_ERR) {
         stackDeconstruct(stack);
         stringDeconstruct(&string);
         return LEX_ERROR;
     }
+    int dataType = curLex;
+
     do {
         //printStack(stack);
         if (curLex == LEX_EOF) {
@@ -196,7 +196,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             }
         }
         if (dataType == LEX_INT || dataType == LEX_FLOAT ||
-            dataType == LEX_STRING) {
+            dataType == LEX_STRING || dataType == LEX_BOOL) {
             curLex = LEX_I;
         }
         if (curLex == LEX_EOF) {
