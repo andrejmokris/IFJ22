@@ -12,11 +12,15 @@
 #include "scanner.h"
 #include "stack.h"
 
+#define SUCCESS_ELSE    1
+#define SUCCESS_NOELSE  2
+#define FAIL            0
+
 int mainParser();
 int getParsToken();
-int ParserLoop();
-bool statementList();
-bool ifRule();
+int ParserLoop(bool getNext);
+bool statementList(bool getNext);
+int ifRule();
 bool functionCall();
 bool parameterDataTypeVerify(int op1, int op2);
 bool functionDeclaration();

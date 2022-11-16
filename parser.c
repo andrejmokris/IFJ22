@@ -48,14 +48,14 @@ bool Type() {
 
 // ID = <expr>;
 bool VarAssign() {
-    //printf("VarAssign\n");
+    // printf("VarAssign\n");
     node_t newNode = TreeFind(symTable, string.string);
     if (newNode == NULL) {
-        if((newNode = TreeInsert(&symTable, 0, string)) == NULL) {
+        if ((newNode = TreeInsert(&symTable, 0, string)) == NULL) {
             endParser(INTERNAL_ERROR);
         }
     }
-    //printf("NEW NODE: %s\n", newNode->NodeID.string);
+    // printf("NEW NODE: %s\n", newNode->NodeID.string);
     if (getParsToken() != LEX_ASSIGN) {
         return false;
     }
@@ -205,11 +205,11 @@ bool functionCall() {
     return getParsToken() == LEX_SEMICOL;
 }
 
-bool ifRule() {
+int ifRule() {
     printf("IF RULE\n");
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
-        return false;
+        return FAIL;
     }
     int resDataType;
     int parseExpressionRes;
@@ -221,32 +221,61 @@ bool ifRule() {
     if (resDataType != LEX_BOOL) {
         printf("Invalid expression in IF statement\n");
         endParser(TYPECOMP_ERORR);
-        return false;
+        return FAIL;
     }
     if (getParsToken() != LEX_LCRB) {
         printf("Missing { after IF statement\n");
         endParser(SYNTAX_ERROR);
-        return false;
+        return FAIL;
     }
-    return statementList();
+
+    if (!statementList(true)) {
+        return FAIL;
+    }
+
+    if (getParsToken() == LEX_ELSE) {
+        printf("HAVING ELSE\n");
+        if (getParsToken() != LEX_LCRB) {
+            printf("Missing { after ELSE statement\n");
+            endParser(SYNTAX_ERROR);
+            return FAIL;
+        }
+        if (statementList(true)) {
+            return SUCCESS_ELSE;
+        }
+    } else {
+        return SUCCESS_NOELSE;
+    }
+    return FAIL;
 }
 
-bool statementList() {
-    curToken = getParsToken();
+// statement list
+// similiar to parser loop, but can't have function definition
+// is called in if_statement or function body
+bool statementList(bool getNext) {
+    // find if loading next token is necessary
+    // mainly due to absence/presence of else statement
+    if (getNext) {
+        curToken = getParsToken();
+    }
+    int resIF;
     switch (curToken) {
         case LEX_IF:
-            if(ifRule()) {
-                return statementList();
+            resIF = ifRule();
+            if (resIF == FAIL) {
+                return SYNTAX_ERROR;
+            } else if (resIF == SUCCESS_ELSE) {
+                return statementList(true);
             } else {
-                endParser(SYNTAX_ERROR);
+                return statementList(false);
             }
             break;
         case LEX_WHILE:
         case LEX_FUNID:
             return functionCall();
         case LEX_ID:
-            if(VarAssign()) {
-                return statementList();
+            if (VarAssign()) {
+                return statementList(true);
             } else {
                 endParser(SYNTAX_ERROR);
             }
@@ -261,42 +290,51 @@ bool statementList() {
     return false;
 }
 
-// Global
-int ParserLoop() {
-    curToken = getParsToken();
+// Global program
+// can have function definitions f.e.
+int ParserLoop(bool getNext) {
+    if (getNext) {
+        curToken = getParsToken();
+    }
+    int resIF;
     switch (curToken) {
         case LEX_ID:
             if (VarAssign() == false) {
                 return SYNTAX_ERROR;
             } else {
-                return ParserLoop();
+                return ParserLoop(true);
             }
             break;
-        case LEX_EPILOG:
-            return SUCCESS;
         case LEX_FUNKW:
             if (functionDeclaration() == false) {
                 return SYNTAX_ERROR;
             } else {
-                return ParserLoop();
+                return ParserLoop(true);
             }
         case LEX_FUNID:
-            printf("function call\n");
             if (!functionCall()) {
                 return SYNTAX_ERROR;
             } else {
-                return ParserLoop();
+                return ParserLoop(true);
             }
         case LEX_IF:
-            if (!ifRule()) {
+            // cases for different outcomes of if - wheather if had or had not
+            // else
+            resIF = ifRule();
+            if (resIF == FAIL) {
                 return SYNTAX_ERROR;
+            } else if (resIF == SUCCESS_ELSE) {
+                return ParserLoop(true);
             } else {
-                return ParserLoop();
+                return ParserLoop(false);
             }
         case LEX_ERR:
             return SYNTAX_ERROR;
-        default:
+        case LEX_EOF:
+        case LEX_EPILOG:
             return SUCCESS;
+        default:
+            return SYNTAX_ERROR;
     }
     return SUCCESS;
 }
@@ -306,7 +344,7 @@ int mainParser() {
     if (!checkProlog(&string)) {
         return endParser(SYNTAX_ERROR);
     }
-    if (ParserLoop() == SUCCESS) {
+    if (ParserLoop(true) == SUCCESS) {
         return endParser(SUCCESS);
     } else {
         return endParser(SYNTAX_ERROR);
