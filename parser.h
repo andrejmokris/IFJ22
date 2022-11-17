@@ -17,6 +17,7 @@
 #define FAIL            0
 
 int mainParser();
+int endParser(int errCode);
 int getParsToken();
 int ParserLoop(bool getNext);
 bool statementList(bool getNext);

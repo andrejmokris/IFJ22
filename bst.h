@@ -6,6 +6,7 @@
 #include <string.h>
 
 #include "dynamic_string.h"
+#include "error.h"
 
 typedef struct Param {
     int dataType;
@@ -35,6 +36,6 @@ void deconstructNode(node_t node);
 void TreeDeconstruct(node_t root);
 
 node_t createFuncNode(int dataType, String_t NodeID);
-bool addParam(node_t node, int dataType, String_t pID);
+int addParam(node_t node, int dataType, String_t pID);
 
 #endif

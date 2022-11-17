@@ -1,78 +1,82 @@
 #include "expression.h"
 
 // E = E + E
-bool addRule(Stack *stack, StackElement *op1, StackElement *op2) {
-    if (op1->dataType == op2->dataType) {
+int addRule(Stack *stack, StackElement *op1, StackElement *op2) {
+    if ((op1->dataType == op2->dataType) &&
+        (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        return true;
+        return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
         op1->dataType = LEX_FLOAT;
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        return true;
+        return SUCCESS;
     }
     elementDeconstruct(op1);
     elementDeconstruct(op2);
-    return false;
+    return TYPECOMP_ERORR;
 }
 
 // E = E - E
-bool subRule(Stack *stack, StackElement *op1, StackElement *op2) {
-    if (op1->dataType == op2->dataType) {
+int subRule(Stack *stack, StackElement *op1, StackElement *op2) {
+    if ((op1->dataType == op2->dataType) &&
+        (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        return true;
+        return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
         op1->dataType = LEX_FLOAT;
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        return true;
+        return SUCCESS;
     }
     elementDeconstruct(op1);
     elementDeconstruct(op2);
-    return false;
+    return TYPECOMP_ERORR;
 }
 
 // E = E * E
-bool mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
-    if (op1->dataType == op2->dataType) {
+int mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
+    if ((op1->dataType == op2->dataType) &&
+        (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        return true;
+        return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
         op1->dataType = LEX_FLOAT;
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        return true;
+        return SUCCESS;
     }
     elementDeconstruct(op1);
     elementDeconstruct(op2);
-    return false;
+    return TYPECOMP_ERORR;
 }
 
 // E = E / E
-bool divRule(Stack *stack, StackElement *op1, StackElement *op2) {
-    if (op1->dataType == op2->dataType) {
+int divRule(Stack *stack, StackElement *op1, StackElement *op2) {
+    if ((op1->dataType == op2->dataType) &&
+        (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        return true;
+        return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
         op1->dataType = LEX_FLOAT;
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        return true;
+        return SUCCESS;
     }
     elementDeconstruct(op1);
     elementDeconstruct(op2);
-    return false;
+    return TYPECOMP_ERORR;
 }
 
-bool reduceExpression(Stack *stack) {
+int reduceExpression(Stack *stack) {
     StackElement *popArr[3];
     int cnt = 0;
     StackElement *lastPopped;
@@ -87,7 +91,7 @@ bool reduceExpression(Stack *stack) {
     if (cnt == 1 && popArr[0]->tokenID == LEX_I) {
         popArr[0]->tokenID = LEX_E;
         stackPushElement(stack, popArr[0]);
-        return true;
+        return SUCCESS;
     }
 
     if (cnt == 3 && popArr[0]->tokenID == LEX_E &&
@@ -96,63 +100,57 @@ bool reduceExpression(Stack *stack) {
             case LEX_ADD:
                 // E+E -> E
                 elementDeconstruct(popArr[1]);
-                if (addRule(stack, popArr[0], popArr[2])) {
-                    return true;
-                }
-                return false;
+                return addRule(stack, popArr[0], popArr[2]);
             case LEX_SUB:
                 // E-E -> E
                 elementDeconstruct(popArr[1]);
-                if (subRule(stack, popArr[0], popArr[2])) {
-                    return true;
-                }
-                return false;
+                return subRule(stack, popArr[0], popArr[2]);
             case LEX_MUL:
                 // E*E -> E
                 elementDeconstruct(popArr[1]);
-                if (mulRule(stack, popArr[0], popArr[2])) {
-                    return true;
-                }
-                return false;
+                return mulRule(stack, popArr[0], popArr[2]);
             case LEX_DIV:
                 // E/E -> E
                 elementDeconstruct(popArr[1]);
-                if (divRule(stack, popArr[0], popArr[2])) {
-                    return true;
-                }
-                return false;
-                return true;
+                return divRule(stack, popArr[0], popArr[2]);
             case LEX_NEQ:
             case LEX_LEQ:
             case LEX_GTQ:
             case LEX_GT:
             case LEX_LE:
             case LEX_EQ:
-                popArr[0]->dataType = LEX_BOOL;
-                stackPushElement(stack, popArr[0]);
-                elementDeconstruct(popArr[1]);
-                elementDeconstruct(popArr[2]);
-                return true;
+                if (popArr[0]->dataType == popArr[2]->dataType) {
+                    popArr[0]->dataType = LEX_BOOL;
+                    stackPushElement(stack, popArr[0]);
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    return SUCCESS;
+                } else {
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    return TYPECOMP_ERORR;
+                }
             default:
-                return false;
+                return SYNTAX_ERROR;
         }
     }
+    // (E) -> E
     if (cnt == 3 && popArr[0]->tokenID == LEX_RPAR &&
         popArr[2]->tokenID == LEX_LPAR) {
         if (popArr[1]->tokenID == LEX_E) {
             stackPushElement(stack, popArr[1]);
             elementDeconstruct(popArr[0]);
             elementDeconstruct(popArr[2]);
-            return true;
+            return SUCCESS;
         }
     }
-    return false;
+    return SYNTAX_ERROR;
 }
 
-bool finishReducing(Stack *stack) {
-    bool res = true;
-    while (res == true && stack->elementCount > 2) {
-        //printStack(stack);
+int finishReducing(Stack *stack) {
+    int res = SUCCESS;
+    while (res == SUCCESS && stack->elementCount > 2) {
+        // printStack(stack);
         res = reduceExpression(stack);
     }
     return res;
@@ -171,7 +169,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
     }
 
     int curLex = get_Token(&string);
-    if(curLex == LEX_ERR) {
+    if (curLex == LEX_ERR) {
         stackDeconstruct(stack);
         stringDeconstruct(&string);
         return LEX_ERROR;
@@ -179,7 +177,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
     int dataType = curLex;
 
     do {
-        //printStack(stack);
+        // printStack(stack);
         if (curLex == LEX_EOF) {
             stackDeconstruct(stack);
             stringDeconstruct(&string);
@@ -207,13 +205,15 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
         // Condition for ending the precendence analysis
         if (curLex > 14) {
             if (curLex == endChar) {
-                if (finishReducing(stack)) {
-                    //printStack(stack);
+                int finishRes = finishReducing(stack);
+
+                if (finishRes == SUCCESS) {
+                    // printStack(stack);
                     break;
                 } else {
                     stackDeconstruct(stack);
                     stringDeconstruct(&string);
-                    return SYNTAX_ERROR;
+                    return finishRes;
                 }
             } else {
                 stackDeconstruct(stack);
@@ -239,12 +239,13 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             curLex = get_Token(&string);
             dataType = curLex;
         } else if (operation == '>') {
-            //printf("REDUCE\n");
-            if (!reduceExpression(stack)) {
+            // printf("REDUCE\n");
+            int reduceRes = reduceExpression(stack);
+            if (reduceRes != SUCCESS) {
                 printf("CHYBA PRI REDUKCII\n");
                 stackDeconstruct(stack);
                 stringDeconstruct(&string);
-                return SYNTAX_ERROR;
+                return reduceRes;
             }
             setTopNoTerm(stack);
         } else if (operation == '=') {
@@ -254,7 +255,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
         }
     } while (endAnalysis == false);
 
-    //printf("EXPRESSION PARSED SUCCESSFULLY\n");
+    // printf("EXPRESSION PARSED SUCCESSFULLY\n");
     *resDataType = stack->items[1]->dataType;
     stackDeconstruct(stack);
     stringDeconstruct(&string);

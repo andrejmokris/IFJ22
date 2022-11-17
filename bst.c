@@ -45,21 +45,21 @@ bool duplicateParamName(node_t node, String_t pID) {
     return true;
 }
 
-bool addParam(node_t node, int dataType, String_t pID) {
+int addParam(node_t node, int dataType, String_t pID) {
     if(!duplicateParamName(node, pID)) {
-        printf("DUPLICATE PARAM NAME\n");
-        return false;
+        printf("Duplicate parameter name\n");
+        return OTHERSEM_ERROR;
     }
     param_t newParam = malloc(sizeof(struct Param));
     String_t paramID;
     if (newParam == NULL || !StringInit(&paramID)) {
-        return false;
+        return INTERNAL_ERROR;
     }
     // string
     newParam->ParamID = paramID;
     newParam->dataType = dataType;
     if (!stringCopy(&paramID, &pID)) {
-        return false;
+        return INTERNAL_ERROR;
     }
     if (node->function->nOfParams < node->function->stackSize) {
         node->function->params[node->function->nOfParams] = newParam;
@@ -68,13 +68,13 @@ bool addParam(node_t node, int dataType, String_t pID) {
         node->function->params =
             realloc(node->function->params, node->function->stackSize * 2);
         if (node->function->params == NULL) {
-            return false;
+            return INTERNAL_ERROR;
         }
         node->function->stackSize = node->function->stackSize * 2;
         node->function->params[node->function->nOfParams] = newParam;
         node->function->nOfParams++;
     }
-    return true;
+    return SUCCESS;
 }
 
 void deconstructNode(node_t node) {

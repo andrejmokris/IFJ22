@@ -70,43 +70,57 @@ bool VarAssign() {
 }
 
 bool getSingleParam(node_t funcNode) {
-    bool lastComma = (curToken == LEX_COMMA);
-    int dataType;
-    if (!Type()) {
-        if (curToken == LEX_RPAR && !lastComma) {
-            return true;
-        }
-        return false;
-    }
-    dataType = curToken;
-    curToken = getParsToken();
-    if (curToken != LEX_ID) {
-        return false;
-    }
-    if (!addParam(funcNode, dataType, string)) {
-        return false;
-    }
-    curToken = getParsToken();
-    if (curToken == LEX_COMMA) {
-        return getSingleParam(funcNode);
-    } else if (curToken == LEX_RPAR) {
+    int newToken = getParsToken();
+    if (newToken == LEX_RPAR) {
         return true;
+    }
+    if (newToken == LEX_COMMA) {
+        int dataType = getParsToken();
+        if(!Type(dataType)) {
+            endParser(SYNTAX_ERROR);
+        }
+        curToken = getParsToken();
+        if(curToken != LEX_ID) {
+            endParser(SYNTAX_ERROR);
+        }
+        int addRes;
+        if((addRes = addParam(funcNode, dataType, string)) != SUCCESS) {
+            endParser(addRes);
+        }
+        return getSingleParam(funcNode);
+    } else {
+        endParser(SYNTAX_ERROR);
     }
     return false;
 }
 
-bool getFuncParams(node_t funcNode) {
-    if (getParsToken() != LEX_LPAR) {
-        return false;
+bool getParams(node_t funcNode) {
+    if (Type()) {
+        int dataType = curToken;
+        int nextToken = getParsToken();
+        if (nextToken != LEX_ID) {
+            endParser(SYNTAX_ERROR);
+        } else {
+            int addRes;
+            if ((addRes = addParam(funcNode, dataType, string)) != SUCCESS) {
+                endParser(addRes);
+            }
+            return getSingleParam(funcNode);
+        }
+    } else {
+        if (curToken != LEX_RPAR) {
+            endParser(SYNTAX_ERROR);
+        }
+        return true;
     }
-    return getSingleParam(funcNode);
+    return false;
 }
 
 bool functionDeclaration() {
     // get function id
     curToken = getParsToken();
     if (curToken != LEX_FUNID) {
-        return false;
+        endParser(SYNTAX_ERROR);
     }
     if (TreeFind(funcTable, string.string) != NULL) {
         printf("Redefinition of a function\n");
@@ -114,19 +128,32 @@ bool functionDeclaration() {
     }
     node_t funcNode = createFuncNode(LEX_FUNID, string);
     if (TreeInsertNode(&funcTable, funcNode) == NULL) {
+        endParser(INTERNAL_ERROR);
+    }
+    funcNode->function->nOfParams = 0;
+
+    // function ID (
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (!getParams(funcNode)) {
         return false;
     }
-    if (!getFuncParams(funcNode)) {
-        return false;
-    }
+    // function ID (parList) : return type { stat_list
     if (getParsToken() != LEX_COLON) {
-        return false;
+        endParser(SYNTAX_ERROR);
     }
+    // return type
     if (!Type()) {
-        return false;
+        endParser(SYNTAX_ERROR);
     }
     funcNode->function->returnType = curToken;
-    return true;
+
+    if (getParsToken() != LEX_LCRB) {
+        endParser(SYNTAX_ERROR);
+    }
+
+    return statementList(true);
 }
 
 // check if functin call matches parameter data types
@@ -169,16 +196,26 @@ bool parameterDataTypeVerify(int op1, int op2) {
 }
 
 bool functionCall() {
+    // case for built-in function
+    // TODO: add typechecking and codegen for built-in functions
+    if (!strcmp(string.string, "write") || !strcmp(string.string, "reads") ||
+        !strcmp(string.string, "readi") || !strcmp(string.string, "readf")) {
+        printf("built in function\n");
+        return true;
+    }
     node_t funcNode = TreeFind(funcTable, string.string);
+    
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    
     if (funcNode == NULL) {
         printf("Undefined function\n");
         endParser(SEMANTIC_ERROR);
     }
+    
     int nOfParams = funcNode->function->nOfParams;
     printf("N of params: %d\n", nOfParams);
-    if (getParsToken() != LEX_LPAR) {
-        endParser(SYNTAX_ERROR);
-    }
     // loading parameters and comparing data types
     for (int i = 0; i < nOfParams; i++) {
         getParsToken();
@@ -249,6 +286,33 @@ int ifRule() {
     return FAIL;
 }
 
+bool whileRule() {
+    printf("WHILE RULE\n");
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+        return FAIL;
+    }
+    int resDataType;
+    int parseExpressionRes;
+    if ((parseExpressionRes =
+             parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
+    }
+    // datatype of IF condition has to be BOOL
+    if (resDataType != LEX_BOOL) {
+        printf("Invalid expression in WHILE statement\n");
+        endParser(TYPECOMP_ERORR);
+        return FAIL;
+    }
+    if (getParsToken() != LEX_LCRB) {
+        printf("Missing { after WHILE statement\n");
+        endParser(SYNTAX_ERROR);
+        return FAIL;
+    }
+
+    return statementList(true);
+}
+
 // statement list
 // similiar to parser loop, but can't have function definition
 // is called in if_statement or function body
@@ -266,11 +330,16 @@ bool statementList(bool getNext) {
                 return SYNTAX_ERROR;
             } else if (resIF == SUCCESS_ELSE) {
                 return statementList(true);
-            } else {
+            } else if (resIF == SUCCESS_NOELSE){
                 return statementList(false);
             }
             break;
         case LEX_WHILE:
+            if (!whileRule()) {
+                return SYNTAX_ERROR;
+            } else {
+                return statementList(true);
+            }
         case LEX_FUNID:
             return functionCall();
         case LEX_ID:
@@ -327,6 +396,12 @@ int ParserLoop(bool getNext) {
                 return ParserLoop(true);
             } else {
                 return ParserLoop(false);
+            }
+        case LEX_WHILE:
+            if (!whileRule()) {
+                return SYNTAX_ERROR;
+            } else {
+                return ParserLoop(true);
             }
         case LEX_ERR:
             return SYNTAX_ERROR;
