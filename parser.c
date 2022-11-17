@@ -75,10 +75,10 @@ bool getSingleParam(node_t funcNode) {
         return true;
     }
     if (newToken == LEX_COMMA) {
-        int dataType = getParsToken();
-        if(!Type(dataType)) {
+        if(!Type()) {
             endParser(SYNTAX_ERROR);
         }
+        int dataType = curToken;
         curToken = getParsToken();
         if(curToken != LEX_ID) {
             endParser(SYNTAX_ERROR);
@@ -131,7 +131,6 @@ bool functionDeclaration() {
         endParser(INTERNAL_ERROR);
     }
     funcNode->function->nOfParams = 0;
-
     // function ID (
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
@@ -152,15 +151,18 @@ bool functionDeclaration() {
     if (getParsToken() != LEX_LCRB) {
         endParser(SYNTAX_ERROR);
     }
-
     return statementList(true);
 }
 
-// check if functin call matches parameter data types
+// check if function call matches parameter data types
 /* op1 - ocakavany dt   op2 - prichadzajuci dt */
 bool parameterDataTypeVerify(int op1, int op2) {
     if (op2 == LEX_ID) {
-        op2 = TreeFind(symTable, string.string)->dataType;
+        node_t findVar = TreeFind(symTable, string.string);
+        if(findVar == NULL) {
+            endParser(UNDEFVAR_ERROR);
+        }
+        op2 = findVar->dataType;
     }
     if (op1 == LEX_TYPE_STRING_OPT) {
         if (op2 == LEX_STRING || op2 == LEX_NULL) {
