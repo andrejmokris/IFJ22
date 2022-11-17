@@ -1,20 +1,20 @@
 #include "parser.h"
 
 String_t string;
-node_t symTable;
+node_t globalSymTable;
 node_t funcTable;
 int curToken;
 
 void initParser() {
     StringInit(&string);
-    symTable = NULL;
+    globalSymTable = NULL;
     funcTable = NULL;
     curToken = 0;
 }
 
 int endParser(int errCode) {
     stringDeconstruct(&string);
-    TreeDeconstruct(symTable);
+    TreeDeconstruct(globalSymTable);
     TreeDeconstruct(funcTable);
     if (errCode != SUCCESS) {
         errorExit(errCode, "Chyba\n");
@@ -47,11 +47,11 @@ bool Type() {
 }
 
 // ID = <expr>;
-bool VarAssign() {
+bool VarAssign(node_t *symTable) {
     // printf("VarAssign\n");
-    node_t newNode = TreeFind(symTable, string.string);
+    node_t newNode = TreeFind(*symTable, string.string);
     if (newNode == NULL) {
-        if ((newNode = TreeInsert(&symTable, 0, string)) == NULL) {
+        if ((newNode = TreeInsert(symTable, 0, string)) == NULL) {
             endParser(INTERNAL_ERROR);
         }
     }
@@ -62,7 +62,7 @@ bool VarAssign() {
     int resDataType;
     int parseExpressionRes;
     if ((parseExpressionRes =
-             parseExpression(LEX_SEMICOL, &resDataType, symTable)) != SUCCESS) {
+             parseExpression(LEX_SEMICOL, &resDataType, *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
     newNode->dataType = resDataType;
@@ -75,17 +75,22 @@ bool getSingleParam(node_t funcNode) {
         return true;
     }
     if (newToken == LEX_COMMA) {
-        if(!Type()) {
+        if (!Type()) {
             endParser(SYNTAX_ERROR);
         }
         int dataType = curToken;
         curToken = getParsToken();
-        if(curToken != LEX_ID) {
+        if (curToken != LEX_ID) {
             endParser(SYNTAX_ERROR);
         }
         int addRes;
-        if((addRes = addParam(funcNode, dataType, string)) != SUCCESS) {
+        if ((addRes = addParam(funcNode, dataType, string)) != SUCCESS) {
             endParser(addRes);
+        }
+        node_t newParam;
+        if ((newParam = TreeInsert(&(funcNode->function->symTable), dataType,
+                                   string)) == NULL) {
+            endParser(INTERNAL_ERROR);
         }
         return getSingleParam(funcNode);
     } else {
@@ -104,6 +109,11 @@ bool getParams(node_t funcNode) {
             int addRes;
             if ((addRes = addParam(funcNode, dataType, string)) != SUCCESS) {
                 endParser(addRes);
+            }
+            node_t newParam;
+            if ((newParam = TreeInsert(&(funcNode->function->symTable),
+                                       dataType, string)) == NULL) {
+                endParser(INTERNAL_ERROR);
             }
             return getSingleParam(funcNode);
         }
@@ -151,15 +161,15 @@ bool functionDeclaration() {
     if (getParsToken() != LEX_LCRB) {
         endParser(SYNTAX_ERROR);
     }
-    return statementList(true);
+    return statementList(true, &(funcNode->function->symTable));
 }
 
 // check if function call matches parameter data types
 /* op1 - ocakavany dt   op2 - prichadzajuci dt */
 bool parameterDataTypeVerify(int op1, int op2) {
     if (op2 == LEX_ID) {
-        node_t findVar = TreeFind(symTable, string.string);
-        if(findVar == NULL) {
+        node_t findVar = TreeFind(globalSymTable, string.string);
+        if (findVar == NULL) {
             endParser(UNDEFVAR_ERROR);
         }
         op2 = findVar->dataType;
@@ -201,21 +211,23 @@ bool functionCall() {
     // case for built-in function
     // TODO: add typechecking and codegen for built-in functions
     if (!strcmp(string.string, "write") || !strcmp(string.string, "reads") ||
-        !strcmp(string.string, "readi") || !strcmp(string.string, "readf")) {
+        !strcmp(string.string, "readi") || !strcmp(string.string, "readf") ||
+        !strcmp(string.string, "floatval") ||
+        !strcmp(string.string, "intval") || !strcmp(string.string, "strval")) {
         printf("built in function\n");
         return true;
     }
     node_t funcNode = TreeFind(funcTable, string.string);
-    
+
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
     }
-    
+
     if (funcNode == NULL) {
         printf("Undefined function\n");
         endParser(SEMANTIC_ERROR);
     }
-    
+
     int nOfParams = funcNode->function->nOfParams;
     printf("N of params: %d\n", nOfParams);
     // loading parameters and comparing data types
@@ -244,7 +256,7 @@ bool functionCall() {
     return getParsToken() == LEX_SEMICOL;
 }
 
-int ifRule() {
+int ifRule(node_t *symTable) {
     printf("IF RULE\n");
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
@@ -253,7 +265,7 @@ int ifRule() {
     int resDataType;
     int parseExpressionRes;
     if ((parseExpressionRes =
-             parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
+             parseExpression(LEX_RPAR, &resDataType, *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
     // datatype of IF condition has to be BOOL
@@ -268,18 +280,17 @@ int ifRule() {
         return FAIL;
     }
 
-    if (!statementList(true)) {
+    if (!statementList(true, symTable)) {
         return FAIL;
     }
 
     if (getParsToken() == LEX_ELSE) {
-        printf("HAVING ELSE\n");
         if (getParsToken() != LEX_LCRB) {
             printf("Missing { after ELSE statement\n");
             endParser(SYNTAX_ERROR);
             return FAIL;
         }
-        if (statementList(true)) {
+        if (statementList(true, symTable)) {
             return SUCCESS_ELSE;
         }
     } else {
@@ -288,7 +299,7 @@ int ifRule() {
     return FAIL;
 }
 
-bool whileRule() {
+bool whileRule(node_t *symTable) {
     printf("WHILE RULE\n");
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
@@ -297,7 +308,7 @@ bool whileRule() {
     int resDataType;
     int parseExpressionRes;
     if ((parseExpressionRes =
-             parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
+             parseExpression(LEX_RPAR, &resDataType, *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
     // datatype of IF condition has to be BOOL
@@ -312,13 +323,13 @@ bool whileRule() {
         return FAIL;
     }
 
-    return statementList(true);
+    return statementList(true, symTable);
 }
 
 // statement list
 // similiar to parser loop, but can't have function definition
 // is called in if_statement or function body
-bool statementList(bool getNext) {
+bool statementList(bool getNext, node_t *symTable) {
     // find if loading next token is necessary
     // mainly due to absence/presence of else statement
     if (getNext) {
@@ -327,26 +338,26 @@ bool statementList(bool getNext) {
     int resIF;
     switch (curToken) {
         case LEX_IF:
-            resIF = ifRule();
+            resIF = ifRule(symTable);
             if (resIF == FAIL) {
                 return SYNTAX_ERROR;
             } else if (resIF == SUCCESS_ELSE) {
-                return statementList(true);
-            } else if (resIF == SUCCESS_NOELSE){
-                return statementList(false);
+                return statementList(true, symTable);
+            } else if (resIF == SUCCESS_NOELSE) {
+                return statementList(false, symTable);
             }
             break;
         case LEX_WHILE:
-            if (!whileRule()) {
+            if (!whileRule(symTable)) {
                 return SYNTAX_ERROR;
             } else {
-                return statementList(true);
+                return statementList(true, symTable);
             }
         case LEX_FUNID:
             return functionCall();
         case LEX_ID:
-            if (VarAssign()) {
-                return statementList(true);
+            if (VarAssign(symTable)) {
+                return statementList(true, symTable);
             } else {
                 endParser(SYNTAX_ERROR);
             }
@@ -367,10 +378,12 @@ int ParserLoop(bool getNext) {
     if (getNext) {
         curToken = getParsToken();
     }
+    // help variable to determine, if we need to load next token after if
+    // statement list
     int resIF;
     switch (curToken) {
         case LEX_ID:
-            if (VarAssign() == false) {
+            if (VarAssign(&globalSymTable) == false) {
                 return SYNTAX_ERROR;
             } else {
                 return ParserLoop(true);
@@ -391,7 +404,7 @@ int ParserLoop(bool getNext) {
         case LEX_IF:
             // cases for different outcomes of if - wheather if had or had not
             // else
-            resIF = ifRule();
+            resIF = ifRule(&globalSymTable);
             if (resIF == FAIL) {
                 return SYNTAX_ERROR;
             } else if (resIF == SUCCESS_ELSE) {
@@ -400,7 +413,7 @@ int ParserLoop(bool getNext) {
                 return ParserLoop(false);
             }
         case LEX_WHILE:
-            if (!whileRule()) {
+            if (!whileRule(&globalSymTable)) {
                 return SYNTAX_ERROR;
             } else {
                 return ParserLoop(true);

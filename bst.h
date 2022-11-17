@@ -18,6 +18,7 @@ typedef struct FunctionNode {
     int nOfParams;
     int stackSize;
     param_t *params;
+    struct TreeNode *symTable;
 } *func_t;
 
 typedef struct TreeNode {

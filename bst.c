@@ -27,10 +27,11 @@ node_t createFuncNode(int dataType, String_t NodeID) {
     if (newNode == NULL || funcNode == NULL) {
         return NULL;
     }
-    newNode->function = funcNode;
+    funcNode->symTable = NULL;
     funcNode->params = malloc(15 * sizeof(param_t));
     funcNode->stackSize = 15;
     funcNode->nOfParams = 0;
+    newNode->function = funcNode;
     return newNode;
 }
 
@@ -85,6 +86,7 @@ void deconstructNode(node_t node) {
             stringDeconstruct(&curParam->ParamID);
             free(curParam);
         }
+        TreeDeconstruct(node->function->symTable);
         free(node->function->params);
         free(node->function);
     }

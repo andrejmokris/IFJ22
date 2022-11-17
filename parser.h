@@ -20,14 +20,14 @@ int mainParser();
 int endParser(int errCode);
 int getParsToken();
 int ParserLoop(bool getNext);
-bool statementList(bool getNext);
-int ifRule();
+bool statementList(bool getNext, node_t *symTable);
+int ifRule(node_t *symTable);
 bool functionCall();
 bool parameterDataTypeVerify(int op1, int op2);
 bool functionDeclaration();
 bool getFuncParams(node_t funcNode);
 bool getSingleParam(node_t funcNode);
-bool VarAssign();
+bool VarAssign(node_t *symTable);
 bool Type();
 
 #endif

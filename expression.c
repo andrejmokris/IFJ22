@@ -91,6 +91,7 @@ int reduceExpression(Stack *stack) {
     if (cnt == 1 && popArr[0]->tokenID == LEX_I) {
         popArr[0]->tokenID = LEX_E;
         stackPushElement(stack, popArr[0]);
+        // To generate code from it, push this to dataStack: popArr[0]->tokenVal
         return SUCCESS;
     }
 
@@ -175,7 +176,6 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
         return LEX_ERROR;
     }
     int dataType = curLex;
-
     do {
         // printStack(stack);
         if (curLex == LEX_EOF) {
@@ -193,8 +193,16 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
                 dataType = curID->dataType;
             }
         }
+        if (dataType == LEX_TYPE_FLOAT) {
+            dataType = LEX_FLOAT;
+        } else if (dataType == LEX_TYPE_INT) {
+            dataType = LEX_INT;
+        } else if (dataType == LEX_TYPE_STRING) {
+            dataType = LEX_STRING;
+        }
         if (dataType == LEX_INT || dataType == LEX_FLOAT ||
-            dataType == LEX_STRING || dataType == LEX_BOOL) {
+            dataType == LEX_STRING || dataType == LEX_BOOL ||
+            dataType == LEX_NULL) {
             curLex = LEX_I;
         }
         if (curLex == LEX_EOF) {
@@ -237,6 +245,11 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             stack->topElement->dataType = dataType;
 
             curLex = get_Token(&string);
+            if (curLex == LEX_ERR) {
+                stackDeconstruct(stack);
+                stringDeconstruct(&string);
+                return LEX_ERROR;
+            }
             dataType = curLex;
         } else if (operation == '>') {
             // printf("REDUCE\n");
@@ -251,6 +264,11 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
         } else if (operation == '=') {
             stackPush(stack, curLex, string);
             curLex = get_Token(&string);
+            if (curLex == LEX_ERR) {
+                stackDeconstruct(stack);
+                stringDeconstruct(&string);
+                return LEX_ERROR;
+            }
             dataType = curLex;
         }
     } while (endAnalysis == false);
