@@ -305,11 +305,13 @@ int ifRule(node_t *symTable, node_t functionNode) {
         endParser(parseExpressionRes);
     }
     // datatype of IF condition has to be BOOL
+    /*
     if (resDataType != LEX_BOOL) {
         printf("Invalid expression in IF statement\n");
         endParser(TYPECOMP_ERORR);
         return FAIL;
     }
+    */
 
     printf("PUSHS bool@true\n");
     printf("JUMPIFNEQS newELSE\n");
