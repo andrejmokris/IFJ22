@@ -6,6 +6,7 @@ int addRule(Stack *stack, StackElement *op1, StackElement *op2) {
         (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
+        printf("ADDS\n");
         return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
@@ -25,6 +26,7 @@ int subRule(Stack *stack, StackElement *op1, StackElement *op2) {
         (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
+        printf("SUBS\n");
         return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
@@ -44,6 +46,7 @@ int mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
         (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
+        printf("MULS\n");
         return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
@@ -63,6 +66,7 @@ int divRule(Stack *stack, StackElement *op1, StackElement *op2) {
         (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
+        printf("DIVS\n");
         return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
@@ -90,6 +94,13 @@ int reduceExpression(Stack *stack) {
     // i -> E
     if (cnt == 1 && popArr[0]->tokenID == LEX_I) {
         popArr[0]->tokenID = LEX_E;
+        if (popArr[0]->isID == false) {
+            if (popArr[0]->dataType == LEX_INT) {
+                printf("PUSHS int@%s\n", popArr[0]->tokenVal.string);
+            } else if (popArr[0]->dataType == LEX_FLOAT) {
+                printf("PUSHS float@%a\n", popArr[0]->tokenVal.string);
+            }
+        }
         stackPushElement(stack, popArr[0]);
         // To generate code from it, push this to dataStack: popArr[0]->tokenVal
         return SUCCESS;
@@ -125,6 +136,7 @@ int reduceExpression(Stack *stack) {
                     stackPushElement(stack, popArr[0]);
                     elementDeconstruct(popArr[1]);
                     elementDeconstruct(popArr[2]);
+                    printf("EQS\n");
                     return SUCCESS;
                 } else {
                     elementDeconstruct(popArr[1]);
@@ -175,8 +187,22 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
         stringDeconstruct(&string);
         return LEX_ERROR;
     }
+
+    if(curLex == LEX_FUNID) {
+        if(functionCall(&string, resDataType, 'a')) {
+            stackDeconstruct(stack);
+            stringDeconstruct(&string);
+            return SUCCESS;
+        } else {
+            stackDeconstruct(stack);
+            stringDeconstruct(&string);
+            return SYNTAX_ERROR;
+        }
+    }
+
     int dataType = curLex;
     do {
+        bool isID = false;
         // printStack(stack);
         if (curLex == LEX_EOF) {
             stackDeconstruct(stack);
@@ -190,6 +216,8 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
                 stringDeconstruct(&string);
                 return UNDEFVAR_ERROR;
             } else {
+                isID = true;
+                printf("PUSHS GF@%s\n", string.string);
                 dataType = curID->dataType;
             }
         }
@@ -243,6 +271,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             stackInsertHandle(stack);
             stackPush(stack, curLex, string);
             stack->topElement->dataType = dataType;
+            stack->topElement->isID = isID;
 
             curLex = get_Token(&string);
             if (curLex == LEX_ERR) {

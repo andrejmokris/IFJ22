@@ -14,6 +14,7 @@
 typedef struct stackElement {
     int tokenID;
     int dataType;
+    bool isID;
     size_t arrayIndex;
     String_t tokenVal;
 } StackElement;

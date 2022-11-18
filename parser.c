@@ -54,6 +54,7 @@ bool VarAssign(node_t *symTable) {
         if ((newNode = TreeInsert(symTable, 0, string)) == NULL) {
             endParser(INTERNAL_ERROR);
         }
+        printf("DEFVAR GF@%s\n", string.string);
     }
     // printf("NEW NODE: %s\n", newNode->NodeID.string);
     if (getParsToken() != LEX_ASSIGN) {
@@ -61,10 +62,12 @@ bool VarAssign(node_t *symTable) {
     }
     int resDataType;
     int parseExpressionRes;
-    if ((parseExpressionRes =
-             parseExpression(LEX_SEMICOL, &resDataType, *symTable)) != SUCCESS) {
+    if ((parseExpressionRes = parseExpression(LEX_SEMICOL, &resDataType,
+                                              *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
+    printf("POPS GF@%s\n", newNode->NodeID.string);
+    printf("CLEARS\n");
     newNode->dataType = resDataType;
     return true;
 }
@@ -132,7 +135,7 @@ bool functionDeclaration() {
     if (curToken != LEX_FUNID) {
         endParser(SYNTAX_ERROR);
     }
-    if (TreeFind(funcTable, string.string) != NULL) {
+    if (TreeFind(funcTable, string.string) != NULL || isBuiltIn()) {
         printf("Redefinition of a function\n");
         endParser(SEMANTIC_ERROR);
     }
@@ -161,7 +164,9 @@ bool functionDeclaration() {
     if (getParsToken() != LEX_LCRB) {
         endParser(SYNTAX_ERROR);
     }
-    return statementList(true, &(funcNode->function->symTable));
+    
+    bool res = statementList(true, &(funcNode->function->symTable), funcNode);
+    return res;
 }
 
 // check if function call matches parameter data types
@@ -207,9 +212,7 @@ bool parameterDataTypeVerify(int op1, int op2) {
     return false;
 }
 
-bool functionCall() {
-    // case for built-in function
-    // TODO: add typechecking and codegen for built-in functions
+bool isBuiltIn() {
     if (!strcmp(string.string, "write") || !strcmp(string.string, "reads") ||
         !strcmp(string.string, "readi") || !strcmp(string.string, "readf") ||
         !strcmp(string.string, "floatval") ||
@@ -217,7 +220,22 @@ bool functionCall() {
         printf("built in function\n");
         return true;
     }
-    node_t funcNode = TreeFind(funcTable, string.string);
+    return false;
+}
+
+bool functionCall(String_t *fName, int *returnType, char scope) {
+    // case for built-in function
+    // TODO: add typechecking and codegen for built-in functions
+    if (isBuiltIn()) {
+        printf("Built-In function\n");
+        return true;
+    }
+    node_t funcNode;
+    if (fName == NULL) {
+        funcNode = TreeFind(funcTable, string.string);
+    } else {
+        funcNode = TreeFind(funcTable, fName->string);
+    }
 
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
@@ -229,7 +247,6 @@ bool functionCall() {
     }
 
     int nOfParams = funcNode->function->nOfParams;
-    printf("N of params: %d\n", nOfParams);
     // loading parameters and comparing data types
     for (int i = 0; i < nOfParams; i++) {
         getParsToken();
@@ -239,7 +256,7 @@ bool functionCall() {
             endParser(RUN_ERROR);
         } else {
             // PARAM HAS GOOD DATA TYPE, it can be pushed to stack or idk
-            printf("Good param\n");
+            //printf("Good param\n");
         }
         if (i < nOfParams - 1 && getParsToken() != LEX_COMMA) {
             endParser(SYNTAX_ERROR);
@@ -253,11 +270,25 @@ bool functionCall() {
             return false;
         }
     }
+    *returnType = funcNode->function->returnType;
     return getParsToken() == LEX_SEMICOL;
 }
 
-int ifRule(node_t *symTable) {
-    printf("IF RULE\n");
+bool returnStat(node_t *symTable, node_t functionNode) {
+    int resDataType;
+    int parseExpressionRes;
+    if ((parseExpressionRes = parseExpression(LEX_SEMICOL, &resDataType, *symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
+    }
+
+    int functionRetType = functionNode->function->returnType;
+    if(!parameterDataTypeVerify(functionRetType, resDataType)) {
+        endParser(RUN_ERROR);
+    }
+    return true;
+}
+
+int ifRule(node_t *symTable, node_t functionNode) {
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
         return FAIL;
@@ -274,32 +305,41 @@ int ifRule(node_t *symTable) {
         endParser(TYPECOMP_ERORR);
         return FAIL;
     }
+
+    printf("PUSHS bool@true\n");
+    printf("JUMPIFNEQS newELSE\n");
+    printf("CLEARS\n");
+    printf("WRITE string@inIFStatement\n");
     if (getParsToken() != LEX_LCRB) {
         printf("Missing { after IF statement\n");
         endParser(SYNTAX_ERROR);
         return FAIL;
     }
 
-    if (!statementList(true, symTable)) {
+    if (!statementList(true, symTable, functionNode)) {
         return FAIL;
     }
-
+    printf("JUMP ENDELSEIF\n");
+    printf("LABEL newELSE\n");
     if (getParsToken() == LEX_ELSE) {
+        printf("WRITE string@inELSEStatement\n");
         if (getParsToken() != LEX_LCRB) {
             printf("Missing { after ELSE statement\n");
             endParser(SYNTAX_ERROR);
             return FAIL;
         }
-        if (statementList(true, symTable)) {
+        if (statementList(true, symTable, functionNode)) {
+            printf("LABEL ENDELSEIF\n");
             return SUCCESS_ELSE;
         }
     } else {
+        printf("LABEL ENDELSEIF\n");
         return SUCCESS_NOELSE;
     }
     return FAIL;
 }
 
-bool whileRule(node_t *symTable) {
+bool whileRule(node_t *symTable, node_t functionNode) {
     printf("WHILE RULE\n");
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
@@ -323,13 +363,13 @@ bool whileRule(node_t *symTable) {
         return FAIL;
     }
 
-    return statementList(true, symTable);
+    return statementList(true, symTable, functionNode);
 }
 
 // statement list
 // similiar to parser loop, but can't have function definition
 // is called in if_statement or function body
-bool statementList(bool getNext, node_t *symTable) {
+bool statementList(bool getNext, node_t *symTable, node_t functionNode) {
     // find if loading next token is necessary
     // mainly due to absence/presence of else statement
     if (getNext) {
@@ -338,26 +378,34 @@ bool statementList(bool getNext, node_t *symTable) {
     int resIF;
     switch (curToken) {
         case LEX_IF:
-            resIF = ifRule(symTable);
+            resIF = ifRule(symTable, functionNode);
             if (resIF == FAIL) {
                 return SYNTAX_ERROR;
             } else if (resIF == SUCCESS_ELSE) {
-                return statementList(true, symTable);
+                return statementList(true, symTable, functionNode);
             } else if (resIF == SUCCESS_NOELSE) {
-                return statementList(false, symTable);
+                return statementList(false, symTable, functionNode);
             }
             break;
         case LEX_WHILE:
-            if (!whileRule(symTable)) {
+            if (!whileRule(symTable, functionNode)) {
                 return SYNTAX_ERROR;
             } else {
-                return statementList(true, symTable);
+                return statementList(true, symTable, functionNode);
             }
+            break;
         case LEX_FUNID:
-            return functionCall();
+            return functionCall(NULL, NULL, functionNode == NULL ? 'g' : 'a');
         case LEX_ID:
             if (VarAssign(symTable)) {
-                return statementList(true, symTable);
+                return statementList(true, symTable, functionNode);
+            } else {
+                endParser(SYNTAX_ERROR);
+            }
+            break;
+        case LEX_RETURN:
+            if (returnStat(symTable, functionNode)) {
+                return statementList(true, symTable, functionNode);
             } else {
                 endParser(SYNTAX_ERROR);
             }
@@ -381,6 +429,8 @@ int ParserLoop(bool getNext) {
     // help variable to determine, if we need to load next token after if
     // statement list
     int resIF;
+    int resDataType;
+    int parseExpressionRes;
     switch (curToken) {
         case LEX_ID:
             if (VarAssign(&globalSymTable) == false) {
@@ -396,7 +446,7 @@ int ParserLoop(bool getNext) {
                 return ParserLoop(true);
             }
         case LEX_FUNID:
-            if (!functionCall()) {
+            if (!functionCall(NULL, NULL, 'g')) {
                 return SYNTAX_ERROR;
             } else {
                 return ParserLoop(true);
@@ -404,7 +454,7 @@ int ParserLoop(bool getNext) {
         case LEX_IF:
             // cases for different outcomes of if - wheather if had or had not
             // else
-            resIF = ifRule(&globalSymTable);
+            resIF = ifRule(&globalSymTable, NULL);
             if (resIF == FAIL) {
                 return SYNTAX_ERROR;
             } else if (resIF == SUCCESS_ELSE) {
@@ -413,7 +463,7 @@ int ParserLoop(bool getNext) {
                 return ParserLoop(false);
             }
         case LEX_WHILE:
-            if (!whileRule(&globalSymTable)) {
+            if (!whileRule(&globalSymTable, NULL)) {
                 return SYNTAX_ERROR;
             } else {
                 return ParserLoop(true);
@@ -424,7 +474,15 @@ int ParserLoop(bool getNext) {
         case LEX_EPILOG:
             return SUCCESS;
         default:
-            return SYNTAX_ERROR;
+            if ((parseExpressionRes = parseExpression(
+                     LEX_SEMICOL, &resDataType, globalSymTable)) != SUCCESS) {
+                endParser(parseExpressionRes);
+            }
+            if (parseExpressionRes == SUCCESS) {
+                return ParserLoop(true);
+            } else {
+                return SYNTAX_ERROR;
+            }
     }
     return SUCCESS;
 }
@@ -434,6 +492,7 @@ int mainParser() {
     if (!checkProlog(&string)) {
         return endParser(SYNTAX_ERROR);
     }
+    printf(".IFJcode22\n");
     if (ParserLoop(true) == SUCCESS) {
         return endParser(SUCCESS);
     } else {
