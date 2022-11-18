@@ -164,7 +164,7 @@ bool functionDeclaration() {
     if (getParsToken() != LEX_LCRB) {
         endParser(SYNTAX_ERROR);
     }
-    
+
     bool res = statementList(true, &(funcNode->function->symTable), funcNode);
     return res;
 }
@@ -256,7 +256,7 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
             endParser(RUN_ERROR);
         } else {
             // PARAM HAS GOOD DATA TYPE, it can be pushed to stack or idk
-            //printf("Good param\n");
+            // printf("Good param\n");
         }
         if (i < nOfParams - 1 && getParsToken() != LEX_COMMA) {
             endParser(SYNTAX_ERROR);
@@ -277,13 +277,18 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
 bool returnStat(node_t *symTable, node_t functionNode) {
     int resDataType;
     int parseExpressionRes;
-    if ((parseExpressionRes = parseExpression(LEX_SEMICOL, &resDataType, *symTable)) != SUCCESS) {
+    if ((parseExpressionRes = parseExpression(LEX_SEMICOL, &resDataType,
+                                              *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
-
-    int functionRetType = functionNode->function->returnType;
-    if(!parameterDataTypeVerify(functionRetType, resDataType)) {
-        endParser(RUN_ERROR);
+    if (functionNode != NULL) {
+        int functionRetType = functionNode->function->returnType;
+        if (functionRetType == resDataType) {
+            return true;
+        }
+        if (!parameterDataTypeVerify(functionRetType, resDataType)) {
+            endParser(RUN_ERROR);
+        }
     }
     return true;
 }
@@ -468,6 +473,13 @@ int ParserLoop(bool getNext) {
             } else {
                 return ParserLoop(true);
             }
+        case LEX_RETURN:
+            if (returnStat(&globalSymTable, NULL)) {
+                return ParserLoop(true);
+            } else {
+                endParser(SYNTAX_ERROR);
+            }
+            break;
         case LEX_ERR:
             return SYNTAX_ERROR;
         case LEX_EOF:

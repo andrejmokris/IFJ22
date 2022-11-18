@@ -188,6 +188,13 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
         return LEX_ERROR;
     }
 
+    if(curLex == endChar && endChar == LEX_SEMICOL) {
+        stackDeconstruct(stack);
+        stringDeconstruct(&string);
+        *resDataType = LEX_VOID;
+        return SUCCESS;
+    }
+
     if(curLex == LEX_FUNID) {
         if(functionCall(&string, resDataType, 'a')) {
             stackDeconstruct(stack);
