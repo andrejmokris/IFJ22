@@ -54,6 +54,21 @@ bool VarAssign(node_t *symTable) {
         if ((newNode = TreeInsert(symTable, 0, string)) == NULL) {
             endParser(INTERNAL_ERROR);
         }
+        // TU VYTVARAME NOVU VARIABLE
+        // AK SME VO WHILE, MUSIME TO VYTIAHNUT VONKU
+        // MUSIME ZAISTIT DOBRY FRAME
+        /*
+        struct: param: topmost while (pointer)
+        .IFJ22code22
+
+        LABE
+        MAIN:
+            GLOBAL
+            .
+            .
+            .
+            .
+        */
         printf("DEFVAR GF@%s\n", string.string);
     }
     // printf("NEW NODE: %s\n", newNode->NodeID.string);
@@ -135,7 +150,8 @@ bool functionDeclaration() {
     if (curToken != LEX_FUNID) {
         endParser(SYNTAX_ERROR);
     }
-    if (TreeFind(funcTable, string.string) != NULL || isBuiltIn(NULL, &string)) {
+    if (TreeFind(funcTable, string.string) != NULL ||
+        isBuiltIn(NULL, &string)) {
         printf("Redefinition of a function\n");
         endParser(SEMANTIC_ERROR);
     }
@@ -143,6 +159,9 @@ bool functionDeclaration() {
     if (TreeInsertNode(&funcTable, funcNode) == NULL) {
         endParser(INTERNAL_ERROR);
     }
+    // LABEL string.string
+    // PUSHFRAME
+    // LF
     funcNode->function->nOfParams = 0;
     // function ID (
     if (getParsToken() != LEX_LPAR) {
@@ -164,7 +183,10 @@ bool functionDeclaration() {
     if (getParsToken() != LEX_LCRB) {
         endParser(SYNTAX_ERROR);
     }
-
+    // POPFRAME
+    // priradenie vysledku
+    // MOV LF@var TF@returnvar
+    // ak to robis cez stack, tak na konci CLEA
     bool res = statementList(true, &(funcNode->function->symTable), funcNode);
     return res;
 }
@@ -231,6 +253,10 @@ bool isBuiltIn(int *returnType, String_t *string) {
 bool functionCall(String_t *fName, int *returnType, char scope) {
     // case for built-in function
     // TODO: add typechecking and codegen for built-in functions
+
+    // CREATEFRAME - vytvori sa localframe
+    // priprava parametrov
+    // call function
     if (isBuiltIn(returnType, fName == NULL ? &string : fName)) {
         return true;
     }
@@ -249,7 +275,6 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
         printf("Undefined function\n");
         endParser(SEMANTIC_ERROR);
     }
-
     int nOfParams = funcNode->function->nOfParams;
     // loading parameters and comparing data types
     for (int i = 0; i < nOfParams; i++) {
@@ -274,14 +299,19 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
             return false;
         }
     }
-    *returnType = funcNode->function->returnType;
-    if (funcNode->function->returnType == LEX_VOID) {
-        *returnType = LEX_NULL;
+    if (returnType != NULL) {
+        *returnType = funcNode->function->returnType;
+        if (funcNode->function->returnType == LEX_VOID) {
+            *returnType = LEX_NULL;
+        }
     }
     return getParsToken() == LEX_SEMICOL;
 }
 
 bool returnStat(node_t *symTable, node_t functionNode) {
+    // push expression
+    // return
+    // popframe - mas ju na temp.frame
     int resDataType;
     int parseExpressionRes;
     if ((parseExpressionRes = parseExpression(LEX_SEMICOL, &resDataType,
@@ -365,19 +395,26 @@ bool whileRule(node_t *symTable, node_t functionNode) {
              parseExpression(LEX_RPAR, &resDataType, *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
-    // datatype of IF condition has to be BOOL
+    
+    /*
+    datatype of IF condition has to be BOOL
     if (resDataType != LEX_BOOL) {
         printf("Invalid expression in WHILE statement\n");
         endParser(TYPECOMP_ERORR);
         return FAIL;
     }
+    */
     if (getParsToken() != LEX_LCRB) {
         printf("Missing { after WHILE statement\n");
         endParser(SYNTAX_ERROR);
         return FAIL;
     }
 
-    return statementList(true, symTable, functionNode);
+    bool res = statementList(true, symTable, functionNode);
+    if(res != true) {
+        endParser(SYNTAX_ERROR);
+    }
+    // GENERATE INSTRUCTION JUMP BACK ON WHILE START
 }
 
 // statement list
@@ -513,6 +550,7 @@ int mainParser() {
     if (!checkProlog(&string)) {
         return endParser(SYNTAX_ERROR);
     }
+    // PRINT HEADER FOR GENERATED FILE
     printf(".IFJcode22\n");
     if (ParserLoop(true) == SUCCESS) {
         return endParser(SUCCESS);
