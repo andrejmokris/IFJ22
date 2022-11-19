@@ -8,6 +8,8 @@
 
 #include "dynamic_string.h"
 
+#include <string.h>
+
 #include "error.h"
 
 bool StringInit(String_t *str) {
@@ -31,6 +33,23 @@ bool resizeString(String_t *str) {
 }
 
 // add one character at the end of the string
+bool stringConcatenate(String_t *str, const char *addon_string) {
+    int str_len = strlen(addon_string);
+    if (str != NULL && str->string != NULL) {
+        if (str->length + str_len > str->allocSize - 1) {
+            if (!resizeString(str)) {
+                return false;
+            }
+        }
+        strncat(str->string, addon_string, str_len);
+        str->length += str_len;
+        str->string[str->length] = '\0';
+    }
+    // errorExit(INTERNAL_ERROR, "Memory could not be allocated\n");
+    return true;
+}
+
+// add one character at the end of the string
 bool stringAppend(String_t *str, int c) {
     if (str != NULL && str->string != NULL) {
         if (str->length - 2 < str->allocSize) {
@@ -45,16 +64,16 @@ bool stringAppend(String_t *str, int c) {
             }
         }
     }
-    //errorExit(INTERNAL_ERROR, "Memory could not be allocated\n");
+    // errorExit(INTERNAL_ERROR, "Memory could not be allocated\n");
     return false;
 }
 
 bool stringCopy(String_t *dest, String_t *source) {
-    if(dest == NULL || source == NULL) {
+    if (dest == NULL || source == NULL) {
         return false;
     }
     for (int i = 0; i < source->length; i++) {
-        if(!stringAppend(dest, source->string[i])) {
+        if (!stringAppend(dest, source->string[i])) {
             return false;
         }
     }

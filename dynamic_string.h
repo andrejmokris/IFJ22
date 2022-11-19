@@ -17,6 +17,7 @@ typedef struct {
 
 bool StringInit(String_t *str);
 bool resizeString(String_t *str);
+bool stringConcatenate(String_t *str, const char *addon_string);
 bool stringAppend(String_t *str, int c);
 void stringClear(String_t *str);
 void stringDeconstruct(String_t *str);

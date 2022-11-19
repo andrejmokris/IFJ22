@@ -1,12 +1,27 @@
 #include "parser.h"
 
+#include "generator.h"
+#include "print_inst.h"
+
+String_t code;
+Tinstruction_list important_ptrs;
 String_t string;
 node_t globalSymTable;
 node_t funcTable;
 int curToken;
 
+#define PRINT_CODE(_fname, _params)                                      \
+    do {                                                                 \
+        insert_last_dll(&important_ptrs, important_ptrs.string_end);     \
+        _fname(_params);                                                 \
+        important_ptrs.string_end = (char *)(code.string + code.length); \
+    } while (0)
+
 void initParser() {
     StringInit(&string);
+    StringInit(&code);
+    init_dll(&important_ptrs);
+    important_ptrs.string_end = code.string;
     globalSymTable = NULL;
     funcTable = NULL;
     curToken = 0;
@@ -54,6 +69,13 @@ bool VarAssign(node_t *symTable) {
         if ((newNode = TreeInsert(symTable, 0, string)) == NULL) {
             endParser(INTERNAL_ERROR);
         }
+        if (important_ptrs.before_while != NULL) {
+            insert_first_dll(&important_ptrs, important_ptrs.string_end);
+        } else {
+            insert_last_dll(&important_ptrs, important_ptrs.string_end);
+        }
+        new_var(string.string);
+        important_ptrs.string_end = (char *)(code.string + code.length);
         // TU VYTVARAME NOVU VARIABLE
         // AK SME VO WHILE, MUSIME TO VYTIAHNUT VONKU
         // MUSIME ZAISTIT DOBRY FRAME
@@ -69,7 +91,6 @@ bool VarAssign(node_t *symTable) {
             .
             .
         */
-        printf("DEFVAR GF@%s\n", string.string);
     }
     // printf("NEW NODE: %s\n", newNode->NodeID.string);
     if (getParsToken() != LEX_ASSIGN) {
@@ -81,8 +102,8 @@ bool VarAssign(node_t *symTable) {
                                               *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
-    printf("POPS GF@%s\n", newNode->NodeID.string);
-    printf("CLEARS\n");
+    // printf("POPS GF@%s\n", newNode->NodeID.string);
+    // printf("CLEARS\n");
     newNode->dataType = resDataType;
     return true;
 }
@@ -159,6 +180,9 @@ bool functionDeclaration() {
     if (TreeInsertNode(&funcTable, funcNode) == NULL) {
         endParser(INTERNAL_ERROR);
     }
+    PRINT_CODE(label, string.string);
+    PRINT_CODE(tmpF, );
+    PRINT_CODE(pushF, );
     // LABEL string.string
     // PUSHFRAME
     // LF
@@ -242,7 +266,7 @@ bool isBuiltIn(int *returnType, String_t *string) {
         !strcmp(string->string, "strlen") ||
         !strcmp(string->string, "substring") || !strcmp(string->string, "ord") ||
         !strcmp(string->string, "chr")) {
-        while(curToken != LEX_SEMICOL) {
+        while (curToken != LEX_SEMICOL) {
             getParsToken(string);
         }
         return true;
@@ -395,7 +419,7 @@ bool whileRule(node_t *symTable, node_t functionNode) {
              parseExpression(LEX_RPAR, &resDataType, *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
-    
+
     /*
     datatype of IF condition has to be BOOL
     if (resDataType != LEX_BOOL) {
@@ -411,7 +435,7 @@ bool whileRule(node_t *symTable, node_t functionNode) {
     }
 
     bool res = statementList(true, symTable, functionNode);
-    if(res != true) {
+    if (res != true) {
         endParser(SYNTAX_ERROR);
     }
     // GENERATE INSTRUCTION JUMP BACK ON WHILE START

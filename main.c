@@ -11,6 +11,8 @@
  */
 #include "main.h"
 
+#include "print_inst.h"
+
 /*
 int main() {
     String_t string;
@@ -35,7 +37,9 @@ int main() {
 
 int main() {
     int res = mainParser();
+    if (res == SUCCESS) {
+        print_code();
+    }
     printf("RESULT: %d\n", res);
     return 0;
 }
-
