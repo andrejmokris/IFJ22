@@ -135,7 +135,7 @@ bool functionDeclaration() {
     if (curToken != LEX_FUNID) {
         endParser(SYNTAX_ERROR);
     }
-    if (TreeFind(funcTable, string.string) != NULL || isBuiltIn()) {
+    if (TreeFind(funcTable, string.string) != NULL || isBuiltIn(NULL, &string)) {
         printf("Redefinition of a function\n");
         endParser(SEMANTIC_ERROR);
     }
@@ -212,12 +212,17 @@ bool parameterDataTypeVerify(int op1, int op2) {
     return false;
 }
 
-bool isBuiltIn() {
-    if (!strcmp(string.string, "write") || !strcmp(string.string, "reads") ||
-        !strcmp(string.string, "readi") || !strcmp(string.string, "readf") ||
-        !strcmp(string.string, "floatval") ||
-        !strcmp(string.string, "intval") || !strcmp(string.string, "strval")) {
-        printf("built in function\n");
+bool isBuiltIn(int *returnType, String_t *string) {
+    if (!strcmp(string->string, "write") || !strcmp(string->string, "reads") ||
+        !strcmp(string->string, "readi") || !strcmp(string->string, "readf") ||
+        !strcmp(string->string, "floatval") ||
+        !strcmp(string->string, "intval") || !strcmp(string->string, "strval") ||
+        !strcmp(string->string, "strlen") ||
+        !strcmp(string->string, "substring") || !strcmp(string->string, "ord") ||
+        !strcmp(string->string, "chr")) {
+        while(curToken != LEX_SEMICOL) {
+            getParsToken(string);
+        }
         return true;
     }
     return false;
@@ -226,8 +231,7 @@ bool isBuiltIn() {
 bool functionCall(String_t *fName, int *returnType, char scope) {
     // case for built-in function
     // TODO: add typechecking and codegen for built-in functions
-    if (isBuiltIn()) {
-        printf("Built-In function\n");
+    if (isBuiltIn(returnType, fName == NULL ? &string : fName)) {
         return true;
     }
     node_t funcNode;
@@ -271,6 +275,9 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
         }
     }
     *returnType = funcNode->function->returnType;
+    if (funcNode->function->returnType == LEX_VOID) {
+        *returnType = LEX_NULL;
+    }
     return getParsToken() == LEX_SEMICOL;
 }
 
