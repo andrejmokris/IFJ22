@@ -394,35 +394,36 @@ int ifRule(node_t *symTable, node_t functionNode) {
         return FAIL;
     }
     */
-
-    printf("PUSHS bool@true\n");
-    printf("JUMPIFNEQS newELSE\n");
-    printf("CLEARS\n");
-    printf("WRITE string@inIFStatement\n");
+    unsigned long labelID = getLabel();
+    char strElse[99999];
+    sprintf(strElse, "IfElse%ld", labelID);
+    char strEnd[99999];
+    sprintf(strEnd, "IfEnd%ld", labelID);
+    PRINT_CODE(push_bool, "true");
+    PRINT_CODE(jumpIfNeqS, strElse);
     if (getParsToken() != LEX_LCRB) {
         printf("Missing { after IF statement\n");
         endParser(SYNTAX_ERROR);
         return FAIL;
     }
-
     if (!statementList(true, symTable, functionNode)) {
         return FAIL;
     }
-    printf("JUMP ENDELSEIF\n");
-    printf("LABEL newELSE\n");
+    PRINT_CODE(jump, strEnd);
+    PRINT_CODE(label, strElse);
     if (getParsToken() == LEX_ELSE) {
-        printf("WRITE string@inELSEStatement\n");
+        // printf("WRITE string@inELSEStatement\n");
         if (getParsToken() != LEX_LCRB) {
             printf("Missing { after ELSE statement\n");
             endParser(SYNTAX_ERROR);
             return FAIL;
         }
         if (statementList(true, symTable, functionNode)) {
-            printf("LABEL ENDELSEIF\n");
+            PRINT_CODE(label, strEnd);
             return SUCCESS_ELSE;
         }
     } else {
-        printf("LABEL ENDELSEIF\n");
+        PRINT_CODE(label, strEnd);
         return SUCCESS_NOELSE;
     }
     return FAIL;
@@ -439,16 +440,17 @@ bool whileRule(node_t *symTable, node_t functionNode) {
         list.before_while = list.active;
     }
     unsigned long labelID = getLabel();
-    char str[99999];
-    sprintf(str, "WhileStart%ld", labelID);
-    PRINT_CODE(label, str);
+    char strStart[99999];
+    char strEnd[99999];
+    sprintf(strStart, "WhileStart%ld", labelID);
+    sprintf(strEnd, "WhileEnd%ld", labelID);
+    PRINT_CODE(label, strStart);
     if ((parseExpressionRes =
              parseExpression(LEX_RPAR, &resDataType, *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
     PRINT_CODE(push_bool, "true");
-    sprintf(str, "WhileEnd%ld", labelID);
-    PRINT_CODE(jumpIfNeqS, str);
+    PRINT_CODE(jumpIfNeqS, strEnd);
     // PUSHS bool@true
     /*
     datatype of IF condition has to be BOOL
@@ -468,10 +470,8 @@ bool whileRule(node_t *symTable, node_t functionNode) {
     if (res != true) {
         endParser(SYNTAX_ERROR);
     }
-    sprintf(str, "WhileStart%ld", labelID);
-    PRINT_CODE(jump, str);
-    sprintf(str, "WhileEnd%ld", labelID);
-    PRINT_CODE(label, str);
+    PRINT_CODE(jump, strStart);
+    PRINT_CODE(label, strEnd);
     // create label whileStartLabelID
 
     return true;

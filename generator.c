@@ -82,6 +82,7 @@ void insert_after_active_dll(Tinstruction_list *list, int position) {
             list->last = new_element;
         }
     } else {
+        free(new_element);
         insert_last_dll(list, position);
     }
 }
