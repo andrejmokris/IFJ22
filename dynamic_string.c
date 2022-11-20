@@ -23,7 +23,7 @@ bool StringInit(String_t *str) {
 }
 
 bool resizeString(String_t *str) {
-    str->string = (char *)realloc(str->string, str->length * 2);
+    str->string = (char *)realloc(str->string, str->allocSize * 2);
     if (str->string != NULL) {
         str->allocSize = str->allocSize * 2;
         return true;

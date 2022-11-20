@@ -1,12 +1,19 @@
 #include "expression.h"
 
+#include "generator.h"
+#include "parser.h"
+#include "print_inst.h"
+
+extern String_t code;
+extern Tinstruction_list list;
+
 // E = E + E
 int addRule(Stack *stack, StackElement *op1, StackElement *op2) {
     if ((op1->dataType == op2->dataType) &&
         (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        printf("ADDS\n");
+        PRINT_CODE(put_OPERATOR, LEX_ADD);
         return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
@@ -26,7 +33,7 @@ int subRule(Stack *stack, StackElement *op1, StackElement *op2) {
         (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        printf("SUBS\n");
+        PRINT_CODE(put_OPERATOR, LEX_SUB);
         return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
@@ -46,7 +53,7 @@ int mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
         (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        printf("MULS\n");
+        PRINT_CODE(put_OPERATOR, LEX_MUL);
         return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
@@ -66,7 +73,7 @@ int divRule(Stack *stack, StackElement *op1, StackElement *op2) {
         (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        printf("DIVS\n");
+        PRINT_CODE(put_OPERATOR, LEX_DIV);
         return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
@@ -96,9 +103,14 @@ int reduceExpression(Stack *stack) {
         popArr[0]->tokenID = LEX_E;
         if (popArr[0]->isID == false) {
             if (popArr[0]->dataType == LEX_INT) {
-                printf("PUSHS int@%s\n", popArr[0]->tokenVal.string);
+                PRINT_CODE(push_int, popArr[0]->tokenVal.string);
+                // printf("PUSHS int@%s\n", popArr[0]->tokenVal.string);
             } else if (popArr[0]->dataType == LEX_FLOAT) {
-                printf("PUSHS float@%a\n", popArr[0]->tokenVal.string);
+                PRINT_CODE(push_float, popArr[0]->tokenVal.string);  // TODO float hodnota
+                // printf("PUSHS float@%a\n", popArr[0]->tokenVal.string);
+            } else if (popArr[0]->dataType == LEX_STRING) {
+                PRINT_CODE(push_string, popArr[0]->tokenVal.string);
+                // printf("PUSHS float@%a\n", popArr[0]->tokenVal.string);
             }
         }
         stackPushElement(stack, popArr[0]);
@@ -126,6 +138,21 @@ int reduceExpression(Stack *stack) {
                 elementDeconstruct(popArr[1]);
                 return divRule(stack, popArr[0], popArr[2]);
             case LEX_NEQ:
+                if (popArr[0]->dataType == popArr[2]->dataType) {
+                    popArr[0]->dataType = LEX_BOOL;
+                    stackPushElement(stack, popArr[0]);
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    PRINT_CODE(put_OPERATOR, LEX_EQ);
+                    PRINT_CODE(put_OPERATOR, 0);
+
+                    return SUCCESS;
+                } else {
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    return TYPECOMP_ERORR;
+                }
+                break;
             case LEX_LEQ:
             case LEX_GTQ:
             case LEX_GT:
@@ -136,13 +163,15 @@ int reduceExpression(Stack *stack) {
                     stackPushElement(stack, popArr[0]);
                     elementDeconstruct(popArr[1]);
                     elementDeconstruct(popArr[2]);
-                    printf("EQS\n");
+                    PRINT_CODE(put_OPERATOR, LEX_EQ);
+
                     return SUCCESS;
                 } else {
                     elementDeconstruct(popArr[1]);
                     elementDeconstruct(popArr[2]);
                     return TYPECOMP_ERORR;
                 }
+                break;
             default:
                 return SYNTAX_ERROR;
         }
@@ -223,7 +252,8 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
                 return UNDEFVAR_ERROR;
             } else {
                 isID = true;
-                printf("PUSHS GF@%s\n", string.string);
+                PRINT_CODE(push_operand, string.string);
+                // printf("PUSHS GF@%s\n", string.string);
                 dataType = curID->dataType;
             }
         }

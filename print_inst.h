@@ -35,8 +35,21 @@ bool coversion(int from, int to) {
     return true;
 }
 */
+bool write_text(const char *text);
+
+bool jump(const char *label);
+
+bool clears();
+
+bool push_int(const char *value);
+
+bool push_float(const char *value);
+
+bool push_bool(const char *value);
 
 bool push_operand(const char *id);
+
+bool new_varTF(const char *id);
 
 bool assign(const char *id);
 
@@ -53,6 +66,8 @@ bool new_var(const char *id);
 bool enter_function(const char *id);
 
 bool load_param(const char *id, const char *temp_id);
+
+bool jumpIfNeqS(const char *id);
 
 bool return_value(const char *id);
 

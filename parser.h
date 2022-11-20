@@ -12,9 +12,16 @@
 #include "scanner.h"
 #include "stack.h"
 
-#define SUCCESS_ELSE    1
-#define SUCCESS_NOELSE  2
-#define FAIL            0
+#define SUCCESS_ELSE 1
+#define SUCCESS_NOELSE 2
+#define FAIL 0
+
+#define PRINT_CODE(_fname, _params)                      \
+    do {                                                 \
+        insert_after_active_dll(&list, list.string_pos); \
+        _fname(_params);                                 \
+        list.string_pos = code.length;                   \
+    } while (0)
 
 int mainParser();
 int endParser(int errCode);

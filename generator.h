@@ -14,6 +14,7 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "dynamic_string.h"
 #include "error.h"
 #include "parser.h"
 
@@ -54,7 +55,7 @@ typedef enum {
 // Double linked list of instructions
 typedef struct item_list {
     // Tinstr ins;
-    char *code;
+    int string_pos;
     struct item_list *item_next;
     struct item_list *item_prev;
 } * list_item;
@@ -63,17 +64,25 @@ typedef struct Tinstruction_list {
     list_item before_while;
     list_item label_main;
     // list_item fun_def_before_while;
+    list_item active;
     list_item first;
     list_item last;
-    char *string_end;
+    int string_pos;
 } Tinstruction_list;
 
 void init_dll(Tinstruction_list *list);
 void set_before_while_dll(Tinstruction_list *list);
 void set_lab_main_dll(Tinstruction_list *list);
 
-void insert_first_dll(Tinstruction_list *list, char *code);
-void insert_last_dll(Tinstruction_list *list, char *code);
+void insert_first_dll(Tinstruction_list *list, int position);
+void insert_before_while_dll(Tinstruction_list *list, int position);
+void insert_last_dll(Tinstruction_list *list, int position);
+void insert_after_active_dll(Tinstruction_list *list, int position);
+
+void activce_first(Tinstruction_list *list);
+void activce_last(Tinstruction_list *list);
+
+void dispose_dll(Tinstruction_list *list);
 
 /*void pre_insert_lab_main(Tinstruction_list *list, bool inwhile);
 void post_insert_before_while(Tinstruction_list *list);

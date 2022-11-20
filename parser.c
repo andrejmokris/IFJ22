@@ -4,24 +4,26 @@
 #include "print_inst.h"
 
 String_t code;
-Tinstruction_list important_ptrs;
+Tinstruction_list list;
 String_t string;
 node_t globalSymTable;
 node_t funcTable;
 int curToken;
+unsigned long labelCounter = 0;
 
-#define PRINT_CODE(_fname, _params)                                      \
-    do {                                                                 \
-        insert_last_dll(&important_ptrs, important_ptrs.string_end);     \
-        _fname(_params);                                                 \
-        important_ptrs.string_end = (char *)(code.string + code.length); \
-    } while (0)
+unsigned long getLabel() {
+    return labelCounter++;
+}
 
 void initParser() {
     StringInit(&string);
     StringInit(&code);
-    init_dll(&important_ptrs);
-    important_ptrs.string_end = code.string;
+    init_dll(&list);
+    PRINT_CODE(write_text, ".IFJcode22");
+    PRINT_CODE(write_text, "JUMP NULLMAIN42069");
+    PRINT_CODE(label, "NULLMAIN42069");
+    PRINT_CODE(tmpF, );
+    PRINT_CODE(pushF, );
     globalSymTable = NULL;
     funcTable = NULL;
     curToken = 0;
@@ -29,8 +31,12 @@ void initParser() {
 
 int endParser(int errCode) {
     stringDeconstruct(&string);
+    print_code();
+    stringDeconstruct(&code);
     TreeDeconstruct(globalSymTable);
     TreeDeconstruct(funcTable);
+    dispose_dll(&list);
+
     if (errCode != SUCCESS) {
         errorExit(errCode, "Chyba\n");
     }
@@ -69,13 +75,13 @@ bool VarAssign(node_t *symTable) {
         if ((newNode = TreeInsert(symTable, 0, string)) == NULL) {
             endParser(INTERNAL_ERROR);
         }
-        if (important_ptrs.before_while != NULL) {
-            insert_first_dll(&important_ptrs, important_ptrs.string_end);
+        if (list.before_while != NULL) {
+            insert_before_while_dll(&list, list.string_pos);
         } else {
-            insert_last_dll(&important_ptrs, important_ptrs.string_end);
+            insert_after_active_dll(&list, list.string_pos);
         }
         new_var(string.string);
-        important_ptrs.string_end = (char *)(code.string + code.length);
+        list.string_pos = code.length;
         // TU VYTVARAME NOVU VARIABLE
         // AK SME VO WHILE, MUSIME TO VYTIAHNUT VONKU
         // MUSIME ZAISTIT DOBRY FRAME
@@ -102,6 +108,8 @@ bool VarAssign(node_t *symTable) {
                                               *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
+    PRINT_CODE(assign, newNode->NodeID.string);
+    PRINT_CODE(clears, );
     // printf("POPS GF@%s\n", newNode->NodeID.string);
     // printf("CLEARS\n");
     newNode->dataType = resDataType;
@@ -145,6 +153,7 @@ bool getParams(node_t funcNode) {
         if (nextToken != LEX_ID) {
             endParser(SYNTAX_ERROR);
         } else {
+            // VYTVORENY PRVY PARAMETER
             int addRes;
             if ((addRes = addParam(funcNode, dataType, string)) != SUCCESS) {
                 endParser(addRes);
@@ -180,8 +189,8 @@ bool functionDeclaration() {
     if (TreeInsertNode(&funcTable, funcNode) == NULL) {
         endParser(INTERNAL_ERROR);
     }
+    active_first(&list);
     PRINT_CODE(label, string.string);
-    PRINT_CODE(tmpF, );
     PRINT_CODE(pushF, );
     // LABEL string.string
     // PUSHFRAME
@@ -212,6 +221,8 @@ bool functionDeclaration() {
     // MOV LF@var TF@returnvar
     // ak to robis cez stack, tak na konci CLEA
     bool res = statementList(true, &(funcNode->function->symTable), funcNode);
+    PRINT_CODE(popF, );
+    active_last(&list);
     return res;
 }
 
@@ -278,9 +289,10 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
     // case for built-in function
     // TODO: add typechecking and codegen for built-in functions
 
-    // CREATEFRAME - vytvori sa localframe
+    // CREATEFRAME - vytvori sa tempframe
     // priprava parametrov
     // call function
+    PRINT_CODE(tmpF, );
     if (isBuiltIn(returnType, fName == NULL ? &string : fName)) {
         return true;
     }
@@ -308,6 +320,11 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
                                      curToken)) {
             endParser(RUN_ERROR);
         } else {
+            PRINT_CODE(new_varTF, funcNode->function->params[i]->ParamID.string);
+            // MOVE
+            char str[99999];
+            sprintf(str, "MOVE TF@%s LF@%s", funcNode->function->params[i]->ParamID.string, string.string);
+            PRINT_CODE(write_text, str);
             // PARAM HAS GOOD DATA TYPE, it can be pushed to stack or idk
             // printf("Good param\n");
         }
@@ -329,7 +346,11 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
             *returnType = LEX_NULL;
         }
     }
-    return getParsToken() == LEX_SEMICOL;
+    if (getParsToken() != LEX_SEMICOL) {
+        endParser(SYNTAX_ERROR);
+    }
+    PRINT_CODE(call, funcNode->NodeID.string);
+    return true;
 }
 
 bool returnStat(node_t *symTable, node_t functionNode) {
@@ -408,18 +429,27 @@ int ifRule(node_t *symTable, node_t functionNode) {
 }
 
 bool whileRule(node_t *symTable, node_t functionNode) {
-    printf("WHILE RULE\n");
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
         return FAIL;
     }
     int resDataType;
     int parseExpressionRes;
+    if (list.before_while == NULL) {
+        list.before_while = list.active;
+    }
+    unsigned long labelID = getLabel();
+    char str[99999];
+    sprintf(str, "WhileStart%ld", labelID);
+    PRINT_CODE(label, str);
     if ((parseExpressionRes =
              parseExpression(LEX_RPAR, &resDataType, *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
-
+    PRINT_CODE(push_bool, "true");
+    sprintf(str, "WhileEnd%ld", labelID);
+    PRINT_CODE(jumpIfNeqS, str);
+    // PUSHS bool@true
     /*
     datatype of IF condition has to be BOOL
     if (resDataType != LEX_BOOL) {
@@ -438,6 +468,13 @@ bool whileRule(node_t *symTable, node_t functionNode) {
     if (res != true) {
         endParser(SYNTAX_ERROR);
     }
+    sprintf(str, "WhileStart%ld", labelID);
+    PRINT_CODE(jump, str);
+    sprintf(str, "WhileEnd%ld", labelID);
+    PRINT_CODE(label, str);
+    // create label whileStartLabelID
+
+    return true;
     // GENERATE INSTRUCTION JUMP BACK ON WHILE START
 }
 
@@ -575,7 +612,7 @@ int mainParser() {
         return endParser(SYNTAX_ERROR);
     }
     // PRINT HEADER FOR GENERATED FILE
-    printf(".IFJcode22\n");
+    // printf(".IFJcode22\n");
     if (ParserLoop(true) == SUCCESS) {
         return endParser(SUCCESS);
     } else {

@@ -14,7 +14,7 @@
 #define RETURN_ERROR 6
 #define TYPECOMP_ERORR 7
 #define OTHERSEM_ERROR 8
-#define INTERNAL_ERROR 60
+#define INTERNAL_ERROR 99
 
 void errorExit(int errorCode, const char *fmt, ...);
 
