@@ -108,6 +108,7 @@ bool VarAssign(node_t *symTable) {
                                               *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
+
     PRINT_CODE(assign, newNode->NodeID.string);
     PRINT_CODE(clears, );
     // printf("POPS GF@%s\n", newNode->NodeID.string);
@@ -222,6 +223,10 @@ bool functionDeclaration() {
     // ak to robis cez stack, tak na konci CLEA
     bool res = statementList(true, &(funcNode->function->symTable), funcNode);
     PRINT_CODE(popF, );
+    if (funcNode->function->returnType == LEX_VOID) {
+        PRINT_CODE(push_null, );
+    }
+    PRINT_CODE(write_text, "RETURN\n");
     active_last(&list);
     return res;
 }

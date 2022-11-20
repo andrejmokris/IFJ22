@@ -69,7 +69,7 @@ bool load_param(const char *id, const char *temp_id);
 
 bool jumpIfNeqS(const char *id);
 
-bool return_value(const char *id);
+bool push_null();
 
 bool exit_function();
 

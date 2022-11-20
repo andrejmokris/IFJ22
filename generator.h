@@ -79,8 +79,8 @@ void insert_before_while_dll(Tinstruction_list *list, int position);
 void insert_last_dll(Tinstruction_list *list, int position);
 void insert_after_active_dll(Tinstruction_list *list, int position);
 
-void activce_first(Tinstruction_list *list);
-void activce_last(Tinstruction_list *list);
+void active_first(Tinstruction_list *list);
+void active_last(Tinstruction_list *list);
 
 void dispose_dll(Tinstruction_list *list);
 

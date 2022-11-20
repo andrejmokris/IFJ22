@@ -222,23 +222,8 @@ bool jump(const char *label) {
     return true;
 }
 
-bool return_value(const char *id) {
-    WTEXT("PUSHS LF@");
-    if (id != NULL) {
-        WTEXT(id);
-        WTEXT("\n");
-    } else {
-        /*switch (func_type) {
-            case (LEX_INT):
-                WTEXT("int@0");
-            case (LEX_FLOAT):
-                WTEXT("float@0.0");
-            case (LEX_STRING):
-                WTEXT("string@");
-            case (LEX_BOOL):
-                WTEXT("bool@false");
-        }*/
-    }
+bool push_null() {
+    WINSTRUCTION("PUSHS nil@nil\n");
     return true;
 }
 

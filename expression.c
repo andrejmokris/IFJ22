@@ -111,6 +111,9 @@ int reduceExpression(Stack *stack) {
             } else if (popArr[0]->dataType == LEX_STRING) {
                 PRINT_CODE(push_string, popArr[0]->tokenVal.string);
                 // printf("PUSHS float@%a\n", popArr[0]->tokenVal.string);
+            } else if (popArr[0]->dataType == LEX_NULL) {
+                PRINT_CODE(push_null, );
+                // printf("PUSHS float@%a\n", popArr[0]->tokenVal.string);
             }
         }
         stackPushElement(stack, popArr[0]);
