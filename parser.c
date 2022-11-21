@@ -231,9 +231,9 @@ bool functionDeclaration() {
 
 // check if function call matches parameter data types
 /* op1 - ocakavany dt   op2 - prichadzajuci dt */
-bool parameterDataTypeVerify(int op1, int op2) {
+bool parameterDataTypeVerify(int op1, int op2, node_t *symTable) {
     if (op2 == LEX_ID) {
-        node_t findVar = TreeFind(globalSymTable, string.string);
+        node_t findVar = TreeFind(symTable, string.string);
         if (findVar == NULL) {
             endParser(UNDEFVAR_ERROR);
         }
@@ -281,8 +281,10 @@ bool readiBuiltIn(int *returnType) {
     }
     if (getParsToken() != LEX_SEMICOL) {
         endParser(SYNTAX_ERROR);
+    } 
+    if(returnType != NULL) {
+        *returnType = LEX_INT;
     }
-    *returnType = LEX_INT;
 
     if (list.before_while != NULL) {
         insert_before_while_dll(&list, list.string_pos);
@@ -325,7 +327,7 @@ bool isBuiltIn(int *returnType, String_t *string) {
     return false;
 }
 
-bool functionCall(String_t *fName, int *returnType, char scope) {
+bool functionCall(String_t *fName, int *returnType, char scope, node_t *symTable) {
     // case for built-in function
     // TODO: add typechecking and codegen for built-in functions
 
@@ -342,7 +344,6 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
     } else {
         funcNode = TreeFind(funcTable, fName->string);
     }
-
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
     }
@@ -356,8 +357,7 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
     for (int i = 0; i < nOfParams; i++) {
         getParsToken();
         // verify if expected datatype of parameter arrives
-        if (!parameterDataTypeVerify(funcNode->function->params[i]->dataType,
-                                     curToken)) {
+        if (!parameterDataTypeVerify(funcNode->function->params[i]->dataType, curToken, symTable)) {
             endParser(RUN_ERROR);
         } else {
             PRINT_CODE(new_varTF,
@@ -429,7 +429,7 @@ bool returnStat(node_t *symTable, node_t functionNode) {
             PRINT_CODE(write_text, "RETURN\n");
             return true;
         }
-        if (!parameterDataTypeVerify(functionRetType, resDataType)) {
+        if (!parameterDataTypeVerify(functionRetType, resDataType, symTable)) {
             endParser(RETURN_ERROR);
         }
     }
@@ -573,7 +573,7 @@ bool statementList(bool getNext, node_t *symTable, node_t functionNode) {
             }
             break;
         case LEX_FUNID:
-            return functionCall(NULL, NULL, functionNode == NULL ? 'g' : 'a');
+            return functionCall(NULL, NULL, functionNode == NULL ? 'g' : 'a', symTable);
         case LEX_ID:
             if (VarAssign(symTable)) {
                 return statementList(true, symTable, functionNode);
@@ -624,7 +624,7 @@ int ParserLoop(bool getNext) {
                 return ParserLoop(true);
             }
         case LEX_FUNID:
-            if (!functionCall(NULL, NULL, 'g')) {
+            if (!functionCall(NULL, NULL, 'g', &globalSymTable)) {
                 return SYNTAX_ERROR;
             } else {
                 return ParserLoop(true);

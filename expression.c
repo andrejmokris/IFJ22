@@ -264,7 +264,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
         return SUCCESS;
     }
     if (curLex == LEX_FUNID) {
-        if (functionCall(&string, resDataType, 'a')) {
+        if (functionCall(&string, resDataType, 'a', symTable)) {
             stackDeconstruct(stack);
             stringDeconstruct(&string);
             return SUCCESS;

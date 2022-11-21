@@ -1,15 +1,17 @@
 <?php
 declare(strict_types=1);
 
-function square(int $a) : int {
-    $x = $a * $a;
-    return $x;
-}
+function factorial(int $n) : int {
+    if ($n === 1) {
+        $result = 1;
+    } else {
+        $decremented_n = $n - 1;
+        $temp_result = factorial($decremented_n);
+        $result = $n * $temp_result;
+    }
+    return $result;
+    }
 
 $cnt = readi();
-$end = readi();
-$x = 0;
-while($cnt !== $end + 1) {
-    $x = square($cnt);
-    $cnt = $cnt + 1;
-}
+$res = factorial($cnt);
+
