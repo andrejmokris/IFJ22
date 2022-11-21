@@ -53,6 +53,9 @@ int get_Token(String_t *str) {
                             return LEX_SEMICOL;
                         case ',':
                             return LEX_COMMA;
+                        case '.':
+                            stringAppend(str, edge_sign);
+                            return LEX_DOT;
                         case ':':
                             return LEX_COLON;
                         case '?':

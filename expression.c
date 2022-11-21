@@ -106,7 +106,8 @@ int reduceExpression(Stack *stack) {
                 PRINT_CODE(push_int, popArr[0]->tokenVal.string);
                 // printf("PUSHS int@%s\n", popArr[0]->tokenVal.string);
             } else if (popArr[0]->dataType == LEX_FLOAT) {
-                PRINT_CODE(push_float, popArr[0]->tokenVal.string);  // TODO float hodnota
+                PRINT_CODE(push_float,
+                           popArr[0]->tokenVal.string);  // TODO float hodnota
                 // printf("PUSHS float@%a\n", popArr[0]->tokenVal.string);
             } else if (popArr[0]->dataType == LEX_STRING) {
                 PRINT_CODE(push_string, popArr[0]->tokenVal.string);
@@ -175,6 +176,22 @@ int reduceExpression(Stack *stack) {
                     return TYPECOMP_ERORR;
                 }
                 break;
+            case LEX_DOT:
+                // CONCAT
+                if (((popArr[0]->dataType == popArr[2]->dataType) &&
+                     (popArr[0]->dataType == LEX_STRING ||
+                      popArr[0]->dataType == LEX_NULL))) {
+                    popArr[0]->dataType = LEX_STRING;
+                    stackPushElement(stack, popArr[0]);
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    //PRINT_CODE(put_OPERATOR, LEX_EQ);
+                    return SUCCESS;
+                } else {
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    return TYPECOMP_ERORR;
+                }
             default:
                 return SYNTAX_ERROR;
         }
@@ -241,7 +258,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
     int dataType = curLex;
     do {
         bool isID = false;
-        // printStack(stack);
+        //printStack(stack);
         if (curLex == LEX_EOF) {
             stackDeconstruct(stack);
             stringDeconstruct(&string);
@@ -278,7 +295,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             return SYNTAX_ERROR;
         }
         // Condition for ending the precendence analysis
-        if (curLex > 14) {
+        if (curLex > 15) {
             if (curLex == endChar) {
                 int finishRes = finishReducing(stack);
 
@@ -297,6 +314,11 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             }
         }
         char operation = table[stack->topNonTerm->tokenID - 1][curLex - 1];
+        // printf("OPERATION: %c\n", operation);
+        // printf("CURLEX: %s\n", string.string);
+        // printf("STLPEC: %d\n", curLex - 1);
+        // printf("RIADOK: %d\n", stack->topNonTerm->tokenID - 1);
+        // printf("TOP NONTERM: %s\n\n", stack->topNonTerm->tokenVal.string);
         if (operation == 'X') {
             if (curLex == endChar) {
                 break;
@@ -320,7 +342,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             }
             dataType = curLex;
         } else if (operation == '>') {
-            // printf("REDUCE\n");
+            //printf("REDUCE\n");
             int reduceRes = reduceExpression(stack);
             if (reduceRes != SUCCESS) {
                 printf("CHYBA PRI REDUKCII\n");

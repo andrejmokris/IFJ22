@@ -49,7 +49,7 @@ bool stackPush(Stack *stack, int tokenID, String_t tokenVal) {
         stack->elementCount++;
         stack->topElement = newElement;
         // check if item is non-terminal
-        if (tokenID >= 1 && tokenID <= 14 && tokenID != LEX_BEG_HANDLE) {
+        if (tokenID >= 1 && tokenID <= 15 && tokenID != LEX_BEG_HANDLE) {
             stack->topNonTerm = newElement;
         }
         return true;
@@ -60,7 +60,7 @@ bool stackPush(Stack *stack, int tokenID, String_t tokenVal) {
 void setTopNoTerm(Stack *stack) {
     for(int i = stack->elementCount - 1; i >= 0; i--) {
         int tokenID = stack->items[i]->tokenID;
-        if (tokenID >= 1 && tokenID <= 14 && tokenID != LEX_BEG_HANDLE) {
+        if (tokenID >= 1 && tokenID <= 15 && tokenID != LEX_BEG_HANDLE) {
             stack->topNonTerm = stack->items[i];
             return;
         }

@@ -73,14 +73,14 @@ enum {
     LEX_RPAR,      // )       12
     LEX_I,         // i       13 
     LEX_DOLLAR,    // $       14
-    LEX_ASSIGN,    // =       15
-    LEX_COMMA,     // ,       16
-    LEX_SEMICOL,   // ;       17
-    LEX_RCRB,      // }       18
-    LEX_LCRB,      // {       19
-    LEX_QM,        // ?       20
-    LEX_COLON,     // :       21
-    LEX_DOT,       // .       22
+    LEX_DOT,       // .       15
+    LEX_ASSIGN,    // =       16
+    LEX_COMMA,     // ,       17
+    LEX_SEMICOL,   // ;       18
+    LEX_RCRB,      // }       19
+    LEX_LCRB,      // {       20
+    LEX_QM,        // ?       21
+    LEX_COLON,     // :       22
     LEX_EOL,       // '\n'    23
     LEX_EOF,       // EOF     24
     LEX_ID,        // ID      25
