@@ -220,11 +220,10 @@ bool functionDeclaration() {
     // MOV LF@var TF@returnvar
     // ak to robis cez stack, tak na konci CLEA
     bool res = statementList(true, &(funcNode->function->symTable), funcNode);
-    PRINT_CODE(popF, );
     if (funcNode->function->returnType == LEX_VOID) {
         PRINT_CODE(push_null, );
+        PRINT_CODE(write_text, "RETURN\n");
     }
-    PRINT_CODE(write_text, "RETURN\n");
     active_last(&list);
     return res;
 }
@@ -419,6 +418,11 @@ bool returnStat(node_t *symTable, node_t functionNode) {
                                               *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
+    if (functionNode->function->returnType == LEX_VOID) {
+        PRINT_CODE(push_null, );
+    }
+    PRINT_CODE(popF, );
+    PRINT_CODE(write_text, "RETURN\n");
     if (functionNode != NULL) {
         int functionRetType = functionNode->function->returnType;
         if (functionRetType == resDataType) {
@@ -539,7 +543,7 @@ bool whileRule(node_t *symTable, node_t functionNode) {
     PRINT_CODE(jump, strStart);
     PRINT_CODE(label, strEnd);
     // create label whileStartLabelID
-
+    // list.before_while = NULL;
     return true;
     // GENERATE INSTRUCTION JUMP BACK ON WHILE START
 }

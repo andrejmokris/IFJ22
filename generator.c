@@ -60,6 +60,7 @@ void insert_before_while_dll(Tinstruction_list *list, int position) {
     if (list->before_while != NULL) {
         new_element->item_prev = list->before_while->item_prev;
         new_element->item_next = list->before_while;
+        list->before_while->item_prev->item_next = new_element;
         list->before_while->item_prev = new_element;
     } else {
         free(new_element);
