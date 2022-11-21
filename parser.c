@@ -11,9 +11,7 @@ node_t funcTable;
 int curToken;
 unsigned long labelCounter = 0;
 
-unsigned long getLabel() {
-    return labelCounter++;
-}
+unsigned long getLabel() { return labelCounter++; }
 
 void initParser() {
     StringInit(&string);
@@ -274,14 +272,51 @@ bool parameterDataTypeVerify(int op1, int op2) {
     return false;
 }
 
+bool readiBuiltIn(int *returnType) {
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (getParsToken() != LEX_RPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (getParsToken() != LEX_SEMICOL) {
+        endParser(SYNTAX_ERROR);
+    }
+    *returnType = LEX_INT;
+
+    if (list.before_while != NULL) {
+        insert_before_while_dll(&list, list.string_pos);
+    } else {
+        insert_after_active_dll(&list, list.string_pos);
+    }
+    char str[9999];
+    unsigned long labelN = getLabel();
+    sprintf(str, "TMP%lu", labelN);
+    new_var(str);
+    list.string_pos = code.length;
+
+    sprintf(str, "READ LF@TMP%lu int",labelN);
+    PRINT_CODE(write_text, str);
+    sprintf(str, "TMP%lu",labelN);
+    PRINT_CODE(push_operand, str);
+    return true;
+}
+
 bool isBuiltIn(int *returnType, String_t *string) {
+    if (!strcmp(string->string, "readi")) {
+        //printf("tu som\n");
+        if(readiBuiltIn(returnType)) {
+            return true;
+        }
+    }
     if (!strcmp(string->string, "write") || !strcmp(string->string, "reads") ||
         !strcmp(string->string, "readi") || !strcmp(string->string, "readf") ||
         !strcmp(string->string, "floatval") ||
-        !strcmp(string->string, "intval") || !strcmp(string->string, "strval") ||
+        !strcmp(string->string, "intval") ||
+        !strcmp(string->string, "strval") ||
         !strcmp(string->string, "strlen") ||
-        !strcmp(string->string, "substring") || !strcmp(string->string, "ord") ||
-        !strcmp(string->string, "chr")) {
+        !strcmp(string->string, "substring") ||
+        !strcmp(string->string, "ord") || !strcmp(string->string, "chr")) {
         while (curToken != LEX_SEMICOL) {
             getParsToken(string);
         }
@@ -297,10 +332,10 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
     // CREATEFRAME - vytvori sa tempframe
     // priprava parametrov
     // call function
-    PRINT_CODE(tmpF, );
     if (isBuiltIn(returnType, fName == NULL ? &string : fName)) {
         return true;
     }
+    PRINT_CODE(tmpF, );
     node_t funcNode;
     if (fName == NULL) {
         funcNode = TreeFind(funcTable, string.string);
@@ -325,11 +360,21 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
                                      curToken)) {
             endParser(RUN_ERROR);
         } else {
-            PRINT_CODE(new_varTF, funcNode->function->params[i]->ParamID.string);
+            PRINT_CODE(new_varTF,
+                       funcNode->function->params[i]->ParamID.string);
             // MOVE
             char str[99999];
-            sprintf(str, "MOVE TF@%s LF@%s", funcNode->function->params[i]->ParamID.string, string.string);
-            PRINT_CODE(write_text, str);
+            if (curToken == LEX_ID) {
+                sprintf(str, "MOVE TF@%s LF@%s",
+                        funcNode->function->params[i]->ParamID.string,
+                        string.string);
+                PRINT_CODE(write_text, str);
+            } else if (curToken == LEX_INT) {
+                sprintf(str, "MOVE TF@%s int@%s",
+                        funcNode->function->params[i]->ParamID.string,
+                        string.string);
+                PRINT_CODE(write_text, str);
+            }
             // PARAM HAS GOOD DATA TYPE, it can be pushed to stack or idk
             // printf("Good param\n");
         }
@@ -349,6 +394,12 @@ bool functionCall(String_t *fName, int *returnType, char scope) {
         *returnType = funcNode->function->returnType;
         if (funcNode->function->returnType == LEX_VOID) {
             *returnType = LEX_NULL;
+        } else if (funcNode->function->returnType == LEX_TYPE_INT) {
+            *returnType = LEX_INT;
+        } else if (funcNode->function->returnType == LEX_TYPE_FLOAT) {
+            *returnType = LEX_FLOAT;
+        } else if (funcNode->function->returnType == LEX_TYPE_STRING) {
+            *returnType = LEX_STRING;
         }
     }
     if (getParsToken() != LEX_SEMICOL) {
@@ -371,12 +422,22 @@ bool returnStat(node_t *symTable, node_t functionNode) {
     if (functionNode != NULL) {
         int functionRetType = functionNode->function->returnType;
         if (functionRetType == resDataType) {
+            PRINT_CODE(popF, );
+            if (functionNode->function->returnType == LEX_VOID) {
+                PRINT_CODE(push_null, );
+            }
+            PRINT_CODE(write_text, "RETURN\n");
             return true;
         }
         if (!parameterDataTypeVerify(functionRetType, resDataType)) {
-            endParser(RUN_ERROR);
+            endParser(RETURN_ERROR);
         }
     }
+    PRINT_CODE(popF, );
+    if (functionNode->function->returnType == LEX_VOID) {
+        PRINT_CODE(push_null, );
+    }
+    PRINT_CODE(write_text, "RETURN\n");
     return true;
 }
 

@@ -26,28 +26,38 @@ bool print_code() {
         putc('\n', stdout);
         ptr = ptr->item_next;
     }
+    return true;
 }
 
 bool put_OPERATOR(int type) {
     switch (type) {
         case (LEX_ADD):
             WINSTRUCTION("ADDS");
+            break;
         case (LEX_SUB):
             WINSTRUCTION("SUBS");
+            break;
         case (LEX_MUL):
             WINSTRUCTION("MULS");
+            break;
         case (LEX_DIV):
             WINSTRUCTION("DIVS");
+            break;
         case (LEX_EQ):
             WINSTRUCTION("EQS");
+            break;
         case (0):
             WINSTRUCTION("NOTS");
+            break;
         case (LEX_NEQ):
             WINSTRUCTION("EQS");
+            break;
         case (LEX_LE):
             WINSTRUCTION("LTS");
+            break;
         case (LEX_GT):
             WINSTRUCTION("GTS");
+            break;
 
             // NOT AND OR? nenašel jsem
     }
@@ -206,6 +216,7 @@ bool load_param(const char *id, const char *temp_id) {
     WTEXT(" LF@id");
     WTEXT(temp_id);
     WTEXT("\n");
+    return true;
 }
 
 bool jumpIfNeqS(const char *label) {
