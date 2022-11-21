@@ -18,7 +18,8 @@ void initParser() {
     StringInit(&code);
     init_dll(&list);
     PRINT_CODE(write_text, ".IFJcode22");
-    PRINT_CODE(write_text, "JUMP NULLMAIN42069");
+    PRINT_CODE(write_text, "CALL NULLMAIN42069");
+    PRINT_CODE(jump, "ENDENDENDEND");
     PRINT_CODE(label, "NULLMAIN42069");
     PRINT_CODE(tmpF, );
     PRINT_CODE(pushF, );
@@ -73,8 +74,16 @@ bool VarAssign(node_t *symTable) {
         if ((newNode = TreeInsert(symTable, 0, string)) == NULL) {
             endParser(INTERNAL_ERROR);
         }
+        list_item stash;
+        stash = list.active;
         if (list.before_while != NULL) {
-            insert_before_while_dll(&list, list.string_pos);
+            list.active = list.before_while;
+            insert_before_active_dll(&list, list.string_pos);
+            list.active = stash;
+        } else if (list.before_if != NULL) {
+            list.active = list.before_if;
+            insert_before_active_dll(&list, list.string_pos);
+            list.active = stash;
         } else {
             insert_after_active_dll(&list, list.string_pos);
         }
@@ -280,13 +289,21 @@ bool readiBuiltIn(int *returnType) {
     }
     if (getParsToken() != LEX_SEMICOL) {
         endParser(SYNTAX_ERROR);
-    } 
-    if(returnType != NULL) {
+    }
+    if (returnType != NULL) {
         *returnType = LEX_INT;
     }
 
+    list_item stash;
+    stash = list.active;
     if (list.before_while != NULL) {
-        insert_before_while_dll(&list, list.string_pos);
+        list.active = list.before_while;
+        insert_before_active_dll(&list, list.string_pos);
+        list.active = stash;
+    } else if (list.before_if != NULL) {
+        list.active = list.before_if;
+        insert_before_active_dll(&list, list.string_pos);
+        list.active = stash;
     } else {
         insert_after_active_dll(&list, list.string_pos);
     }
@@ -296,17 +313,49 @@ bool readiBuiltIn(int *returnType) {
     new_var(str);
     list.string_pos = code.length;
 
-    sprintf(str, "READ LF@TMP%lu int",labelN);
+    sprintf(str, "READ LF@TMP%lu int", labelN);
     PRINT_CODE(write_text, str);
-    sprintf(str, "TMP%lu",labelN);
+    sprintf(str, "TMP%lu", labelN);
     PRINT_CODE(push_operand, str);
+    return true;
+}
+
+bool writeBuiltIn(int *returnType) {
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (returnType != NULL) {
+        *returnType = LEX_NULL;
+    }
+    // write($a, "fas", )
+    int newToken;
+    while ((newToken = getParsToken()) != LEX_RPAR) {
+        // int newToken = getParsToken();
+        if (newToken == LEX_STRING) {
+            PRINT_CODE(write, string.string);
+            // string je na string.string
+        } else if (newToken == LEX_ID) {
+            PRINT_CODE(write_var, string.string);
+        }
+        if (getParsToken() == LEX_RPAR) {
+            break;
+        }
+    }
+    if (getParsToken() != LEX_SEMICOL) {
+        endParser(SYNTAX_ERROR);
+    }
     return true;
 }
 
 bool isBuiltIn(int *returnType, String_t *string) {
     if (!strcmp(string->string, "readi")) {
-        //printf("tu som\n");
-        if(readiBuiltIn(returnType)) {
+        // printf("tu som\n");
+        if (readiBuiltIn(returnType)) {
+            return true;
+        }
+    } else if (!strcmp(string->string, "write")) {
+        // printf("tu som\n");
+        if (writeBuiltIn(returnType)) {
             return true;
         }
     }
@@ -418,34 +467,39 @@ bool returnStat(node_t *symTable, node_t functionNode) {
                                               *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
+    if (functionNode == NULL) {
+        PRINT_CODE(popF, );
+        PRINT_CODE(write_text, "RETURN\n");
+        return true;
+    }
     if (functionNode->function->returnType == LEX_VOID) {
         PRINT_CODE(push_null, );
     }
     PRINT_CODE(popF, );
     PRINT_CODE(write_text, "RETURN\n");
-    if (functionNode != NULL) {
-        int functionRetType = functionNode->function->returnType;
-        if (functionRetType == resDataType) {
-            PRINT_CODE(popF, );
-            if (functionNode->function->returnType == LEX_VOID) {
-                PRINT_CODE(push_null, );
-            }
-            PRINT_CODE(write_text, "RETURN\n");
-            return true;
+    int functionRetType = functionNode->function->returnType;
+    if (functionRetType == resDataType) {
+        if (functionNode->function->returnType == LEX_VOID) {
+            PRINT_CODE(push_null, );
         }
-        if (!parameterDataTypeVerify(functionRetType, resDataType, symTable)) {
-            endParser(RETURN_ERROR);
-        }
+        return true;
     }
-    PRINT_CODE(popF, );
+    if (!parameterDataTypeVerify(functionRetType, resDataType, symTable)) {
+        endParser(RETURN_ERROR);
+    }
     if (functionNode->function->returnType == LEX_VOID) {
         PRINT_CODE(push_null, );
     }
-    PRINT_CODE(write_text, "RETURN\n");
     return true;
 }
 
 int ifRule(node_t *symTable, node_t functionNode) {
+    bool wasDefined;
+    if (list.before_if != NULL) {
+        wasDefined = true;
+    } else {
+        wasDefined = false;
+    }
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
         return FAIL;
@@ -470,6 +524,9 @@ int ifRule(node_t *symTable, node_t functionNode) {
     char strEnd[99999];
     sprintf(strEnd, "IfEnd%ld", labelID);
     PRINT_CODE(push_bool, "true");
+    if (list.before_if == NULL) {
+        list.before_if = list.active;
+    }
     PRINT_CODE(jumpIfNeqS, strElse);
     if (getParsToken() != LEX_LCRB) {
         printf("Missing { after IF statement\n");
@@ -490,31 +547,43 @@ int ifRule(node_t *symTable, node_t functionNode) {
         }
         if (statementList(true, symTable, functionNode)) {
             PRINT_CODE(label, strEnd);
+            if (!wasDefined) {
+                list.before_if = NULL;
+            }
             return SUCCESS_ELSE;
         }
     } else {
         PRINT_CODE(label, strEnd);
+        if (!wasDefined) {
+            list.before_if = NULL;
+        }
         return SUCCESS_NOELSE;
     }
     return FAIL;
 }
 
 bool whileRule(node_t *symTable, node_t functionNode) {
+    bool wasDefined;
+    if (list.before_while != NULL) {
+        wasDefined = true;
+    } else {
+        wasDefined = false;
+    }
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
         return FAIL;
     }
     int resDataType;
     int parseExpressionRes;
-    if (list.before_while == NULL) {
-        list.before_while = list.active;
-    }
     unsigned long labelID = getLabel();
     char strStart[99999];
     char strEnd[99999];
     sprintf(strStart, "WhileStart%ld", labelID);
     sprintf(strEnd, "WhileEnd%ld", labelID);
     PRINT_CODE(label, strStart);
+    if (list.before_while == NULL) {
+        list.before_while = list.active;
+    }
     if ((parseExpressionRes =
              parseExpression(LEX_RPAR, &resDataType, *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
@@ -544,6 +613,9 @@ bool whileRule(node_t *symTable, node_t functionNode) {
     PRINT_CODE(label, strEnd);
     // create label whileStartLabelID
     // list.before_while = NULL;
+    if (!wasDefined) {
+        list.before_while = NULL;
+    }
     return true;
     // GENERATE INSTRUCTION JUMP BACK ON WHILE START
 }
@@ -684,6 +756,7 @@ int mainParser() {
     // PRINT HEADER FOR GENERATED FILE
     // printf(".IFJcode22\n");
     if (ParserLoop(true) == SUCCESS) {
+        PRINT_CODE(label, "ENDENDENDEND");
         return endParser(SUCCESS);
     } else {
         return endParser(SYNTAX_ERROR);

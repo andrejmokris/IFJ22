@@ -2,7 +2,7 @@
 declare(strict_types=1);
 
 function factorial(int $n) : int {
-    if ($n === 1) {
+    if ($n < 2) {
         $result = 1;
     } else {
         $decremented_n = $n - 1;
@@ -10,8 +10,8 @@ function factorial(int $n) : int {
         $result = $n * $temp_result;
     }
     return $result;
-    }
-
-$cnt = readi();
-$res = factorial($cnt);
-
+}
+write("FACTORIAL.NUMBER:");
+$x = readi();
+$res = factorial($x);
+write("VYSLEDOK:", $res);

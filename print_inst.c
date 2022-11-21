@@ -46,17 +46,26 @@ bool put_OPERATOR(int type) {
         case (LEX_EQ):
             WINSTRUCTION("EQS");
             break;
-        case (0):
-            WINSTRUCTION("NOTS");
-            break;
         case (LEX_NEQ):
             WINSTRUCTION("EQS");
             break;
         case (LEX_LE):
             WINSTRUCTION("LTS");
             break;
+        case (LEX_LEQ):
+            WINSTRUCTION("LTS");
+            break;
         case (LEX_GT):
             WINSTRUCTION("GTS");
+            break;
+        case (0):
+            WINSTRUCTION("NOTS");
+            break;
+        case (69):
+            WINSTRUCTION("ORS");
+            break;
+        case (420):
+            WINSTRUCTION("ANDS");
             break;
 
             // NOT AND OR? nenašel jsem
@@ -121,6 +130,13 @@ bool push_operand(const char *id) {
     return true;
 }
 
+bool push_operandTF(const char *id) {
+    WTEXT("PUSHS TF@");
+    WTEXT(id);
+    WTEXT("\n");
+    return true;
+}
+
 bool push_int(const char *value) {
     WTEXT("PUSHS int@");
     WTEXT(value);
@@ -149,6 +165,11 @@ bool push_bool(const char *value) {
     return true;
 }
 
+bool push_null() {
+    WINSTRUCTION("PUSHS nil@nil\n");
+    return true;
+}
+
 bool assign(const char *id) {
     WTEXT("POPS LF@");
     WTEXT(id);
@@ -157,7 +178,7 @@ bool assign(const char *id) {
 }
 
 bool assignTF(const char *id) {
-    WTEXT("POPS LF@");
+    WTEXT("POPS TF@");
     WTEXT(id);
     WTEXT("\n");
     return true;
@@ -199,26 +220,6 @@ bool new_varTF(const char *id) {
     return true;
 }
 
-bool enter_function(const char *id) {
-    WTEXT("CALL ");
-    WTEXT(id);
-    WTEXT("\n");
-    WINSTRUCTION("CREATEFRAME");
-    return true;
-}
-
-bool load_param(const char *id, const char *temp_id) {
-    WTEXT("DEFVAR TF@");
-    WTEXT(id);
-    WTEXT("\n");
-    WTEXT("MOVE TF@id");
-    WTEXT(id);
-    WTEXT(" LF@id");
-    WTEXT(temp_id);
-    WTEXT("\n");
-    return true;
-}
-
 bool jumpIfNeqS(const char *label) {
     WTEXT("JUMPIFNEQS ");
     WTEXT(label);
@@ -233,8 +234,17 @@ bool jump(const char *label) {
     return true;
 }
 
-bool push_null() {
-    WINSTRUCTION("PUSHS nil@nil\n");
+bool write(const char *text) {
+    WTEXT("WRITE string@");
+    WTEXT(text);
+    WTEXT("\n");
+    return true;
+}
+
+bool write_var(const char *name) {
+    WTEXT("WRITE LF@");
+    WTEXT(name);
+    WTEXT("\n");
     return true;
 }
 

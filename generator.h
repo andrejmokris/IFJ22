@@ -61,6 +61,7 @@ typedef struct item_list {
 } * list_item;
 
 typedef struct Tinstruction_list {
+    list_item before_if;
     list_item before_while;
     list_item label_main;
     // list_item fun_def_before_while;
@@ -75,7 +76,7 @@ void set_before_while_dll(Tinstruction_list *list);
 void set_lab_main_dll(Tinstruction_list *list);
 
 void insert_first_dll(Tinstruction_list *list, int position);
-void insert_before_while_dll(Tinstruction_list *list, int position);
+void insert_before_active_dll(Tinstruction_list *list, int position);
 void insert_last_dll(Tinstruction_list *list, int position);
 void insert_after_active_dll(Tinstruction_list *list, int position);
 

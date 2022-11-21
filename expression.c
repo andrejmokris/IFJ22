@@ -8,23 +8,23 @@ extern String_t code;
 extern Tinstruction_list list;
 
 static char table[15][15] = {
-    //0    1    2    3    4    5    6    7    8    9    10   11   12  13   14
-   // +    -    *    /   ===  !==   <    >   <=  >=     (    )    i    $    .
-    {'>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '>'}, // + 0
-    {'>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '>'}, // - 1
-    {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '>'}, // * 2
-    {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '>'}, // / 3
-    {'<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '<'}, // === 4
-    {'<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '<'}, // !== 5
-    {'<', '<', '<', '<', 'X', 'X', 'X', 'X', 'X', 'X', '<', '>', '<', '>', '<'}, // < 6
-    {'<', '<', '<', '<', 'X', 'X', 'X', 'X', 'X', 'X', '<', '>', '<', '>', '<'}, // > 7
-    {'<', '<', '<', '<', 'X', 'X', 'X', 'X', 'X', 'X', '<', '>', '<', '>', '<'}, // <= 8
-    {'<', '<', '<', '<', 'X', 'X', 'X', 'X', 'X', 'X', '<', '>', '<', '>', '<'}, // >= 9
-    {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '=', '<', 'X', '<'}, // ( 10
-    {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', 'X', '>', 'X', '>', '>'}, // ) 11
-    {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', 'X', '>', 'X', '>', '>'}, // i 12
-    {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'X', '<', 'A', '<'}, // $ 13    TOPNONTERM
-    {'>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '>'}  // . 14
+    // 0    1    2    3    4    5    6    7    8    9    10   11   12  13   14
+    // +    -    *    /   ===  !==   <    >   <=  >=     (    )    i    $    .
+    {'>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '>'},  // + 0
+    {'>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '>'},  // - 1
+    {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '>'},  // * 2
+    {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '>'},  // / 3
+    {'<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '<'},  // === 4
+    {'<', '<', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '<'},  // !== 5
+    {'<', '<', '<', '<', 'X', 'X', 'X', 'X', 'X', 'X', '<', '>', '<', '>', '<'},  // < 6
+    {'<', '<', '<', '<', 'X', 'X', 'X', 'X', 'X', 'X', '<', '>', '<', '>', '<'},  // > 7
+    {'<', '<', '<', '<', 'X', 'X', 'X', 'X', 'X', 'X', '<', '>', '<', '>', '<'},  // <= 8
+    {'<', '<', '<', '<', 'X', 'X', 'X', 'X', 'X', 'X', '<', '>', '<', '>', '<'},  // >= 9
+    {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '=', '<', 'X', '<'},  // ( 10
+    {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', 'X', '>', 'X', '>', '>'},  // ) 11
+    {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', 'X', '>', 'X', '>', '>'},  // i 12
+    {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'X', '<', 'A', '<'},  // $ 13
+    {'>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>', '>'}   // . 14
 };
 
 // E = E + E
@@ -178,9 +178,81 @@ int reduceExpression(Stack *stack) {
                 }
                 break;
             case LEX_LEQ:
+                if (popArr[0]->dataType == popArr[2]->dataType) {
+                    popArr[0]->dataType = LEX_BOOL;
+                    stackPushElement(stack, popArr[0]);
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    PRINT_CODE(tmpF, );
+                    PRINT_CODE(new_varTF, "a");
+                    PRINT_CODE(new_varTF, "b");
+                    PRINT_CODE(new_varTF, "res");
+                    PRINT_CODE(assignTF, "b");
+                    PRINT_CODE(assignTF, "a");
+                    PRINT_CODE(write_text, "LE TF@res TF@a TF@b");
+                    PRINT_CODE(push_operandTF, "res");
+                    PRINT_CODE(write_text, "EQ TF@res TF@a TF@b");
+                    PRINT_CODE(push_operandTF, "res");
+                    PRINT_CODE(put_OPERATOR, 69);
+                    return SUCCESS;
+                } else {
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    return TYPECOMP_ERORR;
+                }
+                break;
             case LEX_GTQ:
+                if (popArr[0]->dataType == popArr[2]->dataType) {
+                    popArr[0]->dataType = LEX_BOOL;
+                    stackPushElement(stack, popArr[0]);
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    PRINT_CODE(tmpF, );
+                    PRINT_CODE(new_varTF, "a");
+                    PRINT_CODE(new_varTF, "b");
+                    PRINT_CODE(new_varTF, "res");
+                    PRINT_CODE(assignTF, "b");
+                    PRINT_CODE(assignTF, "a");
+                    PRINT_CODE(write_text, "GT TF@res TF@a TF@b");
+                    PRINT_CODE(push_operandTF, "res");
+                    PRINT_CODE(write_text, "EQ TF@res TF@a TF@b");
+                    PRINT_CODE(push_operandTF, "res");
+                    PRINT_CODE(put_OPERATOR, 69);
+                    return SUCCESS;
+                } else {
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    return TYPECOMP_ERORR;
+                }
+                break;
             case LEX_GT:
+                if (popArr[0]->dataType == popArr[2]->dataType) {
+                    popArr[0]->dataType = LEX_BOOL;
+                    stackPushElement(stack, popArr[0]);
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    PRINT_CODE(put_OPERATOR, LEX_GT);
+                    return SUCCESS;
+                } else {
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    return TYPECOMP_ERORR;
+                }
+                break;
             case LEX_LE:
+                if (popArr[0]->dataType == popArr[2]->dataType) {
+                    popArr[0]->dataType = LEX_BOOL;
+                    stackPushElement(stack, popArr[0]);
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    PRINT_CODE(put_OPERATOR, LEX_LE);
+                    return SUCCESS;
+                } else {
+                    elementDeconstruct(popArr[1]);
+                    elementDeconstruct(popArr[2]);
+                    return TYPECOMP_ERORR;
+                }
+                break;
             case LEX_EQ:
                 if (popArr[0]->dataType == popArr[2]->dataType) {
                     popArr[0]->dataType = LEX_BOOL;
@@ -205,7 +277,7 @@ int reduceExpression(Stack *stack) {
                     stackPushElement(stack, popArr[0]);
                     elementDeconstruct(popArr[1]);
                     elementDeconstruct(popArr[2]);
-                    //PRINT_CODE(put_OPERATOR, LEX_EQ);
+                    // PRINT_CODE(put_OPERATOR, LEX_EQ);
                     return SUCCESS;
                 } else {
                     elementDeconstruct(popArr[1]);
@@ -278,7 +350,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
     int dataType = curLex;
     do {
         bool isID = false;
-        //printStack(stack);
+        // printStack(stack);
         if (curLex == LEX_EOF) {
             stackDeconstruct(stack);
             stringDeconstruct(&string);
@@ -362,7 +434,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             }
             dataType = curLex;
         } else if (operation == '>') {
-            //printf("REDUCE\n");
+            // printf("REDUCE\n");
             int reduceRes = reduceExpression(stack);
             if (reduceRes != SUCCESS) {
                 printf("CHYBA PRI REDUKCII\n");

@@ -49,9 +49,13 @@ bool push_bool(const char *value);
 
 bool push_operand(const char *id);
 
+bool push_operandTF(const char *id);
+
 bool new_varTF(const char *id);
 
 bool assign(const char *id);
+
+bool assignTF(const char *id);
 
 bool label(const char *id);
 
@@ -63,11 +67,11 @@ bool popF();
 
 bool new_var(const char *id);
 
-bool enter_function(const char *id);
-
-bool load_param(const char *id, const char *temp_id);
-
 bool jumpIfNeqS(const char *id);
+
+bool write(const char *text);
+
+bool write_var(const char *name);
 
 bool push_null();
 
