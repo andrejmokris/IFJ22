@@ -320,6 +320,46 @@ bool readiBuiltIn(int *returnType) {
     return true;
 }
 
+bool readsBuiltIn(int *returnType) {
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (getParsToken() != LEX_RPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (getParsToken() != LEX_SEMICOL) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (returnType != NULL) {
+        *returnType = LEX_STRING;
+    }
+
+    list_item stash;
+    stash = list.active;
+    if (list.before_while != NULL) {
+        list.active = list.before_while;
+        insert_before_active_dll(&list, list.string_pos);
+        list.active = stash;
+    } else if (list.before_if != NULL) {
+        list.active = list.before_if;
+        insert_before_active_dll(&list, list.string_pos);
+        list.active = stash;
+    } else {
+        insert_after_active_dll(&list, list.string_pos);
+    }
+    char str[9999];
+    unsigned long labelN = getLabel();
+    sprintf(str, "TMP%lu", labelN);
+    new_var(str);
+    list.string_pos = code.length;
+
+    sprintf(str, "READ LF@TMP%lu string", labelN);
+    PRINT_CODE(write_text, str);
+    sprintf(str, "TMP%lu", labelN);
+    PRINT_CODE(push_operand, str);
+    return true;
+}
+
 bool writeBuiltInSingleParam() {
     int newToken = getParsToken();
     if (newToken == LEX_RPAR) {
@@ -374,6 +414,10 @@ bool isBuiltIn(int *returnType, String_t *string) {
         }
     } else if (!strcmp(string->string, "write")) {
         if (writeBuiltIn(returnType) == true) {
+            return true;
+        }
+    } else if (!strcmp(string->string, "reads")) {
+        if (readsBuiltIn(returnType) == true) {
             return true;
         }
     }
