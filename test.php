@@ -11,7 +11,12 @@ function factorial(int $n) : int {
     }
     return $result;
 }
+
 write("FACTORIAL.NUMBER:");
 $x = readi();
-$res = factorial($x);
-write("VYSLEDOK:", $res);
+$cnt = 0;
+while($cnt !== $x + 1) {
+    $res = factorial($cnt);
+    write($cnt,"\\032","VYSLEDOK:","\\032",$res, "\\010");
+    $cnt = $cnt + 1;
+}

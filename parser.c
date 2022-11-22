@@ -320,6 +320,37 @@ bool readiBuiltIn(int *returnType) {
     return true;
 }
 
+bool writeBuiltInSingleParam() {
+    int newToken = getParsToken();
+    if (newToken == LEX_RPAR) {
+        return true;
+    } else if (newToken == LEX_COMMA) {
+        newToken = getParsToken();
+        if (newToken == LEX_STRING) {
+            PRINT_CODE(write, string.string);
+            return writeBuiltInSingleParam();
+        } else if (newToken == LEX_ID) {
+            PRINT_CODE(write_var, string.string);
+            return writeBuiltInSingleParam();
+        }
+    } else {
+        endParser(SYNTAX_ERROR);
+    }
+    return false;
+}
+
+bool writeBuiltInParam() {
+    int newToken = getParsToken();
+    if (newToken == LEX_RPAR) {
+        return true;
+    } else if (newToken == LEX_STRING) {
+        PRINT_CODE(write, string.string);
+    } else if (newToken == LEX_ID) {
+        PRINT_CODE(write_var, string.string);
+    }
+    return writeBuiltInSingleParam();
+}
+
 bool writeBuiltIn(int *returnType) {
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
@@ -327,19 +358,8 @@ bool writeBuiltIn(int *returnType) {
     if (returnType != NULL) {
         *returnType = LEX_NULL;
     }
-    // write($a, "fas", )
-    int newToken;
-    while ((newToken = getParsToken()) != LEX_RPAR) {
-        // int newToken = getParsToken();
-        if (newToken == LEX_STRING) {
-            PRINT_CODE(write, string.string);
-            // string je na string.string
-        } else if (newToken == LEX_ID) {
-            PRINT_CODE(write_var, string.string);
-        }
-        if (getParsToken() == LEX_RPAR) {
-            break;
-        }
+    if (writeBuiltInParam() != true) {
+        endParser(SYNTAX_ERROR);
     }
     if (getParsToken() != LEX_SEMICOL) {
         endParser(SYNTAX_ERROR);
@@ -349,13 +369,11 @@ bool writeBuiltIn(int *returnType) {
 
 bool isBuiltIn(int *returnType, String_t *string) {
     if (!strcmp(string->string, "readi")) {
-        // printf("tu som\n");
         if (readiBuiltIn(returnType)) {
             return true;
         }
     } else if (!strcmp(string->string, "write")) {
-        // printf("tu som\n");
-        if (writeBuiltIn(returnType)) {
+        if (writeBuiltIn(returnType) == true) {
             return true;
         }
     }
@@ -375,7 +393,8 @@ bool isBuiltIn(int *returnType, String_t *string) {
     return false;
 }
 
-bool functionCall(String_t *fName, int *returnType, char scope, node_t *symTable) {
+bool functionCall(String_t *fName, int *returnType, char scope,
+                  node_t *symTable) {
     // case for built-in function
     // TODO: add typechecking and codegen for built-in functions
 
@@ -405,7 +424,8 @@ bool functionCall(String_t *fName, int *returnType, char scope, node_t *symTable
     for (int i = 0; i < nOfParams; i++) {
         getParsToken();
         // verify if expected datatype of parameter arrives
-        if (!parameterDataTypeVerify(funcNode->function->params[i]->dataType, curToken, symTable)) {
+        if (!parameterDataTypeVerify(funcNode->function->params[i]->dataType,
+                                     curToken, symTable)) {
             endParser(RUN_ERROR);
         } else {
             PRINT_CODE(new_varTF,
@@ -510,14 +530,6 @@ int ifRule(node_t *symTable, node_t functionNode) {
              parseExpression(LEX_RPAR, &resDataType, *symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
-    // datatype of IF condition has to be BOOL
-    /*
-    if (resDataType != LEX_BOOL) {
-        printf("Invalid expression in IF statement\n");
-        endParser(TYPECOMP_ERORR);
-        return FAIL;
-    }
-    */
     unsigned long labelID = getLabel();
     char strElse[99999];
     sprintf(strElse, "IfElse%ld", labelID);
@@ -539,7 +551,6 @@ int ifRule(node_t *symTable, node_t functionNode) {
     PRINT_CODE(jump, strEnd);
     PRINT_CODE(label, strElse);
     if (getParsToken() == LEX_ELSE) {
-        // printf("WRITE string@inELSEStatement\n");
         if (getParsToken() != LEX_LCRB) {
             printf("Missing { after ELSE statement\n");
             endParser(SYNTAX_ERROR);
@@ -590,15 +601,7 @@ bool whileRule(node_t *symTable, node_t functionNode) {
     }
     PRINT_CODE(push_bool, "true");
     PRINT_CODE(jumpIfNeqS, strEnd);
-    // PUSHS bool@true
-    /*
-    datatype of IF condition has to be BOOL
-    if (resDataType != LEX_BOOL) {
-        printf("Invalid expression in WHILE statement\n");
-        endParser(TYPECOMP_ERORR);
-        return FAIL;
-    }
-    */
+
     if (getParsToken() != LEX_LCRB) {
         printf("Missing { after WHILE statement\n");
         endParser(SYNTAX_ERROR);
@@ -649,7 +652,11 @@ bool statementList(bool getNext, node_t *symTable, node_t functionNode) {
             }
             break;
         case LEX_FUNID:
-            return functionCall(NULL, NULL, functionNode == NULL ? 'g' : 'a', symTable);
+            if(!functionCall(NULL, NULL, functionNode == NULL ? 'g' : 'a',symTable)) {
+                return SYNTAX_ERROR;
+            } else {
+                return statementList(true, symTable, functionNode);
+            }
         case LEX_ID:
             if (VarAssign(symTable)) {
                 return statementList(true, symTable, functionNode);
