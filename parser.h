@@ -27,6 +27,7 @@ int mainParser();
 int endParser(int errCode);
 int getParsToken();
 int ParserLoop(bool getNext);
+unsigned long getLabel();
 bool statementList(bool getNext, node_t *symTable, node_t funcNode);
 int ifRule(node_t *symTable, node_t funcNode);
 bool functionCall(String_t *fName, int *returnType, char scope, node_t *symTable);

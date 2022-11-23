@@ -181,8 +181,30 @@ int reduceExpression(Stack *stack) {
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
+                PRINT_CODE(tmpF, );
+                PRINT_CODE(new_varTF, "a");
+                PRINT_CODE(new_varTF, "b");
+                PRINT_CODE(new_varTF, "res");
+                PRINT_CODE(assignTF, "b");
+                PRINT_CODE(assignTF, "a");
+                PRINT_CODE(write_text, "TYPE TF@res TF@a");
+                PRINT_CODE(push_operandTF, "res");
+                PRINT_CODE(write_text, "TYPE TF@res TF@b");
+                PRINT_CODE(push_operandTF, "res");
+                unsigned long labelID = getLabel();
+                char str1[99999];
+                char str2[99999];
+                sprintf(str1, "NEQSLABEL1%ld", labelID);
+                sprintf(str2, "NEQSLABEL2%ld", labelID);
+                PRINT_CODE(jumpIfNeqS, str1);
+                PRINT_CODE(push_operand, "a");
+                PRINT_CODE(push_operand, "b");
                 PRINT_CODE(put_OPERATOR, LEX_EQ);
                 PRINT_CODE(put_OPERATOR, 0);
+                PRINT_CODE(jump, str2);
+                PRINT_CODE(label, str1);
+                PRINT_CODE(push_bool, "true");
+                PRINT_CODE(label, str2);
 
                 return SUCCESS;
             case LEX_LEQ:
@@ -240,8 +262,29 @@ int reduceExpression(Stack *stack) {
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
+                PRINT_CODE(tmpF, );
+                PRINT_CODE(new_varTF, "a");
+                PRINT_CODE(new_varTF, "b");
+                PRINT_CODE(new_varTF, "res");
+                PRINT_CODE(assignTF, "b");
+                PRINT_CODE(assignTF, "a");
+                PRINT_CODE(write_text, "TYPE TF@res TF@a");
+                PRINT_CODE(push_operandTF, "res");
+                PRINT_CODE(write_text, "TYPE TF@res TF@b");
+                PRINT_CODE(push_operandTF, "res");
+                unsigned long labelID = getLabel();
+                char str1[99999];
+                char str2[99999];
+                sprintf(str1, "EQSLABEL1%ld", labelID);
+                sprintf(str2, "EQSLABEL2%ld", labelID);
+                PRINT_CODE(jumpIfNeqS, str1);
+                PRINT_CODE(push_operand, "a");
+                PRINT_CODE(push_operand, "b");
                 PRINT_CODE(put_OPERATOR, LEX_EQ);
-
+                PRINT_CODE(jump, str2);
+                PRINT_CODE(label, str1);
+                PRINT_CODE(push_bool, "false");
+                PRINT_CODE(label, str2);
                 return SUCCESS;
             case LEX_DOT:
                 // CONCAT

@@ -13,45 +13,23 @@ bool print_code();
 
 bool put_OPERATOR(int type);
 
-/*
-bool coversion(int from, int to) {
-    switch (from) {
-        case (LEX_INT):
-            switch (to) {
-                case (LEX_FLOAT):
-                case (LEX_STRING):
-            }
-        case (LEX_FLOAT):
-            switch (to) {
-                case (LEX_INT):
-                case (LEX_STRING):
-            }
-        case (LEX_STRING):
-            switch (to) {
-                case (LEX_FLOAT):
-                case (LEX_INT):
-            }
-    }
-    return true;
-}
-*/
 bool write_text(const char *text);
 
-bool jump(const char *label);
-
-bool clears();
-
-bool push_int(const char *value);
-
-bool push_float(const char *value);
-
-bool push_bool(const char *value);
+bool call(const char *id);
 
 bool push_operand(const char *id);
 
 bool push_operandTF(const char *id);
 
-bool new_varTF(const char *id);
+bool push_int(const char *value);
+
+bool push_float(const char *value);
+
+bool push_string(const char *value);
+
+bool push_bool(const char *value);
+
+bool push_null();
 
 bool assign(const char *id);
 
@@ -67,13 +45,13 @@ bool popF();
 
 bool new_var(const char *id);
 
-bool jumpIfNeqS(const char *id);
+bool new_varTF(const char *id);
+
+bool jumpIfNeqS(const char *label);
+
+bool jump(const char *label);
 
 bool write(const char *text);
-
-bool write_var(const char *name);
-
-bool push_null();
 
 bool exit_function();
 

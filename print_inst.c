@@ -67,35 +67,9 @@ bool put_OPERATOR(int type) {
         case (420):
             WINSTRUCTION("ANDS");
             break;
-
-            // NOT AND OR? nenašel jsem
     }
     return true;
 }
-
-/*
-bool coversion(int from, int to) {
-    switch (from) {
-        case (LEX_INT):
-            switch (to) {
-                case (LEX_FLOAT):
-                case (LEX_STRING):
-            }
-        case (LEX_FLOAT):
-            switch (to) {
-                case (LEX_INT):
-                case (LEX_STRING):
-            }
-        case (LEX_STRING):
-            switch (to) {
-                case (LEX_FLOAT):
-                case (LEX_INT):
-            }
-    }
-    return true;
-}
-*/
-
 bool write_text(const char *text) {
     WTEXT(text);
     WTEXT("\n");
@@ -105,20 +79,6 @@ bool write_text(const char *text) {
 bool call(const char *id) {
     WTEXT("CALL ");
     WTEXT(id);
-    WTEXT("\n");
-    return true;
-}
-
-bool clears() {
-    WINSTRUCTION("CLEARS");
-    return true;
-}
-
-bool move(const char *id1, const char *id2) {
-    WTEXT("MOVE TF@");
-    WTEXT(id1);
-    WTEXT(" LF@");
-    WTEXT(id2);
     WTEXT("\n");
     return true;
 }
@@ -237,13 +197,6 @@ bool jump(const char *label) {
 bool write(const char *text) {
     WTEXT("WRITE string@");
     WTEXT(text);
-    WTEXT("\n");
-    return true;
-}
-
-bool write_var(const char *name) {
-    WTEXT("WRITE LF@");
-    WTEXT(name);
     WTEXT("\n");
     return true;
 }
