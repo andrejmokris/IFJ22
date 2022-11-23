@@ -159,6 +159,9 @@ int reduceExpression(Stack *stack) {
 
     if (cnt == 3 && popArr[0]->tokenID == LEX_E &&
         popArr[2]->tokenID == LEX_E) {
+        unsigned long labelID;
+        char str1[99999];
+        char str2[99999];
         switch (popArr[1]->tokenID) {
             case LEX_ADD:
                 // E+E -> E
@@ -191,9 +194,7 @@ int reduceExpression(Stack *stack) {
                 PRINT_CODE(push_operandTF, "res");
                 PRINT_CODE(write_text, "TYPE TF@res TF@b");
                 PRINT_CODE(push_operandTF, "res");
-                unsigned long labelID = getLabel();
-                char str1[99999];
-                char str2[99999];
+                labelID = getLabel();
                 sprintf(str1, "NEQSLABEL1%ld", labelID);
                 sprintf(str2, "NEQSLABEL2%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str1);
@@ -272,9 +273,7 @@ int reduceExpression(Stack *stack) {
                 PRINT_CODE(push_operandTF, "res");
                 PRINT_CODE(write_text, "TYPE TF@res TF@b");
                 PRINT_CODE(push_operandTF, "res");
-                unsigned long labelID = getLabel();
-                char str1[99999];
-                char str2[99999];
+                labelID = getLabel();
                 sprintf(str1, "EQSLABEL1%ld", labelID);
                 sprintf(str2, "EQSLABEL2%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str1);

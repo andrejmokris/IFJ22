@@ -55,4 +55,8 @@ bool write(const char *text);
 
 bool exit_function();
 
+bool clears();
+
+bool write_var(const char *name);
+
 #endif

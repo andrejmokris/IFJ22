@@ -206,3 +206,15 @@ bool exit_function() {
     WINSTRUCTION("RETURN");
     return true;
 }
+
+bool clears() {
+    WINSTRUCTION("CLEARS");
+    return true;
+}
+
+bool write_var(const char *name) {
+    WTEXT("WRITE LF@");
+    WTEXT(name);
+    WTEXT("\n");
+    return true;
+}
