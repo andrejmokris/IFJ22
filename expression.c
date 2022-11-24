@@ -7,6 +7,69 @@
 extern String_t code;
 extern Tinstruction_list list;
 
+#define TYPE_CONTROL(_var, _faillabel)                    \
+    do {                                                  \
+        PRINT_CODE(write_text, ("TYPE TF@res TF@" _var)); \
+        PRINT_CODE(push_operandTF, "res");                \
+        PRINT_CODE(push_string, "string");                \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);                 \
+        PRINT_CODE(write_text, ("TYPE TF@res TF@" _var)); \
+        PRINT_CODE(push_operandTF, "res");                \
+        PRINT_CODE(push_string, "bool");                  \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);                 \
+        PRINT_CODE(write_text, ("TYPE TF@res TF@" _var)); \
+        PRINT_CODE(push_operandTF, "res");                \
+        PRINT_CODE(push_string, "nil");                   \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);                 \
+        PRINT_CODE(put_OPERATOR, 69);                     \
+        PRINT_CODE(put_OPERATOR, 69);                     \
+        PRINT_CODE(push_bool, "true");                    \
+        PRINT_CODE(jumpIfEqS, _faillabel);                \
+    } while (0)
+
+#define INT2FLOAT(_res, _var, _faillabel)           \
+    do {                                            \
+        PRINT_CODE(write_text, ("TYPE TF@"_res      \
+                                " TF@" _var));      \
+        PRINT_CODE(push_operandTF, _res);           \
+        PRINT_CODE(push_string, "int");             \
+        PRINT_CODE(jumpIfNeqS, _faillabel);         \
+        PRINT_CODE(write_text, ("INT2FLOAT TF@"_var \
+                                " TF@"_var));       \
+        PRINT_CODE(label, _faillabel);              \
+    } while (0)
+
+#define CMP_VAR(_var1, _var2, _res)            \
+    do {                                       \
+        PRINT_CODE(write_text, ("TYPE TF@"_res \
+                                " TF@"_var1)); \
+        PRINT_CODE(push_operandTF, _res);      \
+        PRINT_CODE(write_text, ("TYPE TF@"_res \
+                                " TF@"_var2)); \
+        PRINT_CODE(push_operandTF, _res);      \
+    } while (0)
+
+#define MAKE_VARS()                   \
+    do {                              \
+        PRINT_CODE(tmpF, );           \
+        PRINT_CODE(new_varTF, "a");   \
+        PRINT_CODE(new_varTF, "b");   \
+        PRINT_CODE(new_varTF, "res"); \
+        PRINT_CODE(assignTF, "b");    \
+        PRINT_CODE(assignTF, "a");    \
+    } while (0)
+
+#define END_OPERATION(_str, _labelID)         \
+    do {                                      \
+        sprintf(_str, "EXIT%ld", _labelID);   \
+        PRINT_CODE(jump, _str);               \
+        sprintf(_str, "FAIL%ld", _labelID);   \
+        PRINT_CODE(label, _str);              \
+        PRINT_CODE(write_text, "EXIT int@7"); \
+        sprintf(_str, "EXIT%ld", _labelID);   \
+        PRINT_CODE(label, _str);              \
+    } while (0)
+
 static char table[15][15] = {
     // 0    1    2    3    4    5    6    7    8    9    10   11   12  13   14
     // +    -    *    /   ===  !==   <    >   <=  >=     (    )    i    $    .
@@ -44,11 +107,29 @@ static char table[15][15] = {
 
 // E = E + E
 int addRule(Stack *stack, StackElement *op1, StackElement *op2) {
+    unsigned long labelID = getLabel();
+    char str1[99999];
+    MAKE_VARS();
+    sprintf(str1, "ADDFAIL%ld", labelID);
+    TYPE_CONTROL("a", str1);
+    TYPE_CONTROL("b", str1);
+    CMP_VAR("a", "b", "res");
+    sprintf(str1, "ADD%ld", labelID);
+    PRINT_CODE(jumpIfEqS, str1);
+    sprintf(str1, "ADDLABEL%ld", labelID);
+    INT2FLOAT("res", "a", str1);
+    sprintf(str1, "ADDLABEL2%ld", labelID);
+    INT2FLOAT("res", "b", str1);
+    sprintf(str1, "ADD%ld", labelID);
+    PRINT_CODE(label, str1);
+    PRINT_CODE(write_text, "ADD TF@res TF@a TF@b");
+    PRINT_CODE(push_operandTF, "res");
+    END_OPERATION(str1, labelID);
     if ((op1->dataType == op2->dataType) &&
         (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        PRINT_CODE(put_OPERATOR, LEX_ADD);
+        // PRINT_CODE(put_OPERATOR, LEX_ADD);
         return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
@@ -64,11 +145,29 @@ int addRule(Stack *stack, StackElement *op1, StackElement *op2) {
 
 // E = E - E
 int subRule(Stack *stack, StackElement *op1, StackElement *op2) {
+    unsigned long labelID = getLabel();
+    char str1[99999];
+    MAKE_VARS();
+    sprintf(str1, "SUBFAIL%ld", labelID);
+    TYPE_CONTROL("a", str1);
+    TYPE_CONTROL("b", str1);
+    CMP_VAR("a", "b", "res");
+    sprintf(str1, "SUB%ld", labelID);
+    PRINT_CODE(jumpIfEqS, str1);
+    sprintf(str1, "SUBLABEL%ld", labelID);
+    INT2FLOAT("res", "a", str1);
+    sprintf(str1, "SUBLABEL2%ld", labelID);
+    INT2FLOAT("res", "b", str1);
+    sprintf(str1, "SUB%ld", labelID);
+    PRINT_CODE(label, str1);
+    PRINT_CODE(write_text, "SUB TF@res TF@a TF@b");
+    PRINT_CODE(push_operandTF, "res");
+    END_OPERATION(str1, labelID);
     if ((op1->dataType == op2->dataType) &&
         (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        PRINT_CODE(put_OPERATOR, LEX_SUB);
+        // PRINT_CODE(put_OPERATOR, LEX_SUB);
         return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
@@ -84,11 +183,30 @@ int subRule(Stack *stack, StackElement *op1, StackElement *op2) {
 
 // E = E * E
 int mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
+    unsigned long labelID = getLabel();
+    char str1[99999];
+    MAKE_VARS();
+    sprintf(str1, "MULFAIL%ld", labelID);
+    TYPE_CONTROL("a", str1);
+    TYPE_CONTROL("b", str1);
+    CMP_VAR("a", "b", "res");
+    sprintf(str1, "MULL%ld", labelID);
+    PRINT_CODE(jumpIfEqS, str1);
+    sprintf(str1, "MULLABEL%ld", labelID);
+    INT2FLOAT("res", "a", str1);
+    sprintf(str1, "MULLABEL2%ld", labelID);
+    INT2FLOAT("res", "b", str1);
+    sprintf(str1, "MULL%ld", labelID);
+    PRINT_CODE(label, str1);
+    PRINT_CODE(write_text, "MUL TF@res TF@a TF@b");
+    PRINT_CODE(push_operandTF, "res");
+    END_OPERATION(str1, labelID);
+
     if ((op1->dataType == op2->dataType) &&
         (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        PRINT_CODE(put_OPERATOR, LEX_MUL);
+        // PRINT_CODE(put_OPERATOR, LEX_MUL);
         return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
@@ -104,11 +222,25 @@ int mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
 
 // E = E / E
 int divRule(Stack *stack, StackElement *op1, StackElement *op2) {
+    unsigned long labelID = getLabel();
+    char str1[99999];
+    MAKE_VARS();
+    sprintf(str1, "DIVFAIL%ld", labelID);
+    TYPE_CONTROL("a", str1);
+    TYPE_CONTROL("b", str1);
+    sprintf(str1, "DIVLABEL%ld", labelID);
+    INT2FLOAT("res", "a", str1);
+    sprintf(str1, "DIVLABEL2%ld", labelID);
+    INT2FLOAT("res", "b", str1);
+    PRINT_CODE(write_text, "DIV TF@res TF@a TF@b");
+    PRINT_CODE(push_operandTF, "res");
+    END_OPERATION(str1, labelID);
+
     if ((op1->dataType == op2->dataType) &&
         (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
+        op1->dataType = LEX_FLOAT;
         stackPushElement(stack, op1);
         elementDeconstruct(op2);
-        PRINT_CODE(put_OPERATOR, LEX_DIV);
         return SUCCESS;
     } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
                (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
@@ -139,21 +271,20 @@ int reduceExpression(Stack *stack) {
         if (popArr[0]->isID == false) {
             if (popArr[0]->dataType == LEX_INT) {
                 PRINT_CODE(push_int, popArr[0]->tokenVal.string);
-                // printf("PUSHS int@%s\n", popArr[0]->tokenVal.string);
             } else if (popArr[0]->dataType == LEX_FLOAT) {
-                PRINT_CODE(push_float,
-                           popArr[0]->tokenVal.string);  // TODO float hodnota
-                // printf("PUSHS float@%a\n", popArr[0]->tokenVal.string);
+                char str[99999];
+                char *ptr;
+                double ret;
+                ret = strtod(popArr[0]->tokenVal.string, &ptr);
+                sprintf(str, "%a", ret);
+                PRINT_CODE(push_float, str);  // float val
             } else if (popArr[0]->dataType == LEX_STRING) {
                 PRINT_CODE(push_string, popArr[0]->tokenVal.string);
-                // printf("PUSHS float@%a\n", popArr[0]->tokenVal.string);
             } else if (popArr[0]->dataType == LEX_NULL) {
                 PRINT_CODE(push_null, );
-                // printf("PUSHS float@%a\n", popArr[0]->tokenVal.string);
             }
         }
         stackPushElement(stack, popArr[0]);
-        // To generate code from it, push this to dataStack: popArr[0]->tokenVal
         return SUCCESS;
     }
 
@@ -184,12 +315,7 @@ int reduceExpression(Stack *stack) {
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
-                PRINT_CODE(tmpF, );
-                PRINT_CODE(new_varTF, "a");
-                PRINT_CODE(new_varTF, "b");
-                PRINT_CODE(new_varTF, "res");
-                PRINT_CODE(assignTF, "b");
-                PRINT_CODE(assignTF, "a");
+                MAKE_VARS();
                 PRINT_CODE(write_text, "TYPE TF@res TF@a");
                 PRINT_CODE(push_operandTF, "res");
                 PRINT_CODE(write_text, "TYPE TF@res TF@b");
@@ -213,12 +339,7 @@ int reduceExpression(Stack *stack) {
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
-                PRINT_CODE(tmpF, );
-                PRINT_CODE(new_varTF, "a");
-                PRINT_CODE(new_varTF, "b");
-                PRINT_CODE(new_varTF, "res");
-                PRINT_CODE(assignTF, "b");
-                PRINT_CODE(assignTF, "a");
+                MAKE_VARS();
                 PRINT_CODE(write_text, "LE TF@res TF@a TF@b");
                 PRINT_CODE(push_operandTF, "res");
                 PRINT_CODE(write_text, "EQ TF@res TF@a TF@b");
@@ -231,12 +352,7 @@ int reduceExpression(Stack *stack) {
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
-                PRINT_CODE(tmpF, );
-                PRINT_CODE(new_varTF, "a");
-                PRINT_CODE(new_varTF, "b");
-                PRINT_CODE(new_varTF, "res");
-                PRINT_CODE(assignTF, "b");
-                PRINT_CODE(assignTF, "a");
+                MAKE_VARS();
                 PRINT_CODE(write_text, "GT TF@res TF@a TF@b");
                 PRINT_CODE(push_operandTF, "res");
                 PRINT_CODE(write_text, "EQ TF@res TF@a TF@b");
@@ -263,12 +379,7 @@ int reduceExpression(Stack *stack) {
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
-                PRINT_CODE(tmpF, );
-                PRINT_CODE(new_varTF, "a");
-                PRINT_CODE(new_varTF, "b");
-                PRINT_CODE(new_varTF, "res");
-                PRINT_CODE(assignTF, "b");
-                PRINT_CODE(assignTF, "a");
+                MAKE_VARS();
                 PRINT_CODE(write_text, "TYPE TF@res TF@a");
                 PRINT_CODE(push_operandTF, "res");
                 PRINT_CODE(write_text, "TYPE TF@res TF@b");
@@ -288,16 +399,11 @@ int reduceExpression(Stack *stack) {
             case LEX_DOT:
                 // CONCAT
                 popArr[0]->dataType = LEX_STRING;
-    	        stackPushElement(stack, popArr[0]);
+                stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
-                PRINT_CODE(tmpF, );
                 // save operands into A and B
-                PRINT_CODE(new_varTF, "a");
-                PRINT_CODE(new_varTF, "b");
-                PRINT_CODE(new_varTF, "res");
-                PRINT_CODE(assignTF, "b");
-                PRINT_CODE(assignTF, "a");
+                MAKE_VARS();
                 // Do the type check
                 PRINT_CODE(write_text, "TYPE TF@res TF@a");
                 PRINT_CODE(push_operandTF, "res");

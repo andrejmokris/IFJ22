@@ -18,14 +18,6 @@
 #include "error.h"
 #include "parser.h"
 
-/*typedef enum {
-    ADD_IN,
-    SUB_IN,
-    MUL_IN,
-    DIV_IN,
-    IDIV_IN
-} ins_t;*/
-
 typedef enum {
     ADDR_VAR,
     ADDR_VAR_TMP,
@@ -35,22 +27,6 @@ typedef enum {
     ADDR_INT,
     ADDR_FLOAT
 } Taddr_value;
-
-/*typedef struct {
-    Taddr_value type;
-    union {
-        int i;
-        double f;
-        char *s;
-    } val;
-} TAdr;*/
-
-/*typedef struct ins_addr {
-    int *addr1;
-    int *addr2;
-    int *addr3;
-    ins_t op;
-} Tinstr;*/
 
 // Double linked list of instructions
 typedef struct item_list {
@@ -64,7 +40,6 @@ typedef struct Tinstruction_list {
     list_item before_if;
     list_item before_while;
     list_item label_main;
-    // list_item fun_def_before_while;
     list_item active;
     list_item first;
     list_item last;
@@ -84,25 +59,4 @@ void active_first(Tinstruction_list *list);
 void active_last(Tinstruction_list *list);
 
 void dispose_dll(Tinstruction_list *list);
-
-/*void pre_insert_lab_main(Tinstruction_list *list, bool inwhile);
-void post_insert_before_while(Tinstruction_list *list);
-void post_insert_before_while(Tinstruction_list *list);
-
-void dipose_dll(Tinstruction_list *list);
-
-static void print_addr(Tinstruction_list *list);
-static void print_instr(Tinstruction_list *list);*/
-
-// Tinstr get_instr(ins_t op, Taddr_value addr1, Taddr_value addr2, Taddr_value addr3);
-
-/*void insert_first_dll(Tinstruction_list *list, void *, void *, void *, int data);
-void insert_last_dll(Tinstruction_list *list, void *, void *, void *, int data);
-void dipose_dll(Tinstruction_list *list);
-void delete_first_dll(Tinstruction_list *list);
-void first_dll(Tinstruction_list *list);
-void last_dll(Tinstruction_list *list);
-void next_dll(Tinstruction_list *list);
-void generate_program_instruction(Tinstruction_list *list, void *, void *, void *, int data);*/
-
 #endif

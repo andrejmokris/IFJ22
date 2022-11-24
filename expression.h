@@ -6,11 +6,11 @@
 #include <stdlib.h>
 #include <string.h>
 
+#include "bst.h"
+#include "error.h"
+#include "parser.h"
 #include "scanner.h"
 #include "stack.h"
-#include "parser.h"
-#include "error.h"
-#include "bst.h"
 
 #define STACK_INIT_SIZE 977
 

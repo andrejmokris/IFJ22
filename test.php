@@ -1,21 +1,9 @@
 <?php
 declare(strict_types=1);
-// Program 1: Vypocet faktorialu (iterativne)
-// Hlavni telo programu
-write("Zadejte cislo pro vypocet faktorialu\n");
-$a = readi();
-if ($a === null) {
-    write("Chyba pri nacitani celeho cisla!\n");
-    return;
-} else {
+$x = 1.0;
+$i = 0;
+while($i < 10000) {
+    $x = ($x + 2.0/$x)/2.0;
+    $i = $i + 1;
 }
-if ($a < 0) {
-    write("Faktorial nelze spocitat\n");
-} else {
-    $vysl = 1;
-    while ($a > 0) {
-        $vysl = $vysl * $a;
-        $a = $a - 1;
-    }
-    write("Vysledek je: ", $vysl, "\n");
-}
+write("Square root of 2 is: ", $x, "\n");
