@@ -32,7 +32,7 @@ bool statementList(bool getNext, node_t *symTable, node_t funcNode);
 int ifRule(node_t *symTable, node_t funcNode);
 bool functionCall(String_t *fName, int *returnType, char scope, node_t *symTable);
 bool returnStat(node_t *symTable, node_t funcNode);
-bool writeBuiltIn(int *returnType);
+bool writeBuiltIn(int *returnType, node_t *symTable);
 bool isBuiltIn();
 bool parameterDataTypeVerify(int op1, int op2, node_t *symTable);
 bool functionDeclaration();
