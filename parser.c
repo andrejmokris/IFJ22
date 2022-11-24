@@ -95,8 +95,8 @@ bool VarAssign(node_t *symTable) {
     }
     int resDataType;
     int parseExpressionRes;
-    if ((parseExpressionRes = parseExpression(LEX_SEMICOL, &resDataType,
-                                              symTable)) != SUCCESS) {
+    if ((parseExpressionRes =
+             parseExpression(LEX_SEMICOL, &resDataType, symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
 
@@ -170,8 +170,7 @@ bool functionDeclaration() {
     if (curToken != LEX_FUNID) {
         endParser(SYNTAX_ERROR);
     }
-    if (TreeFind(funcTable, string.string) != NULL ||
-        isBuiltIn(&string)) {
+    if (TreeFind(funcTable, string.string) != NULL || isBuiltIn(&string)) {
         printf("Redefinition of a function\n");
         endParser(SEMANTIC_ERROR);
     }
@@ -182,9 +181,6 @@ bool functionDeclaration() {
     active_first(&list);
     PRINT_CODE(label, string.string);
     PRINT_CODE(pushF, );
-    // LABEL string.string
-    // PUSHFRAME
-    // LF
     funcNode->function->nOfParams = 0;
     // function ID (
     if (getParsToken() != LEX_LPAR) {
@@ -258,7 +254,7 @@ bool parameterDataTypeVerify(int op1, int op2, node_t *symTable) {
     return false;
 }
 
-bool readiBuiltIn(int *returnType) {
+bool readBuiltIn(int *returnType, int type) {
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
     }
@@ -269,7 +265,7 @@ bool readiBuiltIn(int *returnType) {
         endParser(SYNTAX_ERROR);
     }
     if (returnType != NULL) {
-        *returnType = LEX_INT;
+        *returnType = type;
     }
 
     list_item stash;
@@ -287,57 +283,34 @@ bool readiBuiltIn(int *returnType) {
     }
     PRINT_CODE(tmpF, );
     PRINT_CODE(new_varTF, "a");
-    PRINT_CODE(write_text, "READ TF@a int");
+    if (type == LEX_STRING) {
+        PRINT_CODE(write_text, "READ TF@a string");
+    } else if (type == LEX_INT) {
+        PRINT_CODE(write_text, "READ TF@a int");
+    } else if (type == LEX_FLOAT) {
+        PRINT_CODE(write_text, "READ TF@a float");
+    }
     PRINT_CODE(push_operandTF, "a");
     return true;
 }
 
-bool readsBuiltIn(int *returnType) {
-    if (getParsToken() != LEX_LPAR) {
-        endParser(SYNTAX_ERROR);
-    }
-    if (getParsToken() != LEX_RPAR) {
-        endParser(SYNTAX_ERROR);
-    }
-    if (getParsToken() != LEX_SEMICOL) {
-        endParser(SYNTAX_ERROR);
-    }
-    if (returnType != NULL) {
-        *returnType = LEX_STRING;
-    }
-
-    list_item stash;
-    stash = list.active;
-    if (list.before_while != NULL) {
-        list.active = list.before_while;
-        insert_before_active_dll(&list, list.string_pos);
-        list.active = stash;
-    } else if (list.before_if != NULL) {
-        list.active = list.before_if;
-        insert_before_active_dll(&list, list.string_pos);
-        list.active = stash;
-    } else {
-        insert_after_active_dll(&list, list.string_pos);
-    }
-    PRINT_CODE(tmpF, );
-    PRINT_CODE(new_varTF, "a");
-    PRINT_CODE(write_text, "READ TF@a string");
-    PRINT_CODE(push_operandTF, "a");
-    return true;
-}
-
-bool writeBuiltInSingleParam() {
+bool writeBuiltInSingleParam(node_t *symTable) {
     int newToken = getParsToken();
     if (newToken == LEX_RPAR) {
         return true;
     } else if (newToken == LEX_COMMA) {
         newToken = getParsToken();
         if (newToken == LEX_ID) {
+            node_t id_node = TreeFind(*symTable, string.string);
+            if (id_node == NULL) {
+                printf("Undefined var in Write function\n");
+                endParser(UNDEFVAR_ERROR);
+            }
             PRINT_CODE(write_var, string.string);
-            return writeBuiltInSingleParam();
+            return writeBuiltInSingleParam(symTable);
         } else {
             PRINT_CODE(write, string.string);
-            return writeBuiltInSingleParam();
+            return writeBuiltInSingleParam(symTable);
         }
     } else {
         endParser(SYNTAX_ERROR);
@@ -345,30 +318,95 @@ bool writeBuiltInSingleParam() {
     return false;
 }
 
-bool writeBuiltInParam() {
+bool writeBuiltInParam(node_t *symTable) {
     int newToken = getParsToken();
     if (newToken == LEX_RPAR) {
         return true;
     } else if (newToken == LEX_ID) {
+        node_t id_node = TreeFind(*symTable, string.string);
+        if (id_node == NULL) {
+            printf("Undefined function in Write function\n");
+            endParser(UNDEFVAR_ERROR);
+        }
         PRINT_CODE(write_var, string.string);
     } else {
         PRINT_CODE(write, string.string);
     }
-    return writeBuiltInSingleParam();
+    return writeBuiltInSingleParam(symTable);
 }
 
-bool writeBuiltIn(int *returnType) {
+bool writeBuiltIn(int *returnType, node_t *symTable) {
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
     }
     if (returnType != NULL) {
         *returnType = LEX_NULL;
     }
-    if (writeBuiltInParam() != true) {
+    if (writeBuiltInParam(symTable) != true) {
         endParser(SYNTAX_ERROR);
     }
     if (getParsToken() != LEX_SEMICOL) {
         endParser(SYNTAX_ERROR);
+    }
+    return true;
+}
+
+bool strLenBuiltIn(int *returnType, node_t *symTable) {
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    // get param
+    int resDataType;
+    int parseExpressionRes;
+    char str1[99999];
+    char str2[99999];
+    unsigned long labelID = getLabel();
+    sprintf(str1, "goodtype%ld", labelID);
+    sprintf(str2, "badtype%ld", labelID);
+    if ((parseExpressionRes =
+             parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
+    }
+
+    list_item stash;
+    stash = list.active;
+    if (list.before_while != NULL) {
+        list.active = list.before_while;
+        insert_before_active_dll(&list, list.string_pos);
+        list.active = stash;
+    } else if (list.before_if != NULL) {
+        list.active = list.before_if;
+        insert_before_active_dll(&list, list.string_pos);
+        list.active = stash;
+    } else {
+        insert_after_active_dll(&list, list.string_pos);
+    }
+
+    PRINT_CODE(tmpF, );
+    PRINT_CODE(new_varTF, "string");
+    PRINT_CODE(new_varTF, "length");
+    PRINT_CODE(new_varTF, "type");
+
+    PRINT_CODE(assignTF, "string");
+    PRINT_CODE(write_text, "TYPE TF@type TF@string");
+    PRINT_CODE(push_operandTF, "type");
+    PRINT_CODE(push_string, "string");
+
+    PRINT_CODE(jumpIfNeqS, str2);
+    PRINT_CODE(write_text, "STRLEN TF@length TF@string");
+    PRINT_CODE(push_operandTF, "length");
+    PRINT_CODE(jump, str1);
+    PRINT_CODE(label, str2);
+    PRINT_CODE(write_text,
+               "WRITE string@Invalid\\032data\\032Type\\032in\\032STRLEN");
+    PRINT_CODE(write_text, "EXIT INT@4");
+    PRINT_CODE(label, str1);
+
+    if (getParsToken() != LEX_SEMICOL) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (returnType != NULL) {
+        *returnType = LEX_INT;
     }
     return true;
 }
@@ -387,20 +425,29 @@ bool isBuiltIn(String_t *string) {
     return false;
 }
 
-bool callBuiltIn(int *returnType, String_t *string) {
+bool callBuiltIn(int *returnType, String_t *string, node_t *symTable) {
     if (!strcmp(string->string, "readi")) {
-        if (readiBuiltIn(returnType)) {
-            return true;
-        }
-    } else if (!strcmp(string->string, "write")) {
-        if (writeBuiltIn(returnType) == true) {
+        if (readBuiltIn(returnType, LEX_INT)) {
             return true;
         }
     } else if (!strcmp(string->string, "reads")) {
-        if (readsBuiltIn(returnType) == true) {
+        if (readBuiltIn(returnType, LEX_STRING) == true) {
+            return true;
+        }
+    } else if (!strcmp(string->string, "readf")) {
+        if (readBuiltIn(returnType, LEX_FLOAT) == true) {
+            return true;
+        }
+    } else if (!strcmp(string->string, "strlen")) {
+        if (strLenBuiltIn(returnType, symTable) == true) {
+            return true;
+        }
+    } else if (!strcmp(string->string, "write")) {
+        if (writeBuiltIn(returnType, symTable) == true) {
             return true;
         }
     }
+    // bool strLenBuiltIn(int *returnType, node_t *symTable)
     return false;
 }
 
@@ -413,7 +460,8 @@ bool functionCall(String_t *fName, int *returnType, char scope,
     // prepare params for function call
     // call function
     if (isBuiltIn(fName == NULL ? &string : fName)) {
-        if(callBuiltIn(returnType, fName == NULL ? &string : fName)) {
+        if (callBuiltIn(returnType, fName == NULL ? &string : fName,
+                        symTable)) {
             return true;
         } else {
             endParser(SYNTAX_ERROR);
@@ -444,17 +492,12 @@ bool functionCall(String_t *fName, int *returnType, char scope,
                  parseExpression(endChar, &resDataType, symTable)) != SUCCESS) {
             endParser(parseExpressionRes);
         }
-        //printf("EXPRESSION PARSED\n");
-        // verify if expected datatype of parameter arrives
-        if (true) {
-            PRINT_CODE(new_varTF,
-                       funcNode->function->params[i]->ParamID.string);
-            // MOVE
-            char str[99999];
-            sprintf(str, "POPS TF@%s",
-                    funcNode->function->params[i]->ParamID.string);
-            PRINT_CODE(write_text, str);
-        }
+        PRINT_CODE(new_varTF, funcNode->function->params[i]->ParamID.string);
+        // MOVE
+        char str[99999];
+        sprintf(str, "POPS TF@%s",
+                funcNode->function->params[i]->ParamID.string);
+        PRINT_CODE(write_text, str);
     }
     if (nOfParams == 0) {
         if (getParsToken() != LEX_RPAR) {
@@ -486,8 +529,8 @@ bool returnStat(node_t *symTable, node_t functionNode) {
     // popframe - return val on temp frame
     int resDataType;
     int parseExpressionRes;
-    if ((parseExpressionRes = parseExpression(LEX_SEMICOL, &resDataType,
-                                              symTable)) != SUCCESS) {
+    if ((parseExpressionRes =
+             parseExpression(LEX_SEMICOL, &resDataType, symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
     if (functionNode == NULL) {
@@ -655,7 +698,8 @@ bool statementList(bool getNext, node_t *symTable, node_t functionNode) {
             }
             break;
         case LEX_FUNID:
-            if(!functionCall(NULL, NULL, functionNode == NULL ? 'g' : 'a',symTable)) {
+            if (!functionCall(NULL, NULL, functionNode == NULL ? 'g' : 'a',
+                              symTable)) {
                 return SYNTAX_ERROR;
             } else {
                 return statementList(true, symTable, functionNode);
