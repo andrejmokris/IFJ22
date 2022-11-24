@@ -53,7 +53,7 @@ int addRule(Stack *stack, StackElement *op1, StackElement *op2) {
     CMP_VAR("a", "b", "res");
     sprintf(str1, "ADD%ld", labelID);
     PRINT_CODE(jumpIfEqS, str1);
-    sprintf(str1, "ADDLABEL%ld", labelID);
+    sprintf(str1, "ADDLABEL1%ld", labelID);
     INT2FLOAT("res", "a", str1);
     sprintf(str1, "ADDLABEL2%ld", labelID);
     INT2FLOAT("res", "b", str1);
@@ -91,7 +91,7 @@ int subRule(Stack *stack, StackElement *op1, StackElement *op2) {
     CMP_VAR("a", "b", "res");
     sprintf(str1, "SUB%ld", labelID);
     PRINT_CODE(jumpIfEqS, str1);
-    sprintf(str1, "SUBLABEL%ld", labelID);
+    sprintf(str1, "SUBLABEL1%ld", labelID);
     INT2FLOAT("res", "a", str1);
     sprintf(str1, "SUBLABEL2%ld", labelID);
     INT2FLOAT("res", "b", str1);
@@ -129,7 +129,7 @@ int mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
     CMP_VAR("a", "b", "res");
     sprintf(str1, "MULL%ld", labelID);
     PRINT_CODE(jumpIfEqS, str1);
-    sprintf(str1, "MULLABEL%ld", labelID);
+    sprintf(str1, "MULLABEL1%ld", labelID);
     INT2FLOAT("res", "a", str1);
     sprintf(str1, "MULLABEL2%ld", labelID);
     INT2FLOAT("res", "b", str1);
@@ -165,7 +165,7 @@ int divRule(Stack *stack, StackElement *op1, StackElement *op2) {
     sprintf(str1, "DIVFAIL%ld", labelID);
     TYPE_CONTROL("a", str1);
     TYPE_CONTROL("b", str1);
-    sprintf(str1, "DIVLABEL%ld", labelID);
+    sprintf(str1, "DIVLABEL1%ld", labelID);
     INT2FLOAT("res", "a", str1);
     sprintf(str1, "DIVLABEL2%ld", labelID);
     INT2FLOAT("res", "b", str1);
