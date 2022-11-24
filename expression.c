@@ -198,8 +198,8 @@ int reduceExpression(Stack *stack) {
                 sprintf(str1, "NEQSLABEL1%ld", labelID);
                 sprintf(str2, "NEQSLABEL2%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str1);
-                PRINT_CODE(push_operand, "a");
-                PRINT_CODE(push_operand, "b");
+                PRINT_CODE(push_operandTF, "a");
+                PRINT_CODE(push_operandTF, "b");
                 PRINT_CODE(put_OPERATOR, LEX_EQ);
                 PRINT_CODE(put_OPERATOR, 0);
                 PRINT_CODE(jump, str2);
@@ -277,8 +277,8 @@ int reduceExpression(Stack *stack) {
                 sprintf(str1, "EQSLABEL1%ld", labelID);
                 sprintf(str2, "EQSLABEL2%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str1);
-                PRINT_CODE(push_operand, "a");
-                PRINT_CODE(push_operand, "b");
+                PRINT_CODE(push_operandTF, "a");
+                PRINT_CODE(push_operandTF, "b");
                 PRINT_CODE(put_OPERATOR, LEX_EQ);
                 PRINT_CODE(jump, str2);
                 PRINT_CODE(label, str1);
@@ -287,20 +287,37 @@ int reduceExpression(Stack *stack) {
                 return SUCCESS;
             case LEX_DOT:
                 // CONCAT
-                if (((popArr[0]->dataType == popArr[2]->dataType) &&
-                     (popArr[0]->dataType == LEX_STRING ||
-                      popArr[0]->dataType == LEX_NULL))) {
-                    popArr[0]->dataType = LEX_STRING;
-                    stackPushElement(stack, popArr[0]);
-                    elementDeconstruct(popArr[1]);
-                    elementDeconstruct(popArr[2]);
-                    // PRINT_CODE(put_OPERATOR, LEX_EQ);
-                    return SUCCESS;
-                } else {
-                    elementDeconstruct(popArr[1]);
-                    elementDeconstruct(popArr[2]);
-                    return TYPECOMP_ERORR;
-                }
+                popArr[0]->dataType = LEX_STRING;
+    	        stackPushElement(stack, popArr[0]);
+                elementDeconstruct(popArr[1]);
+                elementDeconstruct(popArr[2]);
+                PRINT_CODE(tmpF, );
+                // save operands into A and B
+                PRINT_CODE(new_varTF, "a");
+                PRINT_CODE(new_varTF, "b");
+                PRINT_CODE(new_varTF, "res");
+                PRINT_CODE(assignTF, "b");
+                PRINT_CODE(assignTF, "a");
+                // Do the type check
+                PRINT_CODE(write_text, "TYPE TF@res TF@a");
+                PRINT_CODE(push_operandTF, "res");
+                PRINT_CODE(push_string, "string");
+                labelID = getLabel();
+                sprintf(str1, "NCOMPCAT%ld", labelID);
+                sprintf(str2, "COMPCAT%ld", labelID);
+                PRINT_CODE(jumpIfNeqS, str1);
+                // check second operand
+                PRINT_CODE(write_text, "TYPE TF@res TF@b");
+                PRINT_CODE(push_operandTF, "res");
+                PRINT_CODE(push_string, "string");
+                PRINT_CODE(jumpIfEqS, str2);
+                PRINT_CODE(label, str1);
+                PRINT_CODE(write_text, "EXIT int@7");
+                // good data types label
+                PRINT_CODE(label, str2);
+                PRINT_CODE(write_text, "CONCAT TF@res TF@a TF@b");
+                PRINT_CODE(push_operandTF, "res");
+                return SUCCESS;
             default:
                 return SYNTAX_ERROR;
         }
@@ -327,7 +344,7 @@ int finishReducing(Stack *stack) {
     return res;
 }
 
-int parseExpression(int endChar, int *resDataType, node_t symTable) {
+int parseExpression(int endChar, int *resDataType, node_t *symTable) {
     String_t string;
     Stack *stack = initStack(STACK_INIT_SIZE);
     bool endAnalysis = false;
@@ -373,7 +390,7 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             stringDeconstruct(&string);
             return SYNTAX_ERROR;
         } else if (curLex == LEX_ID) {
-            node_t curID = TreeFind(symTable, string.string);
+            node_t curID = TreeFind(*symTable, string.string);
             if (curID == NULL) {
                 printf("Undefined Variable\n");
                 stackDeconstruct(stack);
@@ -382,7 +399,6 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             } else {
                 isID = true;
                 PRINT_CODE(push_operand, string.string);
-                // printf("PUSHS GF@%s\n", string.string);
                 dataType = curID->dataType;
             }
         }
@@ -423,11 +439,6 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             }
         }
         char operation = table[stack->topNonTerm->tokenID - 1][curLex - 1];
-        // printf("OPERATION: %c\n", operation);
-        // printf("CURLEX: %s\n", string.string);
-        // printf("STLPEC: %d\n", curLex - 1);
-        // printf("RIADOK: %d\n", stack->topNonTerm->tokenID - 1);
-        // printf("TOP NONTERM: %s\n\n", stack->topNonTerm->tokenVal.string);
         if (operation == 'X') {
             if (curLex == endChar) {
                 break;
@@ -451,10 +462,10 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
             }
             dataType = curLex;
         } else if (operation == '>') {
-            // printf("REDUCE\n");
+            // REDUCING EXPRESSION
             int reduceRes = reduceExpression(stack);
             if (reduceRes != SUCCESS) {
-                printf("CHYBA PRI REDUKCII\n");
+                printf("Error occured during the reduction\n");
                 stackDeconstruct(stack);
                 stringDeconstruct(&string);
                 return reduceRes;
@@ -472,7 +483,6 @@ int parseExpression(int endChar, int *resDataType, node_t symTable) {
         }
     } while (endAnalysis == false);
 
-    // printf("EXPRESSION PARSED SUCCESSFULLY\n");
     *resDataType = stack->items[1]->dataType;
     stackDeconstruct(stack);
     stringDeconstruct(&string);

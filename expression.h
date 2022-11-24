@@ -14,6 +14,6 @@
 
 #define STACK_INIT_SIZE 977
 
-int parseExpression(int endChar, int *resDataType, node_t symTable);
+int parseExpression(int endChar, int *resDataType, node_t *symTable);
 
 #endif

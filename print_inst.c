@@ -187,6 +187,13 @@ bool jumpIfNeqS(const char *label) {
     return true;
 }
 
+bool jumpIfEqS(const char *label) {
+    WTEXT("JUMPIFEQS ");
+    WTEXT(label);
+    WTEXT("\n");
+    return true;
+}
+
 bool jump(const char *label) {
     WTEXT("JUMP ");
     WTEXT(label);

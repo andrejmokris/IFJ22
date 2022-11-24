@@ -142,7 +142,15 @@ int get_Token(String_t *str) {
                 if (edge_sign == EOF || edge_sign == '\n' || edge_sign < 31) {
                     input_state = START_STATE;
                     return LEX_ERR;
+                } else if (edge_sign == ' ') {
+                    stringAppend(str, '\\');
+                    stringAppend(str, '0');
+                    stringAppend(str, '3');
+                    stringAppend(str, '2');
+                    input_state = STRING0_STATE;
+                    break;
                 } else if (edge_sign == '\\') {
+                    stringAppend(str, edge_sign);
                     input_state = STRING_ESCAPE_STATE;
                 } else if (edge_sign != '"') {
                     input_state = STRING0_STATE;
@@ -159,10 +167,14 @@ int get_Token(String_t *str) {
                     stringAppend(str, edge_sign);
                     input_state = STRING0_STATE;
                 } else if (edge_sign == 'n') {
-                    stringAppend(str, edge_sign);
+                    stringAppend(str, '0');
+                    stringAppend(str, '1');
+                    stringAppend(str, '0');
                     input_state = STRING0_STATE;
                 } else if (edge_sign == 't') {
-                    stringAppend(str, edge_sign);
+                    stringAppend(str, '0');
+                    stringAppend(str, '0');
+                    stringAppend(str, '9');
                     input_state = STRING0_STATE;
                 } else if (edge_sign == '\\') {
                     stringAppend(str, edge_sign);
@@ -441,11 +453,11 @@ int get_Token(String_t *str) {
 
 bool checkProlog(String_t *str) {
     int startLex = get_Token(str);
-    if(startLex != LEX_LE) {
+    if (startLex != LEX_LE) {
         return false;
     }
     startLex = fgetc(stdin);
-    if(startLex != '?') {
+    if (startLex != '?') {
         return false;
     }
     int curChar = get_Token(str);

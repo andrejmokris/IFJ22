@@ -51,6 +51,8 @@ bool jumpIfNeqS(const char *label);
 
 bool jump(const char *label);
 
+bool jumpIfEqS(const char *label);
+
 bool write(const char *text);
 
 bool exit_function();
