@@ -192,12 +192,12 @@
         PRINT_CODE(write_text, "MOVE LF@ans string@");            \
         PRINT_CODE(new_var, "tmp");                               \
                                                                   \
-        PRINT_CODE(write_text, "LABEL WhileStart0");              \
+        PRINT_CODE(write_text, "LABEL substringgwhileStart0");    \
         PRINT_CODE(write_text, "PUSHS LF@i");                     \
         PRINT_CODE(write_text, "PUSHS LF@j");                     \
         PRINT_CODE(write_text, "LTS");                            \
         PRINT_CODE(write_text, "PUSHS bool@true");                \
-        PRINT_CODE(write_text, "JUMPIFNEQS WhileEnd0");           \
+        PRINT_CODE(write_text, "JUMPIFNEQS substringgwhileEnd0"); \
         PRINT_CODE(write_text, "GETCHAR LF@tmp LF@s LF@i");       \
         PRINT_CODE(write_text, "CONCAT LF@ans LF@ans LF@tmp");    \
         PRINT_CODE(write_text, "PUSHS LF@i");                     \
@@ -205,8 +205,8 @@
         PRINT_CODE(write_text, "ADDS");                           \
         PRINT_CODE(write_text, "POPS LF@i");                      \
         PRINT_CODE(write_text, "CLEARS");                         \
-        PRINT_CODE(write_text, "JUMP WhileStart0");               \
-        PRINT_CODE(write_text, "LABEL WhileEnd0");                \
+        PRINT_CODE(write_text, "JUMP substringgwhileStart0");     \
+        PRINT_CODE(write_text, "LABEL substringgwhileEnd0");      \
                                                                   \
         PRINT_CODE(push_operand, "ans");                          \
         PRINT_CODE(popF, );                                       \
