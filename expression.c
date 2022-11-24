@@ -7,69 +7,6 @@
 extern String_t code;
 extern Tinstruction_list list;
 
-#define TYPE_CONTROL(_var, _faillabel)                    \
-    do {                                                  \
-        PRINT_CODE(write_text, ("TYPE TF@res TF@" _var)); \
-        PRINT_CODE(push_operandTF, "res");                \
-        PRINT_CODE(push_string, "string");                \
-        PRINT_CODE(put_OPERATOR, LEX_EQ);                 \
-        PRINT_CODE(write_text, ("TYPE TF@res TF@" _var)); \
-        PRINT_CODE(push_operandTF, "res");                \
-        PRINT_CODE(push_string, "bool");                  \
-        PRINT_CODE(put_OPERATOR, LEX_EQ);                 \
-        PRINT_CODE(write_text, ("TYPE TF@res TF@" _var)); \
-        PRINT_CODE(push_operandTF, "res");                \
-        PRINT_CODE(push_string, "nil");                   \
-        PRINT_CODE(put_OPERATOR, LEX_EQ);                 \
-        PRINT_CODE(put_OPERATOR, 69);                     \
-        PRINT_CODE(put_OPERATOR, 69);                     \
-        PRINT_CODE(push_bool, "true");                    \
-        PRINT_CODE(jumpIfEqS, _faillabel);                \
-    } while (0)
-
-#define INT2FLOAT(_res, _var, _faillabel)           \
-    do {                                            \
-        PRINT_CODE(write_text, ("TYPE TF@"_res      \
-                                " TF@" _var));      \
-        PRINT_CODE(push_operandTF, _res);           \
-        PRINT_CODE(push_string, "int");             \
-        PRINT_CODE(jumpIfNeqS, _faillabel);         \
-        PRINT_CODE(write_text, ("INT2FLOAT TF@"_var \
-                                " TF@"_var));       \
-        PRINT_CODE(label, _faillabel);              \
-    } while (0)
-
-#define CMP_VAR(_var1, _var2, _res)            \
-    do {                                       \
-        PRINT_CODE(write_text, ("TYPE TF@"_res \
-                                " TF@"_var1)); \
-        PRINT_CODE(push_operandTF, _res);      \
-        PRINT_CODE(write_text, ("TYPE TF@"_res \
-                                " TF@"_var2)); \
-        PRINT_CODE(push_operandTF, _res);      \
-    } while (0)
-
-#define MAKE_VARS()                   \
-    do {                              \
-        PRINT_CODE(tmpF, );           \
-        PRINT_CODE(new_varTF, "a");   \
-        PRINT_CODE(new_varTF, "b");   \
-        PRINT_CODE(new_varTF, "res"); \
-        PRINT_CODE(assignTF, "b");    \
-        PRINT_CODE(assignTF, "a");    \
-    } while (0)
-
-#define END_OPERATION(_str, _labelID)         \
-    do {                                      \
-        sprintf(_str, "EXIT%ld", _labelID);   \
-        PRINT_CODE(jump, _str);               \
-        sprintf(_str, "FAIL%ld", _labelID);   \
-        PRINT_CODE(label, _str);              \
-        PRINT_CODE(write_text, "EXIT int@7"); \
-        sprintf(_str, "EXIT%ld", _labelID);   \
-        PRINT_CODE(label, _str);              \
-    } while (0)
-
 static char table[15][15] = {
     // 0    1    2    3    4    5    6    7    8    9    10   11   12  13   14
     // +    -    *    /   ===  !==   <    >   <=  >=     (    )    i    $    .

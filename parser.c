@@ -20,6 +20,11 @@ void initParser() {
     PRINT_CODE(write_text, ".IFJcode22");
     PRINT_CODE(write_text, "CALL NULLMAIN42069");
     PRINT_CODE(jump, "ENDENDENDEND");
+    PRINT_CODE(write_text, "");
+    PRINT_SUBSTRING();
+    PRINT_ORD();
+    PRINT_STRLEN();
+    PRINT_CHR();
     PRINT_CODE(label, "NULLMAIN42069");
     PRINT_CODE(tmpF, );
     PRINT_CODE(pushF, );
@@ -207,6 +212,7 @@ bool functionDeclaration() {
         PRINT_CODE(push_null, );
         PRINT_CODE(write_text, "RETURN\n");
     }
+    PRINT_CODE(write_text, "");
     active_last(&list);
     return res;
 }
@@ -358,55 +364,117 @@ bool strLenBuiltIn(int *returnType, node_t *symTable) {
     // get param
     int resDataType;
     int parseExpressionRes;
-    char str1[99999];
-    char str2[99999];
-    unsigned long labelID = getLabel();
-    sprintf(str1, "goodtype%ld", labelID);
-    sprintf(str2, "badtype%ld", labelID);
     if ((parseExpressionRes =
              parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
 
-    list_item stash;
-    stash = list.active;
-    if (list.before_while != NULL) {
-        list.active = list.before_while;
-        insert_before_active_dll(&list, list.string_pos);
-        list.active = stash;
-    } else if (list.before_if != NULL) {
-        list.active = list.before_if;
-        insert_before_active_dll(&list, list.string_pos);
-        list.active = stash;
-    } else {
-        insert_after_active_dll(&list, list.string_pos);
-    }
-
     PRINT_CODE(tmpF, );
     PRINT_CODE(new_varTF, "string");
-    PRINT_CODE(new_varTF, "length");
-    PRINT_CODE(new_varTF, "type");
-
     PRINT_CODE(assignTF, "string");
-    PRINT_CODE(write_text, "TYPE TF@type TF@string");
-    PRINT_CODE(push_operandTF, "type");
-    PRINT_CODE(push_string, "string");
-
-    PRINT_CODE(jumpIfNeqS, str2);
-    PRINT_CODE(write_text, "STRLEN TF@length TF@string");
-    PRINT_CODE(push_operandTF, "length");
-    PRINT_CODE(jump, str1);
-    PRINT_CODE(label, str2);
-    PRINT_CODE(write_text,
-               "WRITE string@Invalid\\032data\\032Type\\032in\\032STRLEN");
-    PRINT_CODE(write_text, "EXIT INT@4");
-    PRINT_CODE(label, str1);
+    PRINT_CODE(call, "strlen");
 
     if (getParsToken() != LEX_SEMICOL) {
         endParser(SYNTAX_ERROR);
     }
     if (returnType != NULL) {
         *returnType = LEX_INT;
+    }
+    return true;
+}
+
+bool ordBuiltIn(int *returnType, node_t *symTable) {
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    // get param
+    int resDataType;
+    int parseExpressionRes;
+    if ((parseExpressionRes =
+             parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
+    }
+    PRINT_CODE(tmpF, );
+    PRINT_CODE(new_varTF, "string");
+    PRINT_CODE(assignTF, "string");
+    PRINT_CODE(call, "ord");
+
+    if (getParsToken() != LEX_SEMICOL) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (returnType != NULL) {
+        *returnType = LEX_INT;
+    }
+    return true;
+}
+
+bool chrBuiltIn(int *returnType, node_t *symTable) {
+    // chr(int $i)
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    // get param
+    int resDataType;
+    int parseExpressionRes;
+    if ((parseExpressionRes =
+             parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
+    }
+    PRINT_CODE(tmpF, );
+    PRINT_CODE(new_varTF, "i");
+    PRINT_CODE(assignTF, "i");
+    PRINT_CODE(call, "chr");
+
+    if (getParsToken() != LEX_SEMICOL) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (returnType != NULL) {
+        *returnType = LEX_INT;
+    }
+    return true;
+}
+
+bool substringBuiltIn(int *returnType, node_t *symTable) {
+    // chr(int $i)
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    // get param
+    int resDataType;
+    int parseExpressionRes;
+    PRINT_CODE(tmpF, );
+    PRINT_CODE(new_varTF, "i");
+    PRINT_CODE(new_varTF, "j");
+    PRINT_CODE(new_varTF, "s");
+
+    if ((parseExpressionRes =
+             parseExpression(LEX_COMMA, &resDataType, symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
+    }
+
+    PRINT_CODE(assignTF, "s");
+
+    if ((parseExpressionRes =
+             parseExpression(LEX_COMMA, &resDataType, symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
+    }
+
+    PRINT_CODE(assignTF, "i");
+
+    if ((parseExpressionRes =
+             parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
+    }
+
+    PRINT_CODE(assignTF, "j");
+
+    PRINT_CODE(call, "substring");
+
+    if (getParsToken() != LEX_SEMICOL) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (returnType != NULL) {
+        *returnType = LEX_STRING;
     }
     return true;
 }
@@ -439,6 +507,7 @@ bool callBuiltIn(int *returnType, String_t *string, node_t *symTable) {
             return true;
         }
     } else if (!strcmp(string->string, "strlen")) {
+        // printf("calling strlen\n");
         if (strLenBuiltIn(returnType, symTable) == true) {
             return true;
         }
@@ -446,8 +515,20 @@ bool callBuiltIn(int *returnType, String_t *string, node_t *symTable) {
         if (writeBuiltIn(returnType, symTable) == true) {
             return true;
         }
+    } else if (!strcmp(string->string, "ord")) {
+        if (ordBuiltIn(returnType, symTable) == true) {
+            return true;
+        }
+        // bool strLenBuiltIn(int *returnType, node_t *symTable)
+    } else if (!strcmp(string->string, "chr")) {
+        if (chrBuiltIn(returnType, symTable) == true) {
+            return true;
+        }
+    } else if (!strcmp(string->string, "substring")) {
+        if (substringBuiltIn(returnType, symTable) == true) {
+            return true;
+        }
     }
-    // bool strLenBuiltIn(int *returnType, node_t *symTable)
     return false;
 }
 

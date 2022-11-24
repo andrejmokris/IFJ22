@@ -16,7 +16,7 @@ void init_dll(Tinstruction_list *list) {
 }
 
 void active_first(Tinstruction_list *list) {
-    list->active = list->first->item_next->item_next;
+    list->active = list->first->item_next->item_next->item_next;
 }
 
 void active_last(Tinstruction_list *list) {

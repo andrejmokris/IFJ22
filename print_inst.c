@@ -3,20 +3,6 @@
 extern Tinstruction_list list;
 extern String_t code;
 
-#define WINSTRUCTION(_name)                                    \
-    do {                                                       \
-        if (stringConcatenate(&code, (_name "\n")) == false) { \
-            endParser(INTERNAL_ERROR);                         \
-        }                                                      \
-    } while (0)
-
-#define WTEXT(_text)                                      \
-    do {                                                  \
-        if (stringConcatenate(&code, (_text)) == false) { \
-            endParser(INTERNAL_ERROR);                    \
-        }                                                 \
-    } while (0)
-
 bool print_code() {
     list_item ptr = list.first;
     while (ptr != NULL) {
@@ -209,7 +195,6 @@ bool write(const char *text) {
 }
 
 bool exit_function() {
-    WINSTRUCTION("POPRFAME");
     WINSTRUCTION("RETURN");
     return true;
 }
