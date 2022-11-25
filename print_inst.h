@@ -18,6 +18,75 @@
         list.string_pos = code.length;                   \
     } while (0)
 
+#define CONDITION(_labelID)                           \
+    do {                                              \
+        char str[99999];                              \
+        PRINT_CODE(tmpF, );                           \
+        PRINT_CODE(new_varTF, "a");                   \
+        PRINT_CODE(assignTF, "a");                    \
+        PRINT_CODE(new_varTF, "type");                \
+        PRINT_CODE(write_text, "TYPE TF@type TF@a");  \
+        PRINT_CODE(push_operandTF, "type");           \
+        PRINT_CODE(push_string, "string@bool");       \
+        sprintf(str, "ISomethingElse%ld", _labelID);  \
+        PRINT_CODE(jumpIfNeqS, str);                  \
+        PRINT_CODE(push_operandTF, "a");              \
+        sprintf(str, "ENDOFCONDITION%ld", _labelID);  \
+        PRINT_CODE(jump, str);                        \
+        sprintf(str, "IsSomethingElse%ld", _labelID); \
+        PRINT_CODE(label, str);                       \
+        PRINT_CODE(write_text, "TYPE TF@type TF@a");  \
+        PRINT_CODE(push_operandTF, "type");           \
+        PRINT_CODE(push_string, "string@int");        \
+        sprintf(str, "Next1%ld", _labelID);           \
+        PRINT_CODE(jumpIfNeqS, str);                  \
+        PRINT_CODE(push_operandTF, "a");              \
+        PRINT_CODE(push_int, "0");                    \
+        sprintf(str, "PUSHTRUUU%ld", _labelID);       \
+        PRINT_CODE(jumpIfNeqS, str);                  \
+        PRINT_CODE(push_bool, "false");               \
+        sprintf(str, "ENDOFCONDITION%ld", _labelID);  \
+        PRINT_CODE(jump, str);                        \
+        sprintf(str, "Next1%ld", _labelID);           \
+        PRINT_CODE(label, str);                       \
+        PRINT_CODE(write_text, "TYPE TF@type TF@a");  \
+        PRINT_CODE(push_operandTF, "type");           \
+        PRINT_CODE(push_string, "string@float");      \
+        sprintf(str, "Next2%ld", _labelID);           \
+        PRINT_CODE(jumpIfNeqS, str);                  \
+        PRINT_CODE(push_operandTF, "a");              \
+        PRINT_CODE(push_float, "0x0p+0");             \
+        sprintf(str, "PUSHTRUUU%ld", _labelID);       \
+        PRINT_CODE(jumpIfNeqS, str);                  \
+        PRINT_CODE(push_bool, "false");               \
+        sprintf(str, "ENDOFCONDITION%ld", _labelID);  \
+        PRINT_CODE(jump, str);                        \
+        sprintf(str, "Next2%ld", _labelID);           \
+        PRINT_CODE(label, str);                       \
+        PRINT_CODE(write_text, "TYPE TF@type TF@a");  \
+        PRINT_CODE(push_operandTF, "type");           \
+        PRINT_CODE(push_string, "string@string");     \
+        sprintf(str, "Next3%ld", _labelID);           \
+        PRINT_CODE(jumpIfNeqS, str);                  \
+        PRINT_CODE(push_operandTF, "a");              \
+        PRINT_CODE(push_string, "");                  \
+        sprintf(str, "PUSHTRUUU%ld", _labelID);       \
+        PRINT_CODE(jumpIfNeqS, str);                  \
+        PRINT_CODE(push_bool, "false");               \
+        sprintf(str, "ENDOFCONDITION%ld", _labelID);  \
+        PRINT_CODE(jump, str);                        \
+        sprintf(str, "Next3%ld", _labelID);           \
+        PRINT_CODE(label, str);                       \
+        PRINT_CODE(push_bool, "false");               \
+        sprintf(str, "ENDOFCONDITION%ld", _labelID);  \
+        PRINT_CODE(jump, str);                        \
+        sprintf(str, "PUSHTRUUU%ld", _labelID);       \
+        PRINT_CODE(label, str);                       \
+        PRINT_CODE(push_bool, "true");                \
+        sprintf(str, "ENDOFCONDITION%ld", _labelID);  \
+        PRINT_CODE(label, str);                       \
+    } while (0)
+
 #define TYPE_CONTROL(_var, _faillabel)                    \
     do {                                                  \
         PRINT_CODE(write_text, ("TYPE TF@res TF@" _var)); \

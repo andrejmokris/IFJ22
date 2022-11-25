@@ -662,6 +662,7 @@ int ifRule(node_t *symTable, node_t functionNode) {
     sprintf(strElse, "IfElse%ld", labelID);
     char strEnd[99999];
     sprintf(strEnd, "IfEnd%ld", labelID);
+    CONDITION(labelID);
     PRINT_CODE(push_bool, "true");
     if (list.before_if == NULL) {
         list.before_if = list.active;
@@ -726,6 +727,7 @@ bool whileRule(node_t *symTable, node_t functionNode) {
              parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
     }
+    CONDITION(labelID);
     PRINT_CODE(push_bool, "true");
     PRINT_CODE(jumpIfNeqS, strEnd);
 
