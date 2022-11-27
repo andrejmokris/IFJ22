@@ -277,7 +277,7 @@ int reduceExpression(Stack *stack) {
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
                 MAKE_VARS();
-                PRINT_CODE(write_text, "LE TF@res TF@a TF@b");
+                PRINT_CODE(write_text, "LT TF@res TF@a TF@b");
                 PRINT_CODE(push_operandTF, "res");
                 PRINT_CODE(write_text, "EQ TF@res TF@a TF@b");
                 PRINT_CODE(push_operandTF, "res");

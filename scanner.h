@@ -54,7 +54,11 @@ typedef enum {
     DOT_STATE,      // .
     COMMMA_STATE,   // ,
     SEMICOL_STATE,  // ;
-    EOF_STATE
+    EOF_STATE,
+    OCTAL_ESCAPE_STATE2,
+    OCTAL_ESCAPE_STATE3,
+    HEX_ESCAPE_STATE2,
+    HEX_ESCAPE_STATE3
 } FSM_States;
 
 enum {

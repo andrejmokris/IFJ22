@@ -632,7 +632,7 @@ bool returnStat(node_t *symTable, node_t functionNode) {
         return true;
     }
     if (!parameterDataTypeVerify(functionRetType, resDataType, symTable)) {
-        endParser(RETURN_ERROR);
+        endParser(RUN_ERROR);
     }
     if (functionNode->function->returnType == LEX_VOID) {
         PRINT_CODE(push_null, );
@@ -869,8 +869,14 @@ int ParserLoop(bool getNext) {
         case LEX_ERR:
             return SYNTAX_ERROR;
         case LEX_EOF:
-        case LEX_EPILOG:
             return SUCCESS;
+        case LEX_EPILOG:
+            if(getParsToken(string) != LEX_EOF) {
+                endParser(SYNTAX_ERROR);
+            } else {
+                return SUCCESS;
+            }
+            break;
         default:
             if ((parseExpressionRes = parseExpression(
                      LEX_SEMICOL, &resDataType, &globalSymTable)) != SUCCESS) {
