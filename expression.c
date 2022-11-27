@@ -45,7 +45,7 @@ static char table[15][15] = {
 // E = E + E
 int addRule(Stack *stack, StackElement *op1, StackElement *op2) {
     unsigned long labelID = getLabel();
-    char str1[99999];
+    char str1[9999];
     MAKE_VARS();
     sprintf(str1, "ADDFAIL%ld", labelID);
     TYPE_CONTROL("a", str1);
@@ -83,7 +83,7 @@ int addRule(Stack *stack, StackElement *op1, StackElement *op2) {
 // E = E - E
 int subRule(Stack *stack, StackElement *op1, StackElement *op2) {
     unsigned long labelID = getLabel();
-    char str1[99999];
+    char str1[9999];
     MAKE_VARS();
     sprintf(str1, "SUBFAIL%ld", labelID);
     TYPE_CONTROL("a", str1);
@@ -121,7 +121,7 @@ int subRule(Stack *stack, StackElement *op1, StackElement *op2) {
 // E = E * E
 int mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
     unsigned long labelID = getLabel();
-    char str1[99999];
+    char str1[9999];
     MAKE_VARS();
     sprintf(str1, "MULFAIL%ld", labelID);
     TYPE_CONTROL("a", str1);
@@ -160,7 +160,7 @@ int mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
 // E = E / E
 int divRule(Stack *stack, StackElement *op1, StackElement *op2) {
     unsigned long labelID = getLabel();
-    char str1[99999];
+    char str1[9999];
     MAKE_VARS();
     sprintf(str1, "DIVFAIL%ld", labelID);
     TYPE_CONTROL("a", str1);
@@ -208,7 +208,7 @@ int reduceExpression(Stack *stack) {
         if (popArr[0]->isID == false) {
             if (popArr[0]->dataType == LEX_INT) {
                 PRINT_CODE(push_int, popArr[0]->tokenVal.string);
-            } else if (popArr[0]->dataType == LEX_FLOAT) {
+            } else if (popArr[0]->dataType == LEX_FLOAT || popArr[0]->dataType == LEX_EXPONENT) {
                 char str[99999];
                 char *ptr;
                 double ret;
@@ -405,7 +405,6 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
         stringDeconstruct(&string);
         return LEX_ERROR;
     }
-
     if (curLex == endChar && endChar == LEX_SEMICOL) {
         stackDeconstruct(stack);
         stringDeconstruct(&string);
@@ -441,6 +440,21 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
                 return UNDEFVAR_ERROR;
             } else {
                 isID = true;
+                char initialized[9999];
+                char typeinstruction[9999];
+                unsigned long labelID = getLabel();
+                sprintf(initialized, "checkinitializedgood%lu", labelID);
+                sprintf(typeinstruction, "TYPE TF@optype LF@%s",string.string);
+                /* check initialization of var */
+                PRINT_CODE(tmpF, );
+                PRINT_CODE(new_varTF, "optype");
+                PRINT_CODE(write_text, typeinstruction);
+                PRINT_CODE(write_text, "PUSHS TF@optype");
+                PRINT_CODE(push_string, "");
+                PRINT_CODE(jumpIfNeqS, initialized);
+                PRINT_CODE(write_text, "EXIT int@5");
+                PRINT_CODE(label, initialized);
+                /* end of init check */
                 PRINT_CODE(push_operand, string.string);
                 dataType = curID->dataType;
             }

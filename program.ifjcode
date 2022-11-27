@@ -2,323 +2,6 @@
 CALL NULLMAIN42069
 JUMP ENDENDENDEND
 
-LABEL foo
-PUSHFRAME
-DEFVAR LF@y
-PUSHS string@hello
-POPS LF@y
-CLEARS
-PUSHS int@1
-PUSHS int@1
-CREATEFRAME
-DEFVAR TF@a
-DEFVAR TF@b
-DEFVAR TF@res
-POPS TF@b
-POPS TF@a
-TYPE TF@res TF@a
-PUSHS TF@res
-TYPE TF@res TF@b
-PUSHS TF@res
-JUMPIFNEQS EQSLABEL11
-PUSHS TF@a
-PUSHS TF@b
-EQS
-JUMP EQSLABEL21
-LABEL EQSLABEL11
-PUSHS bool@false
-LABEL EQSLABEL21
-CREATEFRAME
-DEFVAR TF@a
-POPS TF@a
-DEFVAR TF@type
-TYPE TF@type TF@a
-PUSHS TF@type
-PUSHS string@bool
-JUMPIFNEQS IsSomethingElse2
-PUSHS TF@a
-JUMP ENDOFCONDITION2
-LABEL IsSomethingElse2
-TYPE TF@type TF@a
-PUSHS TF@type
-PUSHS string@int
-JUMPIFNEQS Next12
-PUSHS TF@a
-PUSHS int@0
-JUMPIFNEQS PUSHTRUUU2
-PUSHS bool@false
-JUMP ENDOFCONDITION2
-LABEL Next12
-TYPE TF@type TF@a
-PUSHS TF@type
-PUSHS string@float
-JUMPIFNEQS Next22
-PUSHS TF@a
-PUSHS float@0x0p+0
-JUMPIFNEQS PUSHTRUUU2
-PUSHS bool@false
-JUMP ENDOFCONDITION2
-LABEL Next22
-TYPE TF@type TF@a
-PUSHS TF@type
-PUSHS string@string
-JUMPIFNEQS Next32
-PUSHS TF@a
-PUSHS string@
-JUMPIFNEQS PUSHTRUUU2
-PUSHS bool@false
-JUMP ENDOFCONDITION2
-LABEL Next32
-PUSHS bool@false
-JUMP ENDOFCONDITION2
-LABEL PUSHTRUUU2
-PUSHS bool@true
-LABEL ENDOFCONDITION2
-PUSHS bool@true
-JUMPIFNEQS IfElse2
-PUSHS int@42
-POPS LF@y
-CLEARS
-WRITE LF@y
-JUMP IfEnd2
-LABEL IfElse2
-WRITE LF@y
-LABEL IfEnd2
-WRITE LF@y
-DEFVAR LF@i
-PUSHS int@1
-POPS LF@i
-CLEARS
-CREATEFRAME
-DEFVAR LF@inp
-LABEL WhileStart3
-PUSHS LF@i
-PUSHS int@10
-CREATEFRAME
-DEFVAR TF@a
-DEFVAR TF@b
-DEFVAR TF@res
-POPS TF@b
-POPS TF@a
-LT TF@res TF@a TF@b
-PUSHS TF@res
-EQ TF@res TF@a TF@b
-PUSHS TF@res
-ORS
-CREATEFRAME
-DEFVAR TF@a
-POPS TF@a
-DEFVAR TF@type
-TYPE TF@type TF@a
-PUSHS TF@type
-PUSHS string@bool
-JUMPIFNEQS IsSomethingElse3
-PUSHS TF@a
-JUMP ENDOFCONDITION3
-LABEL IsSomethingElse3
-TYPE TF@type TF@a
-PUSHS TF@type
-PUSHS string@int
-JUMPIFNEQS Next13
-PUSHS TF@a
-PUSHS int@0
-JUMPIFNEQS PUSHTRUUU3
-PUSHS bool@false
-JUMP ENDOFCONDITION3
-LABEL Next13
-TYPE TF@type TF@a
-PUSHS TF@type
-PUSHS string@float
-JUMPIFNEQS Next23
-PUSHS TF@a
-PUSHS float@0x0p+0
-JUMPIFNEQS PUSHTRUUU3
-PUSHS bool@false
-JUMP ENDOFCONDITION3
-LABEL Next23
-TYPE TF@type TF@a
-PUSHS TF@type
-PUSHS string@string
-JUMPIFNEQS Next33
-PUSHS TF@a
-PUSHS string@
-JUMPIFNEQS PUSHTRUUU3
-PUSHS bool@false
-JUMP ENDOFCONDITION3
-LABEL Next33
-PUSHS bool@false
-JUMP ENDOFCONDITION3
-LABEL PUSHTRUUU3
-PUSHS bool@true
-LABEL ENDOFCONDITION3
-PUSHS bool@true
-JUMPIFNEQS WhileEnd3
-PUSHS int@5
-POPS LF@i
-CLEARS
-PUSHS LF@i
-PUSHS int@1
-CREATEFRAME
-DEFVAR TF@a
-DEFVAR TF@b
-DEFVAR TF@res
-POPS TF@b
-POPS TF@a
-TYPE TF@res TF@a
-PUSHS TF@res
-PUSHS string@string
-EQS
-TYPE TF@res TF@a
-PUSHS TF@res
-PUSHS string@bool
-EQS
-TYPE TF@res TF@a
-PUSHS TF@res
-PUSHS string@nil
-EQS
-ORS
-ORS
-PUSHS bool@true
-JUMPIFEQS ADDFAIL4
-TYPE TF@res TF@b
-PUSHS TF@res
-PUSHS string@string
-EQS
-TYPE TF@res TF@b
-PUSHS TF@res
-PUSHS string@bool
-EQS
-TYPE TF@res TF@b
-PUSHS TF@res
-PUSHS string@nil
-EQS
-ORS
-ORS
-PUSHS bool@true
-JUMPIFEQS ADDFAIL4
-TYPE TF@res TF@a
-PUSHS TF@res
-TYPE TF@res TF@b
-PUSHS TF@res
-JUMPIFEQS ADD4
-TYPE TF@res TF@a
-PUSHS TF@res
-PUSHS string@int
-JUMPIFNEQS ADDLABEL14
-INT2FLOAT TF@a TF@a
-LABEL ADDLABEL14
-TYPE TF@res TF@b
-PUSHS TF@res
-PUSHS string@int
-JUMPIFNEQS ADDLABEL24
-INT2FLOAT TF@b TF@b
-LABEL ADDLABEL24
-LABEL ADD4
-ADD TF@res TF@a TF@b
-PUSHS TF@res
-JUMP EXIT4
-LABEL FAIL4
-EXIT int@7
-LABEL EXIT4
-POPS LF@i
-CLEARS
-WRITE LF@i
-WRITE string@Insert\032non-empty\032input\032for\032quiting,\032otherwise\032next\032iteration.\010
-CREATEFRAME
-DEFVAR TF@a
-READ TF@a string
-PUSHS TF@a
-POPS LF@x
-CLEARS
-PUSHS LF@x
-CREATEFRAME
-DEFVAR TF@string
-POPS TF@string
-CALL strlen
-POPS LF@inp
-CLEARS
-PUSHS LF@inp
-PUSHS int@0
-CREATEFRAME
-DEFVAR TF@a
-DEFVAR TF@b
-DEFVAR TF@res
-POPS TF@b
-POPS TF@a
-TYPE TF@res TF@a
-PUSHS TF@res
-TYPE TF@res TF@b
-PUSHS TF@res
-JUMPIFNEQS NEQSLABEL15
-PUSHS TF@a
-PUSHS TF@b
-EQS
-NOTS
-JUMP NEQSLABEL25
-LABEL NEQSLABEL15
-PUSHS bool@true
-LABEL NEQSLABEL25
-CREATEFRAME
-DEFVAR TF@a
-POPS TF@a
-DEFVAR TF@type
-TYPE TF@type TF@a
-PUSHS TF@type
-PUSHS string@bool
-JUMPIFNEQS IsSomethingElse6
-PUSHS TF@a
-JUMP ENDOFCONDITION6
-LABEL IsSomethingElse6
-TYPE TF@type TF@a
-PUSHS TF@type
-PUSHS string@int
-JUMPIFNEQS Next16
-PUSHS TF@a
-PUSHS int@0
-JUMPIFNEQS PUSHTRUUU6
-PUSHS bool@false
-JUMP ENDOFCONDITION6
-LABEL Next16
-TYPE TF@type TF@a
-PUSHS TF@type
-PUSHS string@float
-JUMPIFNEQS Next26
-PUSHS TF@a
-PUSHS float@0x0p+0
-JUMPIFNEQS PUSHTRUUU6
-PUSHS bool@false
-JUMP ENDOFCONDITION6
-LABEL Next26
-TYPE TF@type TF@a
-PUSHS TF@type
-PUSHS string@string
-JUMPIFNEQS Next36
-PUSHS TF@a
-PUSHS string@
-JUMPIFNEQS PUSHTRUUU6
-PUSHS bool@false
-JUMP ENDOFCONDITION6
-LABEL Next36
-PUSHS bool@false
-JUMP ENDOFCONDITION6
-LABEL PUSHTRUUU6
-PUSHS bool@true
-LABEL ENDOFCONDITION6
-PUSHS bool@true
-JUMPIFNEQS IfElse6
-WRITE LF@x
-PUSHS nil@nil
-POPFRAME
-RETURN
-PUSHS nil@nil
-JUMP IfEnd6
-LABEL IfElse6
-LABEL IfEnd6
-JUMP WhileStart3
-LABEL WhileEnd3
-PUSHS nil@nil
-RETURN
-
 LABEL substring
 PUSHFRAME
 CREATEFRAME
@@ -510,17 +193,139 @@ PUSHS TF@res
 POPFRAME
 RETURN
 
+LABEL floatval
+PUSHFRAME
+CREATEFRAME
+DEFVAR TF@val2convert
+DEFVAR TF@check
+DEFVAR TF@res
+MOVE TF@val2convert LF@val2convert
+MOVE TF@check string@string
+TYPE TF@res TF@val2convert
+PUSHS TF@res
+PUSHS TF@check
+JUMPIFEQS stringinfloatvalerr
+MOVE TF@val2convert LF@val2convert
+MOVE TF@check string@float
+TYPE TF@res TF@val2convert
+PUSHS TF@res
+PUSHS TF@check
+JUMPIFEQS floatinfloatvalgood
+MOVE TF@val2convert LF@val2convert
+MOVE TF@check string@int
+TYPE TF@res TF@val2convert
+PUSHS TF@res
+PUSHS TF@check
+JUMPIFEQS intinginfloatvalgood
+MOVE TF@val2convert LF@val2convert
+MOVE TF@check string@nil
+TYPE TF@res TF@val2convert
+PUSHS TF@res
+PUSHS TF@check
+JUMPIFEQS nullinfloatvalgood
+LABEL stringinfloatvalerr
+EXIT int@4
+LABEL floatinfloatvalgood
+PUSHS LF@val2convert
+POPFRAME
+RETURN
+LABEL intinginfloatvalgood
+INT2FLOAT TF@res LF@val2convert
+PUSHS TF@res
+POPFRAME
+RETURN
+LABEL nullinfloatvalgood
+PUSHS FLOAT@0x0p+0
+POPFRAME
+RETURN
+
+LABEL intval
+PUSHFRAME
+CREATEFRAME
+DEFVAR TF@val2convert
+DEFVAR TF@check
+DEFVAR TF@res
+MOVE TF@val2convert LF@val2convert
+MOVE TF@check string@string
+TYPE TF@res TF@val2convert
+PUSHS TF@res
+PUSHS TF@check
+JUMPIFEQS stringinintvalerr
+MOVE TF@check string@float
+TYPE TF@res TF@val2convert
+PUSHS TF@res
+PUSHS TF@check
+JUMPIFEQS floatinintvalgood
+MOVE TF@check string@int
+TYPE TF@res TF@val2convert
+PUSHS TF@res
+PUSHS TF@check
+JUMPIFEQS intinintvalgood
+MOVE TF@check string@nil
+TYPE TF@res TF@val2convert
+PUSHS TF@res
+PUSHS TF@check
+JUMPIFEQS nullinintvalgood
+LABEL stringinintvalerr
+EXIT int@4
+LABEL floatinintvalgood
+FLOAT2INT TF@res LF@val2convert
+PUSHS TF@res
+POPFRAME
+RETURN
+LABEL intinintvalgood
+PUSHS LF@val2convert
+POPFRAME
+RETURN
+LABEL nullinintvalgood
+PUSHS INT@0
+POPFRAME
+RETURN
+
+LABEL strval
+PUSHFRAME
+CREATEFRAME
+DEFVAR TF@val2convert
+DEFVAR TF@check
+DEFVAR TF@res
+MOVE TF@val2convert LF@val2convert
+MOVE TF@check string@string
+TYPE TF@res TF@val2convert
+PUSHS TF@res
+PUSHS TF@check
+JUMPIFEQS stringinstrvalgood
+MOVE TF@check string@float
+TYPE TF@res TF@val2convert
+PUSHS TF@res
+PUSHS TF@check
+JUMPIFEQS floatinstrvalbad
+MOVE TF@check string@int
+TYPE TF@res TF@val2convert
+PUSHS TF@res
+PUSHS TF@check
+JUMPIFEQS floatinstrvalbad
+MOVE TF@check string@nil
+TYPE TF@res TF@val2convert
+PUSHS TF@res
+PUSHS TF@check
+JUMPIFEQS nullinstrvalgood
+LABEL stringinstrvalgood
+PUSHS TF@val2convert
+POPFRAME
+RETURN
+LABEL floatinstrvalbad
+EXIT INT@4
+LABEL nullinstrvalgood
+PUSHS STRING@
+POPFRAME
+RETURN
+
 LABEL NULLMAIN42069
 CREATEFRAME
 PUSHFRAME
-DEFVAR LF@y
-PUSHS int@10
-POPS LF@y
-CLEARS
-CREATEFRAME
-PUSHS int@7
-DEFVAR TF@x
-POPS TF@x
-CALL foo
-WRITE LF@y
+WRITE string@123456
+WRITE string@\032or\032
+WRITE float@0x1.edd2f1a9fbe77p+6
+WRITE string@,\032thats\032the\032question
+WRITE string@\010
 LABEL ENDENDENDEND

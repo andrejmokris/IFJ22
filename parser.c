@@ -25,6 +25,9 @@ void initParser() {
     PRINT_ORD();
     PRINT_STRLEN();
     PRINT_CHR();
+    PRINT_FLOATVAL();
+    PRINT_INTVAL();
+    PRINT_STRVAL();
     PRINT_CODE(label, "NULLMAIN42069");
     PRINT_CODE(tmpF, );
     PRINT_CODE(pushF, );
@@ -79,6 +82,12 @@ bool VarAssign(node_t *symTable) {
         if ((newNode = TreeInsert(symTable, 0, string)) == NULL) {
             endParser(INTERNAL_ERROR);
         }
+        /*
+        printf("CREATING NEW VAR: %s\n", string.string);
+        if(list.before_while != NULL) {
+            printf("IN WHILE LOOP\n");
+        }
+        */
         list_item stash;
         stash = list.active;
         if (list.before_while != NULL) {
@@ -312,7 +321,29 @@ bool writeBuiltInSingleParam(node_t *symTable) {
                 printf("Undefined var in Write function\n");
                 endParser(UNDEFVAR_ERROR);
             }
+            char initialized[9999];
+            char typeinstruction[9999];
+            unsigned long labelID = getLabel();
+            sprintf(initialized, "checkinitializedgood%lu", labelID);
+            sprintf(typeinstruction, "TYPE TF@optype LF@%s", string.string);
+            /* check initialization of var */
+            PRINT_CODE(tmpF, );
+            PRINT_CODE(new_varTF, "optype");
+            PRINT_CODE(write_text, typeinstruction);
+            PRINT_CODE(write_text, "PUSHS TF@optype");
+            PRINT_CODE(push_string, "");
+            PRINT_CODE(jumpIfNeqS, initialized);
+            PRINT_CODE(write_text, "EXIT int@5");
+            PRINT_CODE(label, initialized);
             PRINT_CODE(write_var, string.string);
+            return writeBuiltInSingleParam(symTable);
+        } else if (newToken == LEX_FLOAT) {
+            char str[9999];
+            char *ptr;
+            double ret;
+            ret = strtod(string.string, &ptr);
+            sprintf(str, "WRITE float@%a", ret);
+            PRINT_CODE(write_text, str);
             return writeBuiltInSingleParam(symTable);
         } else {
             PRINT_CODE(write, string.string);
@@ -334,14 +365,37 @@ bool writeBuiltInParam(node_t *symTable) {
             printf("Undefined function in Write function\n");
             endParser(UNDEFVAR_ERROR);
         }
+        char initialized[9999];
+        char typeinstruction[9999];
+        unsigned long labelID = getLabel();
+        sprintf(initialized, "checkinitializedgood%lu", labelID);
+        sprintf(typeinstruction, "TYPE TF@optype LF@%s", string.string);
+        /* check initialization of var */
+        PRINT_CODE(tmpF, );
+        PRINT_CODE(new_varTF, "optype");
+        PRINT_CODE(write_text, typeinstruction);
+        PRINT_CODE(write_text, "PUSHS TF@optype");
+        PRINT_CODE(push_string, "");
+        PRINT_CODE(jumpIfNeqS, initialized);
+        PRINT_CODE(write_text, "EXIT int@5");
+        PRINT_CODE(label, initialized);
         PRINT_CODE(write_var, string.string);
+    } else if (newToken == LEX_FLOAT) {
+        char str[9999];
+        char *ptr;
+        double ret;
+        ret = strtod(string.string, &ptr);
+        sprintf(str, "WRITE float@%a", ret);
+        PRINT_CODE(write_text, str);
     } else {
         PRINT_CODE(write, string.string);
+        return writeBuiltInSingleParam(symTable);
     }
     return writeBuiltInSingleParam(symTable);
 }
 
 bool writeBuiltIn(int *returnType, node_t *symTable) {
+    // printf("WRITE CALL\n");
     if (getParsToken() != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
     }
@@ -404,6 +458,78 @@ bool ordBuiltIn(int *returnType, node_t *symTable) {
     }
     if (returnType != NULL) {
         *returnType = LEX_INT;
+    }
+    return true;
+}
+
+bool floatValBuiltIn(int *returnType, node_t *symTable) {
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    // get param
+    int resDataType;
+    int parseExpressionRes;
+    if ((parseExpressionRes =
+             parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
+    };
+    PRINT_CODE(tmpF, );
+    PRINT_CODE(new_varTF, "val2convert");
+    PRINT_CODE(assignTF, "val2convert");
+    PRINT_CODE(call, "floatval");
+    if (getParsToken() != LEX_SEMICOL) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (returnType != NULL) {
+        *returnType = LEX_FLOAT;
+    }
+    return true;
+}
+
+bool intValBuiltIn(int *returnType, node_t *symTable) {
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    // get param
+    int resDataType;
+    int parseExpressionRes;
+    if ((parseExpressionRes =
+             parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
+    };
+    PRINT_CODE(tmpF, );
+    PRINT_CODE(new_varTF, "val2convert");
+    PRINT_CODE(assignTF, "val2convert");
+    PRINT_CODE(call, "intval");
+    if (getParsToken() != LEX_SEMICOL) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (returnType != NULL) {
+        *returnType = LEX_INT;
+    }
+    return true;
+}
+
+bool strValBuiltIn(int *returnType, node_t *symTable) {
+    if (getParsToken() != LEX_LPAR) {
+        endParser(SYNTAX_ERROR);
+    }
+    // get param
+    int resDataType;
+    int parseExpressionRes;
+    if ((parseExpressionRes =
+             parseExpression(LEX_RPAR, &resDataType, symTable)) != SUCCESS) {
+        endParser(parseExpressionRes);
+    };
+    PRINT_CODE(tmpF, );
+    PRINT_CODE(new_varTF, "val2convert");
+    PRINT_CODE(assignTF, "val2convert");
+    PRINT_CODE(call, "strval");
+    if (getParsToken() != LEX_SEMICOL) {
+        endParser(SYNTAX_ERROR);
+    }
+    if (returnType != NULL) {
+        *returnType = LEX_STRING;
     }
     return true;
 }
@@ -526,6 +652,18 @@ bool callBuiltIn(int *returnType, String_t *string, node_t *symTable) {
         }
     } else if (!strcmp(string->string, "substring")) {
         if (substringBuiltIn(returnType, symTable) == true) {
+            return true;
+        }
+    } else if (!strcmp(string->string, "floatval")) {
+        if (floatValBuiltIn(returnType, symTable) == true) {
+            return true;
+        }
+    } else if (!strcmp(string->string, "intval")) {
+        if (intValBuiltIn(returnType, symTable) == true) {
+            return true;
+        }
+    } else if (!strcmp(string->string, "strval")) {
+        if (strValBuiltIn(returnType, symTable) == true) {
             return true;
         }
     }
@@ -871,7 +1009,7 @@ int ParserLoop(bool getNext) {
         case LEX_EOF:
             return SUCCESS;
         case LEX_EPILOG:
-            if(getParsToken(string) != LEX_EOF) {
+            if (getParsToken(string) != LEX_EOF) {
                 endParser(SYNTAX_ERROR);
             } else {
                 return SUCCESS;

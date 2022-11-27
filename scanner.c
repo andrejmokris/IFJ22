@@ -470,7 +470,7 @@ int get_Token(String_t *str) {
 
             case EXPONENT_STATE0:
                 if (edge_sign == '-' || edge_sign == '+') {
-                    input_state = EXPONENT_STATE1;
+                    input_state = EXPONENT_STATE2;
                     stringAppend(str, edge_sign);
                     break;
                 } else if (edge_sign == 'e' || edge_sign == 'E' ||
