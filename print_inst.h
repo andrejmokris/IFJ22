@@ -187,6 +187,8 @@
         PRINT_CODE(write_text, "DEFVAR TF@string");               \
         PRINT_CODE(write_text, "POPS TF@string");                 \
         PRINT_CODE(write_text, "CALL strlen");                    \
+        PRINT_CODE(write_text, "PUSHS int@1");                    \
+        PRINT_CODE(write_text, "ADDS");                           \
         PRINT_CODE(write_text, "POPS LF@strlen");                 \
         PRINT_CODE(write_text, "CLEARS");                         \
         PRINT_CODE(write_text, "PUSHS LF@i");                     \

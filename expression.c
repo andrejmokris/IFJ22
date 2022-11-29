@@ -208,7 +208,8 @@ int reduceExpression(Stack *stack) {
         if (popArr[0]->isID == false) {
             if (popArr[0]->dataType == LEX_INT) {
                 PRINT_CODE(push_int, popArr[0]->tokenVal.string);
-            } else if (popArr[0]->dataType == LEX_FLOAT || popArr[0]->dataType == LEX_EXPONENT) {
+            } else if (popArr[0]->dataType == LEX_FLOAT ||
+                       popArr[0]->dataType == LEX_EXPONENT) {
                 char str[99999];
                 char *ptr;
                 double ret;
@@ -228,8 +229,9 @@ int reduceExpression(Stack *stack) {
     if (cnt == 3 && popArr[0]->tokenID == LEX_E &&
         popArr[2]->tokenID == LEX_E) {
         unsigned long labelID;
-        char str1[99999];
-        char str2[99999];
+        char str1[9999];
+        char str2[9999];
+        char str3[9999];
         switch (popArr[1]->tokenID) {
             case LEX_ADD:
                 // E+E -> E
@@ -339,21 +341,39 @@ int reduceExpression(Stack *stack) {
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
+                labelID = getLabel();
+                sprintf(str1, "NCOMPCAT%ld", labelID);
+                sprintf(str2, "COMPCAT%ld", labelID);
+                sprintf(str3, "SECONDOPERANDCOMPARE%ld", labelID);
                 // save operands into A and B
                 MAKE_VARS();
                 // Do the type check
                 PRINT_CODE(write_text, "TYPE TF@res TF@a");
                 PRINT_CODE(push_operandTF, "res");
+                PRINT_CODE(push_string, "float");
+                PRINT_CODE(jumpIfEqS, str1);
+                PRINT_CODE(push_operandTF, "res");
+                PRINT_CODE(push_string, "int");
+                PRINT_CODE(jumpIfEqS, str1);
+                PRINT_CODE(push_operandTF, "res");
                 PRINT_CODE(push_string, "string");
-                labelID = getLabel();
-                sprintf(str1, "NCOMPCAT%ld", labelID);
-                sprintf(str2, "COMPCAT%ld", labelID);
-                PRINT_CODE(jumpIfNeqS, str1);
+                PRINT_CODE(jumpIfEqS, str3);
+                PRINT_CODE(write_text, "MOVE TF@a string@");
                 // check second operand
+                PRINT_CODE(label, str3);
                 PRINT_CODE(write_text, "TYPE TF@res TF@b");
+                PRINT_CODE(push_operandTF, "res");
+                PRINT_CODE(push_string, "int");
+                PRINT_CODE(jumpIfEqS, str1);
+                PRINT_CODE(push_operandTF, "res");
+                PRINT_CODE(push_string, "float");
+                PRINT_CODE(jumpIfEqS, str1);
                 PRINT_CODE(push_operandTF, "res");
                 PRINT_CODE(push_string, "string");
                 PRINT_CODE(jumpIfEqS, str2);
+                PRINT_CODE(write_text, "MOVE TF@b string@");
+                PRINT_CODE(jump, str2);
+                // EXIT LABEL
                 PRINT_CODE(label, str1);
                 PRINT_CODE(write_text, "EXIT int@7");
                 // good data types label
@@ -404,8 +424,13 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
         stackDeconstruct(stack);
         stringDeconstruct(&string);
         return LEX_ERROR;
-    }
-    if (curLex == endChar && endChar == LEX_SEMICOL) {
+    } else if (curLex == LEX_RPAR &&
+               (endChar == LEX_COMMA || endChar == LEX_RPAR)) {
+        stackDeconstruct(stack);
+        stringDeconstruct(&string);
+        *resDataType = LEX_VOID;
+        return RUN_ERROR;
+    } else if (curLex == endChar && endChar == LEX_SEMICOL) {
         stackDeconstruct(stack);
         stringDeconstruct(&string);
         *resDataType = LEX_VOID;
@@ -440,21 +465,22 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
                 return UNDEFVAR_ERROR;
             } else {
                 isID = true;
-                char initialized[9999];
-                char typeinstruction[9999];
-                unsigned long labelID = getLabel();
-                sprintf(initialized, "checkinitializedgood%lu", labelID);
-                sprintf(typeinstruction, "TYPE TF@optype LF@%s",string.string);
-                /* check initialization of var */
-                PRINT_CODE(tmpF, );
-                PRINT_CODE(new_varTF, "optype");
-                PRINT_CODE(write_text, typeinstruction);
-                PRINT_CODE(write_text, "PUSHS TF@optype");
-                PRINT_CODE(push_string, "");
-                PRINT_CODE(jumpIfNeqS, initialized);
-                PRINT_CODE(write_text, "EXIT int@5");
-                PRINT_CODE(label, initialized);
-                /* end of init check */
+                /**/
+                // char initialized[9999];
+                // char typeinstruction[9999];
+                // unsigned long labelID = getLabel();
+                // sprintf(initialized, "checkinitializedgood%lu", labelID);
+                // sprintf(typeinstruction, "TYPE TF@optype LF@%s", string.string);
+                // // check initialization of var
+                // PRINT_CODE(tmpF, );
+                // PRINT_CODE(new_varTF, "optype");
+                // PRINT_CODE(write_text, typeinstruction);
+                // PRINT_CODE(write_text, "PUSHS TF@optype");
+                // PRINT_CODE(push_string, "");
+                // PRINT_CODE(jumpIfNeqS, initialized);
+                // PRINT_CODE(write_text, "EXIT int@5");
+                // PRINT_CODE(label, initialized);
+                // // end of init check
                 PRINT_CODE(push_operand, string.string);
                 dataType = curID->dataType;
             }

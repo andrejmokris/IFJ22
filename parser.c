@@ -321,20 +321,20 @@ bool writeBuiltInSingleParam(node_t *symTable) {
                 printf("Undefined var in Write function\n");
                 endParser(UNDEFVAR_ERROR);
             }
-            char initialized[9999];
-            char typeinstruction[9999];
-            unsigned long labelID = getLabel();
-            sprintf(initialized, "checkinitializedgood%lu", labelID);
-            sprintf(typeinstruction, "TYPE TF@optype LF@%s", string.string);
-            /* check initialization of var */
-            PRINT_CODE(tmpF, );
-            PRINT_CODE(new_varTF, "optype");
-            PRINT_CODE(write_text, typeinstruction);
-            PRINT_CODE(write_text, "PUSHS TF@optype");
-            PRINT_CODE(push_string, "");
-            PRINT_CODE(jumpIfNeqS, initialized);
-            PRINT_CODE(write_text, "EXIT int@5");
-            PRINT_CODE(label, initialized);
+            // char initialized[9999];
+            // char typeinstruction[9999];
+            // unsigned long labelID = getLabel();
+            // sprintf(initialized, "checkinitializedgood%lu", labelID);
+            // sprintf(typeinstruction, "TYPE TF@optype LF@%s", string.string);
+            // /* check initialization of var */
+            // PRINT_CODE(tmpF, );
+            // PRINT_CODE(new_varTF, "optype");
+            // PRINT_CODE(write_text, typeinstruction);
+            // PRINT_CODE(write_text, "PUSHS TF@optype");
+            // PRINT_CODE(push_string, "");
+            // PRINT_CODE(jumpIfNeqS, initialized);
+            // PRINT_CODE(write_text, "EXIT int@5");
+            // PRINT_CODE(label, initialized);
             PRINT_CODE(write_var, string.string);
             return writeBuiltInSingleParam(symTable);
         } else if (newToken == LEX_FLOAT) {
@@ -672,9 +672,6 @@ bool callBuiltIn(int *returnType, String_t *string, node_t *symTable) {
 
 bool functionCall(String_t *fName, int *returnType, char scope,
                   node_t *symTable) {
-    // case for built-in function
-    // TODO: add typechecking and codegen for built-in functions
-
     // CREATEFRAME - create a temporary frame
     // prepare params for function call
     // call function
@@ -709,7 +706,7 @@ bool functionCall(String_t *fName, int *returnType, char scope,
         int parseExpressionRes;
         if ((parseExpressionRes =
                  parseExpression(endChar, &resDataType, symTable)) != SUCCESS) {
-            endParser(parseExpressionRes);
+            endParser(RUN_ERROR);
         }
         PRINT_CODE(new_varTF, funcNode->function->params[i]->ParamID.string);
         // MOVE
@@ -803,7 +800,7 @@ int ifRule(node_t *symTable, node_t functionNode) {
     CONDITION(labelID);
     PRINT_CODE(push_bool, "true");
     if (list.before_if == NULL) {
-        list.before_if = list.active;
+        list.before_if = list.last;
     }
     PRINT_CODE(jumpIfNeqS, strElse);
     if (getParsToken() != LEX_LCRB) {
