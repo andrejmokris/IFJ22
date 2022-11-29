@@ -800,7 +800,7 @@ int ifRule(node_t *symTable, node_t functionNode) {
     CONDITION(labelID);
     PRINT_CODE(push_bool, "true");
     if (list.before_if == NULL) {
-        list.before_if = list.last;
+        list.before_if = list.active;
     }
     PRINT_CODE(jumpIfNeqS, strElse);
     if (getParsToken() != LEX_LCRB) {
