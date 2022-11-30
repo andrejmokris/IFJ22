@@ -28,83 +28,177 @@
         PRINT_CODE(write_text, "TYPE TF@type TF@a");   \
         PRINT_CODE(push_operandTF, "type");            \
         PRINT_CODE(write_text, "PUSHS string@bool");   \
-        sprintf(str, "IsSomethingElse%ld", _labelID);  \
+        sprintf(str, "$IsSomethingElse%ld", _labelID); \
         PRINT_CODE(jumpIfNeqS, str);                   \
         PRINT_CODE(push_operandTF, "a");               \
-        sprintf(str, "ENDOFCONDITION%ld", _labelID);   \
+        sprintf(str, "$ENDOFCONDITION%ld", _labelID);  \
         PRINT_CODE(jump, str);                         \
-        sprintf(str, "IsSomethingElse%ld", _labelID);  \
+        sprintf(str, "$IsSomethingElse%ld", _labelID); \
         PRINT_CODE(label, str);                        \
         PRINT_CODE(write_text, "TYPE TF@type TF@a");   \
         PRINT_CODE(push_operandTF, "type");            \
         PRINT_CODE(write_text, "PUSHS string@int");    \
-        sprintf(str, "Next1%ld", _labelID);            \
+        sprintf(str, "$Next1%ld", _labelID);           \
         PRINT_CODE(jumpIfNeqS, str);                   \
         PRINT_CODE(push_operandTF, "a");               \
         PRINT_CODE(push_int, "0");                     \
-        sprintf(str, "PUSHTRUUU%ld", _labelID);        \
+        sprintf(str, "$PUSHTRUUU%ld", _labelID);       \
         PRINT_CODE(jumpIfNeqS, str);                   \
         PRINT_CODE(push_bool, "false");                \
-        sprintf(str, "ENDOFCONDITION%ld", _labelID);   \
+        sprintf(str, "$ENDOFCONDITION%ld", _labelID);  \
         PRINT_CODE(jump, str);                         \
-        sprintf(str, "Next1%ld", _labelID);            \
+        sprintf(str, "$Next1%ld", _labelID);           \
         PRINT_CODE(label, str);                        \
         PRINT_CODE(write_text, "TYPE TF@type TF@a");   \
         PRINT_CODE(push_operandTF, "type");            \
         PRINT_CODE(write_text, "PUSHS string@float");  \
-        sprintf(str, "Next2%ld", _labelID);            \
+        sprintf(str, "$Next2%ld", _labelID);           \
         PRINT_CODE(jumpIfNeqS, str);                   \
         PRINT_CODE(push_operandTF, "a");               \
         PRINT_CODE(push_float, "0x0p+0");              \
-        sprintf(str, "PUSHTRUUU%ld", _labelID);        \
+        sprintf(str, "$PUSHTRUUU%ld", _labelID);       \
         PRINT_CODE(jumpIfNeqS, str);                   \
         PRINT_CODE(push_bool, "false");                \
-        sprintf(str, "ENDOFCONDITION%ld", _labelID);   \
+        sprintf(str, "$ENDOFCONDITION%ld", _labelID);  \
         PRINT_CODE(jump, str);                         \
-        sprintf(str, "Next2%ld", _labelID);            \
+        sprintf(str, "$Next2%ld", _labelID);           \
         PRINT_CODE(label, str);                        \
         PRINT_CODE(write_text, "TYPE TF@type TF@a");   \
         PRINT_CODE(push_operandTF, "type");            \
         PRINT_CODE(write_text, "PUSHS string@string"); \
-        sprintf(str, "Next3%ld", _labelID);            \
+        sprintf(str, "$Next3%ld", _labelID);           \
         PRINT_CODE(jumpIfNeqS, str);                   \
         PRINT_CODE(push_operandTF, "a");               \
         PRINT_CODE(push_string, "");                   \
-        sprintf(str, "PUSHTRUUU%ld", _labelID);        \
-        PRINT_CODE(jumpIfNeqS, str);                   \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);              \
+        PRINT_CODE(push_operandTF, "a");               \
+        PRINT_CODE(push_string, "0");                  \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);              \
+        PRINT_CODE(push_operandTF, "a");               \
+        PRINT_CODE(push_string, "0.0");                \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);              \
+        PRINT_CODE(put_OPERATOR, 69);                  \
+        sprintf(str, "$PUSHTRUUU%ld", _labelID);       \
+        PRINT_CODE(jumpIfEqS, str);                    \
         PRINT_CODE(push_bool, "false");                \
-        sprintf(str, "ENDOFCONDITION%ld", _labelID);   \
+        sprintf(str, "$ENDOFCONDITION%ld", _labelID);  \
         PRINT_CODE(jump, str);                         \
-        sprintf(str, "Next3%ld", _labelID);            \
+        sprintf(str, "$Next3%ld", _labelID);           \
         PRINT_CODE(label, str);                        \
         PRINT_CODE(push_bool, "false");                \
-        sprintf(str, "ENDOFCONDITION%ld", _labelID);   \
+        sprintf(str, "$ENDOFCONDITION%ld", _labelID);  \
         PRINT_CODE(jump, str);                         \
-        sprintf(str, "PUSHTRUUU%ld", _labelID);        \
+        sprintf(str, "$PUSHTRUUU%ld", _labelID);       \
         PRINT_CODE(label, str);                        \
         PRINT_CODE(push_bool, "true");                 \
-        sprintf(str, "ENDOFCONDITION%ld", _labelID);   \
+        sprintf(str, "$ENDOFCONDITION%ld", _labelID);  \
         PRINT_CODE(label, str);                        \
     } while (0)
 
-#define TYPE_CONTROL(_var, _faillabel)                    \
-    do {                                                  \
-        PRINT_CODE(write_text, ("TYPE TF@res TF@" _var)); \
-        PRINT_CODE(push_operandTF, "res");                \
-        PRINT_CODE(push_string, "string");                \
-        PRINT_CODE(put_OPERATOR, LEX_EQ);                 \
-        PRINT_CODE(write_text, ("TYPE TF@res TF@" _var)); \
-        PRINT_CODE(push_operandTF, "res");                \
-        PRINT_CODE(push_string, "bool");                  \
-        PRINT_CODE(put_OPERATOR, LEX_EQ);                 \
-        PRINT_CODE(write_text, ("TYPE TF@res TF@" _var)); \
-        PRINT_CODE(push_operandTF, "res");                \
-        PRINT_CODE(push_string, "nil");                   \
-        PRINT_CODE(put_OPERATOR, LEX_EQ);                 \
-        PRINT_CODE(put_OPERATOR, 69);                     \
-        PRINT_CODE(put_OPERATOR, 69);                     \
-        PRINT_CODE(push_bool, "true");                    \
-        PRINT_CODE(jumpIfEqS, _faillabel);                \
+#define TYPE_CONTROL(_var, _res, _faillabel)                   \
+    do {                                                       \
+        PRINT_CODE(write_text, ("TYPE TF@" _res " TF@" _var)); \
+        PRINT_CODE(push_operandTF, _res);                      \
+        PRINT_CODE(push_string, "string");                     \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);                      \
+        PRINT_CODE(write_text, ("TYPE TF@" _res " TF@" _var)); \
+        PRINT_CODE(push_operandTF, _res);                      \
+        PRINT_CODE(push_string, "bool");                       \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);                      \
+        PRINT_CODE(write_text, ("TYPE TF@" _res " TF@" _var)); \
+        PRINT_CODE(push_operandTF, _res);                      \
+        PRINT_CODE(push_string, "nil");                        \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);                      \
+        PRINT_CODE(put_OPERATOR, 69);                          \
+        PRINT_CODE(put_OPERATOR, 69);                          \
+        PRINT_CODE(push_bool, "true");                         \
+        PRINT_CODE(jumpIfEqS, _faillabel);                     \
+    } while (0)
+
+#define IS_NIL(_var, _res)                                     \
+    do {                                                       \
+        PRINT_CODE(write_text, ("TYPE TF@" _res " TF@" _var)); \
+        PRINT_CODE(push_operandTF, _res);                      \
+        PRINT_CODE(push_string, "nil");                        \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);                      \
+    } while (0)
+
+#define CMP_TO_NULL(_var, _labelID)                     \
+    do {                                                \
+        MAKE_VARS();                                    \
+        PRINT_CODE(write_text, "TYPE TF@res TF@"_var);  \
+        PRINT_CODE(push_operandTF, "res");              \
+        PRINT_CODE(write_text, "PUSHS string@nil");     \
+        sprintf(str2, "$IsSomethingElse%ld", _labelID); \
+        PRINT_CODE(jumpIfNeqS, str2);                   \
+        PRINT_CODE(push_bool, "true");                  \
+        sprintf(str2, "$ENDOFCOMPTONULL%ld", _labelID); \
+        PRINT_CODE(jump, str2);                         \
+        sprintf(str2, "$IsSomethingElse%ld", _labelID); \
+        PRINT_CODE(label, str2);                        \
+        PRINT_CODE(write_text, "TYPE TF@res TF@"_var);  \
+        PRINT_CODE(push_operandTF, "res");              \
+        PRINT_CODE(write_text, "PUSHS string@int");     \
+        sprintf(str2, "$Next1%ld", _labelID);           \
+        PRINT_CODE(jumpIfNeqS, str2);                   \
+        PRINT_CODE(push_operandTF, _var);               \
+        PRINT_CODE(push_int, "0");                      \
+        sprintf(str2, "$PUSHTRUUU%ld", _labelID);       \
+        PRINT_CODE(jumpIfEqS, str2);                    \
+        PRINT_CODE(push_bool, "false");                 \
+        sprintf(str2, "$ENDOFCOMPTONULL%ld", _labelID); \
+        PRINT_CODE(jump, str2);                         \
+        sprintf(str2, "$Next1%ld", _labelID);           \
+        PRINT_CODE(label, str2);                        \
+        PRINT_CODE(write_text, "TYPE TF@res TF@"_var);  \
+        PRINT_CODE(push_operandTF, "res");              \
+        PRINT_CODE(write_text, "PUSHS string@float");   \
+        sprintf(str2, "$Next2%ld", _labelID);           \
+        PRINT_CODE(jumpIfNeqS, str2);                   \
+        PRINT_CODE(push_operandTF, _var);               \
+        PRINT_CODE(push_float, "0x0p+0");               \
+        sprintf(str2, "$PUSHTRUUU%ld", _labelID);       \
+        PRINT_CODE(jumpIfEqS, str2);                    \
+        PRINT_CODE(push_bool, "false");                 \
+        sprintf(str2, "$ENDOFCOMPTONULL%ld", _labelID); \
+        PRINT_CODE(jump, str2);                         \
+        sprintf(str2, "$Next2%ld", _labelID);           \
+        PRINT_CODE(label, str2);                        \
+        PRINT_CODE(write_text, "TYPE TF@type TF@a");    \
+        PRINT_CODE(push_operandTF, "type");             \
+        PRINT_CODE(write_text, "PUSHS string@string");  \
+        sprintf(str2, "$Next3%ld", _labelID);           \
+        PRINT_CODE(jumpIfNeqS, str2);                   \
+        PRINT_CODE(push_operandTF, _var);               \
+        PRINT_CODE(push_string, "");                    \
+        sprintf(str2, "$PUSHTRUUU%ld", _labelID);       \
+        PRINT_CODE(jumpIfEqS, str2);                    \
+        PRINT_CODE(push_bool, "false");                 \
+        sprintf(str2, "$ENDOFCOMPTONULL%ld", _labelID); \
+        PRINT_CODE(jump, str2);                         \
+        sprintf(str2, "$Next3%ld", _labelID);           \
+        PRINT_CODE(label, str2);                        \
+        PRINT_CODE(push_bool, "false");                 \
+        sprintf(str2, "$ENDOFCOMPTONULL%ld", _labelID); \
+        PRINT_CODE(jump, str2);                         \
+        sprintf(str2, "$PUSHTRUUU%ld", _labelID);       \
+        PRINT_CODE(label, str2);                        \
+        PRINT_CODE(push_bool, "true");                  \
+        sprintf(str2, "$ENDOFCOMPTONULL%ld", _labelID); \
+        PRINT_CODE(label, str2);                        \
+    } while (0)
+
+#define B_S_CONTROL(_var, _res)                                \
+    do {                                                       \
+        PRINT_CODE(write_text, ("TYPE TF@" _res " TF@" _var)); \
+        PRINT_CODE(push_operandTF, _res);                      \
+        PRINT_CODE(push_string, "string");                     \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);                      \
+        PRINT_CODE(write_text, ("TYPE TF@" _res " TF@" _var)); \
+        PRINT_CODE(push_operandTF, _res);                      \
+        PRINT_CODE(push_string, "bool");                       \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);                      \
+        PRINT_CODE(put_OPERATOR, 69);                          \
     } while (0)
 
 #define INT2FLOAT(_res, _var, _faillabel)           \
@@ -147,15 +241,15 @@
         PRINT_CODE(assignTF, "a");    \
     } while (0)
 
-#define END_OPERATION(_str, _labelID)         \
-    do {                                      \
-        sprintf(_str, "EXIT%ld", _labelID);   \
-        PRINT_CODE(jump, _str);               \
-        sprintf(_str, "FAIL%ld", _labelID);   \
-        PRINT_CODE(label, _str);              \
-        PRINT_CODE(write_text, "EXIT int@7"); \
-        sprintf(_str, "EXIT%ld", _labelID);   \
-        PRINT_CODE(label, _str);              \
+#define END_OPERATION(_str, _labelID)          \
+    do {                                       \
+        sprintf(_str, "$EXIT%ld", _labelID);   \
+        PRINT_CODE(jump, _str);                \
+        sprintf(_str, "$FAIL%ld", _labelID);   \
+        PRINT_CODE(label, _str);               \
+        PRINT_CODE(write_text, "EXIT int@53"); \
+        sprintf(_str, "$EXIT%ld", _labelID);   \
+        PRINT_CODE(label, _str);               \
     } while (0)
 
 #define PRINT_SUBSTRING()                                         \
@@ -456,8 +550,8 @@
         char str1[99999];                                                \
         char str2[99999];                                                \
         unsigned long labelID = getLabel();                              \
-        sprintf(str1, "goodtype%ld", labelID);                           \
-        sprintf(str2, "badtype%ld", labelID);                            \
+        sprintf(str1, "$goodtype%ld", labelID);                          \
+        sprintf(str2, "$badtype%ld", labelID);                           \
         PRINT_CODE(label, "strlen");                                     \
         PRINT_CODE(pushF, );                                             \
         PRINT_CODE(new_var, "length");                                   \

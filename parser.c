@@ -794,9 +794,9 @@ int ifRule(node_t *symTable, node_t functionNode) {
     }
     unsigned long labelID = getLabel();
     char strElse[99999];
-    sprintf(strElse, "IfElse%ld", labelID);
+    sprintf(strElse, "$IfElse%ld", labelID);
     char strEnd[99999];
-    sprintf(strEnd, "IfEnd%ld", labelID);
+    sprintf(strEnd, "$IfEnd%ld", labelID);
     CONDITION(labelID);
     PRINT_CODE(push_bool, "true");
     if (list.before_if == NULL) {
@@ -852,8 +852,8 @@ bool whileRule(node_t *symTable, node_t functionNode) {
     unsigned long labelID = getLabel();
     char strStart[99999];
     char strEnd[99999];
-    sprintf(strStart, "WhileStart%ld", labelID);
-    sprintf(strEnd, "WhileEnd%ld", labelID);
+    sprintf(strStart, "$WhileStart%ld", labelID);
+    sprintf(strEnd, "$WhileEnd%ld", labelID);
     PRINT_CODE(label, strStart);
     if (list.before_while == NULL) {
         list.before_while = list.active;
