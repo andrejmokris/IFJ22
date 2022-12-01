@@ -171,7 +171,7 @@ int divRule(Stack *stack, StackElement *op1, StackElement *op2) {
     INT2FLOAT("res", "b", str1);
     PRINT_CODE(push_float, "0x0p+0");
     PRINT_CODE(push_operandTF, "b");
-    sprintf(str1, "$FAILDIV0%ld", labelID);
+    sprintf(str1, "$FAILDIVBY0%ld", labelID);
     PRINT_CODE(jumpIfNeqS, str1);
     PRINT_CODE(write_text, "EXIT int@57");
     PRINT_CODE(label, str1);
@@ -281,25 +281,25 @@ int reduceExpression(Stack *stack) {
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
-                sprintf(str1, "$LEQNOTCOMPARE%ld", labelID);
+                labelID = getLabel();
                 MAKE_VARS();
 
                 IS_NIL("a", "res");
                 PRINT_CODE(push_bool, "true");
-                sprintf(str3, "$DONTCMPTONULL%ld", labelID);
+
+                sprintf(str1, "$GTQEND%ld", labelID);
+                sprintf(str3, "$LEQDONTCMPTONULL1%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str3);
-                CMP_TO_NULL("b", labelID);
-                PRINT_CODE(push_bool, "false");
-                PRINT_CODE(jumpIfEqS, str1);
+                CMP_TO_NULL("b", getLabel());
+                PRINT_CODE(jump, str1);
                 PRINT_CODE(label, str3);
 
                 IS_NIL("b", "res");
                 PRINT_CODE(push_bool, "true");
-                sprintf(str3, "$DONTCMPTONULL2%ld", labelID);
+                sprintf(str3, "$LEQDONTCMPTONULL2%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str3);
-                CMP_TO_NULL("a", labelID);
-                PRINT_CODE(push_bool, "false");
-                PRINT_CODE(jumpIfEqS, str1);
+                CMP_TO_NULL("a", getLabel());
+                PRINT_CODE(jump, str1);
                 PRINT_CODE(label, str3);
 
                 sprintf(str1, "$LEQCOMPARE%ld", labelID);
@@ -310,13 +310,13 @@ int reduceExpression(Stack *stack) {
                 B_S_CONTROL("b", "res");
                 PRINT_CODE(put_OPERATOR, 69);
                 PRINT_CODE(push_bool, "true");
-                sprintf(str3, "$VALIDTYPE%ld", labelID);
+                sprintf(str3, "$LEQVALIDTYPE%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str3);
                 PRINT_CODE(write_text, "EXIT int@53");
                 PRINT_CODE(label, str3);
-                sprintf(str3, "$SKIP%ld", labelID);
+                sprintf(str3, "$LESKIP1%ld", labelID);
                 INT2FLOAT("res", "a", str3);
-                sprintf(str3, "$SKIP2%ld", labelID);
+                sprintf(str3, "$LESKIP2%ld", labelID);
                 INT2FLOAT("res", "b", str3);
                 PRINT_CODE(label, str1);
                 PRINT_CODE(push_operandTF, "a");
@@ -338,25 +338,24 @@ int reduceExpression(Stack *stack) {
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
-                sprintf(str1, "$GTQNOTCOMPARE%ld", labelID);
+                labelID = getLabel();
                 MAKE_VARS();
 
+                sprintf(str1, "$GTQEND%ld", labelID);
                 IS_NIL("a", "res");
                 PRINT_CODE(push_bool, "true");
-                sprintf(str3, "$DONTCMPTONULL%ld", labelID);
+                sprintf(str3, "$GTQDONTCMPTONULL1%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str3);
-                CMP_TO_NULL("b", labelID);
-                PRINT_CODE(push_bool, "false");
-                PRINT_CODE(jumpIfEqS, str1);
+                CMP_TO_NULL("b", getLabel());
+                PRINT_CODE(jump, str1);
                 PRINT_CODE(label, str3);
 
                 IS_NIL("b", "res");
                 PRINT_CODE(push_bool, "true");
-                sprintf(str3, "$DONTCMPTONULL2%ld", labelID);
+                sprintf(str3, "$GTQDONTCMPTONULL2%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str3);
-                CMP_TO_NULL("a", labelID);
-                PRINT_CODE(push_bool, "false");
-                PRINT_CODE(jumpIfEqS, str1);
+                CMP_TO_NULL("a", getLabel());
+                PRINT_CODE(jump, str1);
                 PRINT_CODE(label, str3);
 
                 sprintf(str1, "$GTQCOMPARE%ld", labelID);
@@ -367,13 +366,13 @@ int reduceExpression(Stack *stack) {
                 B_S_CONTROL("b", "res");
                 PRINT_CODE(put_OPERATOR, 69);
                 PRINT_CODE(push_bool, "true");
-                sprintf(str3, "$VALIDTYPE%ld", labelID);
+                sprintf(str3, "$GTQVALIDTYPE%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str3);
                 PRINT_CODE(write_text, "EXIT int@53");
                 PRINT_CODE(label, str3);
-                sprintf(str3, "$SKIP%ld", labelID);
+                sprintf(str3, "$GTQSKIP1%ld", labelID);
                 INT2FLOAT("res", "a", str3);
-                sprintf(str3, "$SKIP2%ld", labelID);
+                sprintf(str3, "$GTQSKIP2%ld", labelID);
                 INT2FLOAT("res", "b", str3);
                 PRINT_CODE(label, str1);
                 PRINT_CODE(push_operandTF, "a");
@@ -396,6 +395,7 @@ int reduceExpression(Stack *stack) {
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
+                labelID = getLabel();
                 sprintf(str1, "$ GREATERCOMPARE%ld", labelID);
                 sprintf(str2, "$ GREATERNOTCOMPARE%ld", labelID);
                 MAKE_VARS();
@@ -410,13 +410,13 @@ int reduceExpression(Stack *stack) {
                 B_S_CONTROL("b", "res");
                 PRINT_CODE(put_OPERATOR, 69);
                 PRINT_CODE(push_bool, "true");
-                sprintf(str3, "$VALIDTYPE%ld", labelID);
+                sprintf(str3, "$GREATERVALIDTYPE%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str3);
                 PRINT_CODE(write_text, "EXIT int@53");
                 PRINT_CODE(label, str3);
-                sprintf(str3, "$SKIP%ld", labelID);
+                sprintf(str3, "$GTSKIP1%ld", labelID);
                 INT2FLOAT("res", "a", str3);
-                sprintf(str3, "$SKIP2%ld", labelID);
+                sprintf(str3, "$GTSKIP2%ld", labelID);
                 INT2FLOAT("res", "b", str3);
                 PRINT_CODE(label, str1);
                 PRINT_CODE(push_operandTF, "a");
@@ -433,6 +433,7 @@ int reduceExpression(Stack *stack) {
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
+                labelID = getLabel();
                 sprintf(str1, "$LESSCOMPARE%ld", labelID);
                 sprintf(str2, "$LESSNOTCOMPARE%ld", labelID);
                 MAKE_VARS();
@@ -447,13 +448,13 @@ int reduceExpression(Stack *stack) {
                 B_S_CONTROL("b", "res");
                 PRINT_CODE(put_OPERATOR, 69);
                 PRINT_CODE(push_bool, "true");
-                sprintf(str3, "$VALIDTYPE%ld", labelID);
+                sprintf(str3, "$LESSVALIDTYPE%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str3);
                 PRINT_CODE(write_text, "EXIT int@53");
                 PRINT_CODE(label, str3);
-                sprintf(str3, "$SKIP%ld", labelID);
+                sprintf(str3, "$LESKIP1%ld", labelID);
                 INT2FLOAT("res", "a", str3);
-                sprintf(str3, "$SKIP2%ld", labelID);
+                sprintf(str3, "$LESKIP2%ld", labelID);
                 INT2FLOAT("res", "b", str3);
                 PRINT_CODE(label, str1);
                 PRINT_CODE(push_operandTF, "a");
@@ -471,6 +472,7 @@ int reduceExpression(Stack *stack) {
                 stackPushElement(stack, popArr[0]);
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
+                labelID = getLabel();
                 MAKE_VARS();
                 CMP_VAR("a", "b", "res");
                 labelID = getLabel();

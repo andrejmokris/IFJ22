@@ -123,18 +123,18 @@
         PRINT_CODE(put_OPERATOR, LEX_EQ);                      \
     } while (0)
 
-#define CMP_TO_NULL(_var, _labelID)                     \
+#define CMP_TO_NULL(_var, _label)                       \
     do {                                                \
-        MAKE_VARS();                                    \
+        unsigned long int _labelID = _label;            \
         PRINT_CODE(write_text, "TYPE TF@res TF@"_var);  \
         PRINT_CODE(push_operandTF, "res");              \
         PRINT_CODE(write_text, "PUSHS string@nil");     \
-        sprintf(str2, "$IsSomethingElse%ld", _labelID); \
+        sprintf(str2, "$SomethingElse%ld", _labelID);   \
         PRINT_CODE(jumpIfNeqS, str2);                   \
         PRINT_CODE(push_bool, "true");                  \
         sprintf(str2, "$ENDOFCOMPTONULL%ld", _labelID); \
         PRINT_CODE(jump, str2);                         \
-        sprintf(str2, "$IsSomethingElse%ld", _labelID); \
+        sprintf(str2, "$SomethingElse%ld", _labelID);   \
         PRINT_CODE(label, str2);                        \
         PRINT_CODE(write_text, "TYPE TF@res TF@"_var);  \
         PRINT_CODE(push_operandTF, "res");              \
@@ -143,7 +143,7 @@
         PRINT_CODE(jumpIfNeqS, str2);                   \
         PRINT_CODE(push_operandTF, _var);               \
         PRINT_CODE(push_int, "0");                      \
-        sprintf(str2, "$PUSHTRUUU%ld", _labelID);       \
+        sprintf(str2, "$PUSHTRUGH%ld", _labelID);       \
         PRINT_CODE(jumpIfEqS, str2);                    \
         PRINT_CODE(push_bool, "false");                 \
         sprintf(str2, "$ENDOFCOMPTONULL%ld", _labelID); \
@@ -157,21 +157,21 @@
         PRINT_CODE(jumpIfNeqS, str2);                   \
         PRINT_CODE(push_operandTF, _var);               \
         PRINT_CODE(push_float, "0x0p+0");               \
-        sprintf(str2, "$PUSHTRUUU%ld", _labelID);       \
+        sprintf(str2, "$PUSHTRUGH%ld", _labelID);       \
         PRINT_CODE(jumpIfEqS, str2);                    \
         PRINT_CODE(push_bool, "false");                 \
         sprintf(str2, "$ENDOFCOMPTONULL%ld", _labelID); \
         PRINT_CODE(jump, str2);                         \
         sprintf(str2, "$Next2%ld", _labelID);           \
         PRINT_CODE(label, str2);                        \
-        PRINT_CODE(write_text, "TYPE TF@type TF@a");    \
-        PRINT_CODE(push_operandTF, "type");             \
+        PRINT_CODE(write_text, "TYPE TF@res TF@a");     \
+        PRINT_CODE(push_operandTF, "res");              \
         PRINT_CODE(write_text, "PUSHS string@string");  \
         sprintf(str2, "$Next3%ld", _labelID);           \
         PRINT_CODE(jumpIfNeqS, str2);                   \
         PRINT_CODE(push_operandTF, _var);               \
         PRINT_CODE(push_string, "");                    \
-        sprintf(str2, "$PUSHTRUUU%ld", _labelID);       \
+        sprintf(str2, "$PUSHTRUGH%ld", _labelID);       \
         PRINT_CODE(jumpIfEqS, str2);                    \
         PRINT_CODE(push_bool, "false");                 \
         sprintf(str2, "$ENDOFCOMPTONULL%ld", _labelID); \
@@ -181,7 +181,7 @@
         PRINT_CODE(push_bool, "false");                 \
         sprintf(str2, "$ENDOFCOMPTONULL%ld", _labelID); \
         PRINT_CODE(jump, str2);                         \
-        sprintf(str2, "$PUSHTRUUU%ld", _labelID);       \
+        sprintf(str2, "$PUSHTRUGH%ld", _labelID);       \
         PRINT_CODE(label, str2);                        \
         PRINT_CODE(push_bool, "true");                  \
         sprintf(str2, "$ENDOFCOMPTONULL%ld", _labelID); \
