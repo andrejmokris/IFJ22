@@ -50,7 +50,6 @@ void init_dll(Tinstruction_list *list);
 void set_before_while_dll(Tinstruction_list *list);
 void set_lab_main_dll(Tinstruction_list *list);
 
-void insert_first_dll(Tinstruction_list *list, int position);
 void insert_before_active_dll(Tinstruction_list *list, int position);
 void insert_last_dll(Tinstruction_list *list, int position);
 void insert_after_active_dll(Tinstruction_list *list, int position);

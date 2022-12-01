@@ -164,7 +164,7 @@
         PRINT_CODE(jump, str2);                         \
         sprintf(str2, "$Next2%ld", _labelID);           \
         PRINT_CODE(label, str2);                        \
-        PRINT_CODE(write_text, "TYPE TF@res TF@a");     \
+        PRINT_CODE(write_text, "TYPE TF@res TF@"_var);  \
         PRINT_CODE(push_operandTF, "res");              \
         PRINT_CODE(write_text, "PUSHS string@string");  \
         sprintf(str2, "$Next3%ld", _labelID);           \

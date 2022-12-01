@@ -9,7 +9,7 @@ extern Tinstruction_list list;
 
 static char table[15][15] = {
     // 0    1    2    3    4    5    6    7    8    9    10   11   12  13   14
-    // +    -    *    /   ===  !==   <    >   <=  >=     (    )    i    $    .
+    // +    -    *    /   ===  !==   <    >   <=  >=     (    )    i    $   .
     {'>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>',
      '>'},  // + 0
     {'>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>',
@@ -37,7 +37,7 @@ static char table[15][15] = {
     {'>', '>', '>', '>', '>', '>', '>', '>', '>', '>', 'X', '>', 'X', '>',
      '>'},  // i 12
     {'<', '<', '<', '<', '<', '<', '<', '<', '<', '<', '<', 'X', '<', 'A',
-     '<'},  // $ 13
+     '<'},  // $13
     {'>', '>', '<', '<', '>', '>', '>', '>', '>', '>', '<', '>', '<', '>',
      '>'}  // . 14
 };
@@ -284,11 +284,10 @@ int reduceExpression(Stack *stack) {
                 labelID = getLabel();
                 MAKE_VARS();
 
-                IS_NIL("a", "res");
-                PRINT_CODE(push_bool, "true");
-
                 sprintf(str1, "$GTQEND%ld", labelID);
                 sprintf(str3, "$LEQDONTCMPTONULL1%ld", labelID);
+                IS_NIL("a", "res");
+                PRINT_CODE(push_bool, "true");
                 PRINT_CODE(jumpIfNeqS, str3);
                 CMP_TO_NULL("b", getLabel());
                 PRINT_CODE(jump, str1);
@@ -396,8 +395,8 @@ int reduceExpression(Stack *stack) {
                 elementDeconstruct(popArr[1]);
                 elementDeconstruct(popArr[2]);
                 labelID = getLabel();
-                sprintf(str1, "$ GREATERCOMPARE%ld", labelID);
-                sprintf(str2, "$ GREATERNOTCOMPARE%ld", labelID);
+                sprintf(str1, "$GREATERCOMPARE%ld", labelID);
+                sprintf(str2, "$GREATERNOTCOMPARE%ld", labelID);
                 MAKE_VARS();
                 IS_NIL("a", "res");
                 IS_NIL("b", "res");
@@ -422,7 +421,7 @@ int reduceExpression(Stack *stack) {
                 PRINT_CODE(push_operandTF, "a");
                 PRINT_CODE(push_operandTF, "b");
                 PRINT_CODE(put_OPERATOR, LEX_GT);
-                sprintf(str3, "$ GREATEREND%ld", labelID);
+                sprintf(str3, "$GREATEREND%ld", labelID);
                 PRINT_CODE(jump, str3);
                 PRINT_CODE(label, str2);
                 PRINT_CODE(push_bool, "false");

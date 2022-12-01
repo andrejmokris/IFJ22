@@ -104,8 +104,11 @@ bool VarAssign(node_t *symTable) {
         new_var(string.string);
         list.string_pos = code.length;
     }
-    if (getParsToken() != LEX_ASSIGN) {
+    int token = getParsToken();
+    if (token != LEX_ASSIGN && token != LEX_SEMICOL) {
         return false;
+    } else if (token == LEX_SEMICOL) {
+        return true;
     }
     int resDataType;
     int parseExpressionRes;
@@ -799,7 +802,7 @@ int ifRule(node_t *symTable, node_t functionNode) {
     sprintf(strEnd, "$IfEnd%ld", labelID);
     CONDITION(labelID);
     PRINT_CODE(push_bool, "true");
-    if (list.before_if == NULL) {
+    if (list.before_while == NULL && list.before_if == NULL) {
         list.before_if = list.active;
     }
     PRINT_CODE(jumpIfNeqS, strElse);
@@ -855,7 +858,7 @@ bool whileRule(node_t *symTable, node_t functionNode) {
     sprintf(strStart, "$WhileStart%ld", labelID);
     sprintf(strEnd, "$WhileEnd%ld", labelID);
     PRINT_CODE(label, strStart);
-    if (list.before_while == NULL) {
+    if (list.before_while == NULL && list.before_if == NULL) {
         list.before_while = list.active;
     }
     if ((parseExpressionRes =

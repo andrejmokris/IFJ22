@@ -24,31 +24,11 @@ void active_last(Tinstruction_list *list) {
 }
 
 void set_before_while_dll(Tinstruction_list *list) {
-    list->before_while = list->last;
+    list->before_while = list->last->item_prev;
 }
 
 void set_lab_main_dll(Tinstruction_list *list) {
     list->label_main = list->first;
-}
-
-void insert_first_dll(Tinstruction_list *list, int position) {
-    list_item new_element = malloc(sizeof(struct item_list));
-    if (new_element == NULL) {
-        errorExit(INTERNAL_ERROR, "DLL INSERT ERROR\n");
-    }
-    new_element->string_pos = position;
-    if (list->first != NULL) {
-        new_element->item_prev = NULL;
-        new_element->item_next = list->first;
-        list->first->item_prev = new_element;
-        list->first = new_element;
-
-    } else {
-        new_element->item_prev = NULL;
-        new_element->item_next = NULL;
-        list->first = new_element;
-        list->last = new_element;
-    }
 }
 
 void insert_before_active_dll(Tinstruction_list *list, int position) {
@@ -78,11 +58,10 @@ void insert_after_active_dll(Tinstruction_list *list, int position) {
         new_element->item_prev = list->active;
         new_element->item_next = list->active->item_next;
         list->active->item_next = new_element;
-        list->active = new_element;
-
         if (list->last == list->active) {
             list->last = new_element;
         }
+        list->active = new_element;
     } else {
         free(new_element);
         insert_last_dll(list, position);
@@ -100,11 +79,13 @@ void insert_last_dll(Tinstruction_list *list, int position) {
         new_element->item_next = NULL;
         list->last->item_next = new_element;
         list->last = new_element;
+        list->active = new_element;
     } else {
         new_element->item_prev = NULL;
         new_element->item_next = NULL;
         list->first = new_element;
         list->last = new_element;
+        list->active = new_element;
     }
 }
 
