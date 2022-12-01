@@ -46,10 +46,11 @@ static char table[15][15] = {
 int addRule(Stack *stack, StackElement *op1, StackElement *op2) {
     unsigned long labelID = getLabel();
     char str1[9999];
+    char str2[9999];
     MAKE_VARS();
     sprintf(str1, "$FAIL%ld", labelID);
-    TYPE_CONTROL("a", "res", str1);
-    TYPE_CONTROL("b", "res", str1);
+    TYPE_CONTROL("a", "res", str1, getLabel());
+    TYPE_CONTROL("b", "res", str1, getLabel());
     CMP_VAR("a", "b", "res");
     sprintf(str1, "$ADD%ld", labelID);
     PRINT_CODE(jumpIfEqS, str1);
@@ -62,32 +63,22 @@ int addRule(Stack *stack, StackElement *op1, StackElement *op2) {
     PRINT_CODE(write_text, "ADD TF@res TF@a TF@b");
     PRINT_CODE(push_operandTF, "res");
     END_OPERATION(str1, labelID);
-    if ((op1->dataType == op2->dataType) &&
-        (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
-        stackPushElement(stack, op1);
-        elementDeconstruct(op2);
-        // PRINT_CODE(put_OPERATOR, LEX_ADD);
-        return SUCCESS;
-    } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
-               (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
-        op1->dataType = LEX_FLOAT;
-        stackPushElement(stack, op1);
-        elementDeconstruct(op2);
-        return SUCCESS;
-    }
-    elementDeconstruct(op1);
+
+    op1->dataType = LEX_FLOAT;
+    stackPushElement(stack, op1);
     elementDeconstruct(op2);
-    return TYPECOMP_ERORR;
+    return SUCCESS;
 }
 
 // E = E - E
 int subRule(Stack *stack, StackElement *op1, StackElement *op2) {
     unsigned long labelID = getLabel();
     char str1[9999];
+    char str2[9999];
     MAKE_VARS();
     sprintf(str1, "$FAIL%ld", labelID);
-    TYPE_CONTROL("a", "res", str1);
-    TYPE_CONTROL("b", "res", str1);
+    TYPE_CONTROL("a", "res", str1, getLabel());
+    TYPE_CONTROL("b", "res", str1, getLabel());
     CMP_VAR("a", "b", "res");
     sprintf(str1, "$SUB%ld", labelID);
     PRINT_CODE(jumpIfEqS, str1);
@@ -100,32 +91,22 @@ int subRule(Stack *stack, StackElement *op1, StackElement *op2) {
     PRINT_CODE(write_text, "SUB TF@res TF@a TF@b");
     PRINT_CODE(push_operandTF, "res");
     END_OPERATION(str1, labelID);
-    if ((op1->dataType == op2->dataType) &&
-        (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
-        stackPushElement(stack, op1);
-        elementDeconstruct(op2);
-        // PRINT_CODE(put_OPERATOR, LEX_SUB);
-        return SUCCESS;
-    } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
-               (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
-        op1->dataType = LEX_FLOAT;
-        stackPushElement(stack, op1);
-        elementDeconstruct(op2);
-        return SUCCESS;
-    }
-    elementDeconstruct(op1);
+
+    op1->dataType = LEX_FLOAT;
+    stackPushElement(stack, op1);
     elementDeconstruct(op2);
-    return TYPECOMP_ERORR;
+    return SUCCESS;
 }
 
 // E = E * E
 int mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
     unsigned long labelID = getLabel();
     char str1[9999];
+    char str2[9999];
     MAKE_VARS();
     sprintf(str1, "$FAIL%ld", labelID);
-    TYPE_CONTROL("a", "res", str1);
-    TYPE_CONTROL("b", "res", str1);
+    TYPE_CONTROL("a", "res", str1, getLabel());
+    TYPE_CONTROL("b", "res", str1, getLabel());
     CMP_VAR("a", "b", "res");
     sprintf(str1, "$MULL%ld", labelID);
     PRINT_CODE(jumpIfEqS, str1);
@@ -139,62 +120,32 @@ int mulRule(Stack *stack, StackElement *op1, StackElement *op2) {
     PRINT_CODE(push_operandTF, "res");
     END_OPERATION(str1, labelID);
 
-    if ((op1->dataType == op2->dataType) &&
-        (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
-        stackPushElement(stack, op1);
-        elementDeconstruct(op2);
-        // PRINT_CODE(put_OPERATOR, LEX_MUL);
-        return SUCCESS;
-    } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
-               (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
-        op1->dataType = LEX_FLOAT;
-        stackPushElement(stack, op1);
-        elementDeconstruct(op2);
-        return SUCCESS;
-    }
-    elementDeconstruct(op1);
+    op1->dataType = LEX_FLOAT;
+    stackPushElement(stack, op1);
     elementDeconstruct(op2);
-    return TYPECOMP_ERORR;
+    return SUCCESS;
 }
 
 // E = E / E
 int divRule(Stack *stack, StackElement *op1, StackElement *op2) {
     unsigned long labelID = getLabel();
     char str1[9999];
+    char str2[9999];
     MAKE_VARS();
     sprintf(str1, "$FAIL%ld", labelID);
-    TYPE_CONTROL("a", "res", str1);
-    TYPE_CONTROL("b", "res", str1);
+    TYPE_CONTROL("a", "res", str1, getLabel());
+    TYPE_CONTROL("b", "res", str1, getLabel());
     sprintf(str1, "$DIVLABEL1%ld", labelID);
     INT2FLOAT("res", "a", str1);
     sprintf(str1, "$DIVLABEL2%ld", labelID);
     INT2FLOAT("res", "b", str1);
-    PRINT_CODE(push_float, "0x0p+0");
-    PRINT_CODE(push_operandTF, "b");
-    sprintf(str1, "$FAILDIVBY0%ld", labelID);
-    PRINT_CODE(jumpIfNeqS, str1);
-    PRINT_CODE(write_text, "EXIT int@57");
-    PRINT_CODE(label, str1);
     PRINT_CODE(write_text, "DIV TF@res TF@a TF@b");
     PRINT_CODE(push_operandTF, "res");
     END_OPERATION(str1, labelID);
-
-    if ((op1->dataType == op2->dataType) &&
-        (op1->dataType == LEX_INT || op1->dataType == LEX_FLOAT)) {
-        op1->dataType = LEX_FLOAT;
-        stackPushElement(stack, op1);
-        elementDeconstruct(op2);
-        return SUCCESS;
-    } else if ((op1->dataType == LEX_FLOAT && op2->dataType == LEX_INT) ||
-               (op1->dataType == LEX_INT && op2->dataType == LEX_FLOAT)) {
-        op1->dataType = LEX_FLOAT;
-        stackPushElement(stack, op1);
-        elementDeconstruct(op2);
-        return SUCCESS;
-    }
-    elementDeconstruct(op1);
+    op1->dataType = LEX_FLOAT;
+    stackPushElement(stack, op1);
     elementDeconstruct(op2);
-    return TYPECOMP_ERORR;
+    return SUCCESS;
 }
 
 int reduceExpression(Stack *stack) {
@@ -311,7 +262,7 @@ int reduceExpression(Stack *stack) {
                 PRINT_CODE(push_bool, "true");
                 sprintf(str3, "$LEQVALIDTYPE%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str3);
-                PRINT_CODE(write_text, "EXIT int@53");
+                PRINT_CODE(write_text, "EXIT int@7");
                 PRINT_CODE(label, str3);
                 sprintf(str3, "$LESKIP1%ld", labelID);
                 INT2FLOAT("res", "a", str3);
@@ -367,7 +318,7 @@ int reduceExpression(Stack *stack) {
                 PRINT_CODE(push_bool, "true");
                 sprintf(str3, "$GTQVALIDTYPE%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str3);
-                PRINT_CODE(write_text, "EXIT int@53");
+                PRINT_CODE(write_text, "EXIT int@7");
                 PRINT_CODE(label, str3);
                 sprintf(str3, "$GTQSKIP1%ld", labelID);
                 INT2FLOAT("res", "a", str3);
@@ -411,7 +362,7 @@ int reduceExpression(Stack *stack) {
                 PRINT_CODE(push_bool, "true");
                 sprintf(str3, "$GREATERVALIDTYPE%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str3);
-                PRINT_CODE(write_text, "EXIT int@53");
+                PRINT_CODE(write_text, "EXIT int@7");
                 PRINT_CODE(label, str3);
                 sprintf(str3, "$GTSKIP1%ld", labelID);
                 INT2FLOAT("res", "a", str3);
@@ -449,7 +400,7 @@ int reduceExpression(Stack *stack) {
                 PRINT_CODE(push_bool, "true");
                 sprintf(str3, "$LESSVALIDTYPE%ld", labelID);
                 PRINT_CODE(jumpIfNeqS, str3);
-                PRINT_CODE(write_text, "EXIT int@53");
+                PRINT_CODE(write_text, "EXIT int@7");
                 PRINT_CODE(label, str3);
                 sprintf(str3, "$LESKIP1%ld", labelID);
                 INT2FLOAT("res", "a", str3);
@@ -616,22 +567,18 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
                 return UNDEFVAR_ERROR;
             } else {
                 isID = true;
-                /**/
-                // char initialized[9999];
-                // char typeinstruction[9999];
-                // unsigned long labelID = getLabel();
-                // sprintf(initialized, "checkinitializedgood%lu", labelID);
-                // sprintf(typeinstruction, "TYPE TF@optype LF@%s", string.string);
-                // // check initialization of var
-                // PRINT_CODE(tmpF, );
-                // PRINT_CODE(new_varTF, "optype");
-                // PRINT_CODE(write_text, typeinstruction);
-                // PRINT_CODE(write_text, "PUSHS TF@optype");
-                // PRINT_CODE(push_string, "");
-                // PRINT_CODE(jumpIfNeqS, initialized);
-                // PRINT_CODE(write_text, "EXIT int@5");
-                // PRINT_CODE(label, initialized);
-                // // end of init check
+                char initialized[9999];
+                char typeinstruction[9999];
+                unsigned long labelID = getLabel();
+                sprintf(initialized, "checkinitializedgood%lu", labelID);
+                sprintf(typeinstruction, "TYPE LF@$optype LF@%s", string.string);
+                // check initialization of var
+                PRINT_CODE(write_text, typeinstruction);
+                PRINT_CODE(write_text, "PUSHS LF@$optype");
+                PRINT_CODE(push_string, "");
+                PRINT_CODE(jumpIfNeqS, initialized);
+                PRINT_CODE(write_text, "EXIT int@5");
+                PRINT_CODE(label, initialized);
                 PRINT_CODE(push_operand, string.string);
                 dataType = curID->dataType;
             }

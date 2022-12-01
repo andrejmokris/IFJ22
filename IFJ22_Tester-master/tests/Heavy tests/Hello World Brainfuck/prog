@@ -6,6 +6,15 @@ $program = reads();
 $program_length = strlen($program);
 $pc = 0;
 
+function ssubstr(string $str, int $start, int $end) : string {
+    $out = substring($str, $start, $end);
+    if($out !== null) {
+        return $out;
+    } else {
+        return "";
+    }
+}
+
 function setData(string $data, int $ptr, int $value) : string {
     $dataLen = strlen($data);
     $data1 = ssubstr($data, 0, $ptr);
@@ -14,15 +23,6 @@ function setData(string $data, int $ptr, int $value) : string {
     $chr = chr($value);
     $out = $data1 . $chr . $data2;
     return $out;
-}
-
-function ssubstr(string $str, int $start, int $end) : string {
-    $out = substring($str, $start, $end);
-    if($out !== null) {
-        return $out;
-    } else {
-        return "";
-    }
 }
 
 while($pc<$program_length) {

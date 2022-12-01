@@ -31,6 +31,7 @@ void initParser() {
     PRINT_CODE(label, "NULLMAIN42069");
     PRINT_CODE(tmpF, );
     PRINT_CODE(pushF, );
+    PRINT_CODE(new_var, "$optype");
     globalSymTable = NULL;
     funcTable = NULL;
     curToken = 0;
@@ -198,6 +199,7 @@ bool functionDeclaration() {
     active_first(&list);
     PRINT_CODE(label, string.string);
     PRINT_CODE(pushF, );
+    PRINT_CODE(new_var, "$optype");
     funcNode->function->nOfParams = 0;
     // function ID (
     if (getParsToken() != LEX_LPAR) {
@@ -324,20 +326,19 @@ bool writeBuiltInSingleParam(node_t *symTable) {
                 printf("Undefined var in Write function\n");
                 endParser(UNDEFVAR_ERROR);
             }
-            // char initialized[9999];
-            // char typeinstruction[9999];
-            // unsigned long labelID = getLabel();
-            // sprintf(initialized, "checkinitializedgood%lu", labelID);
-            // sprintf(typeinstruction, "TYPE TF@optype LF@%s", string.string);
-            // /* check initialization of var */
-            // PRINT_CODE(tmpF, );
-            // PRINT_CODE(new_varTF, "optype");
-            // PRINT_CODE(write_text, typeinstruction);
-            // PRINT_CODE(write_text, "PUSHS TF@optype");
-            // PRINT_CODE(push_string, "");
-            // PRINT_CODE(jumpIfNeqS, initialized);
-            // PRINT_CODE(write_text, "EXIT int@5");
-            // PRINT_CODE(label, initialized);
+            char initialized[9999];
+            char typeinstruction[9999];
+            unsigned long labelID = getLabel();
+            sprintf(initialized, "checkinitializedgood%lu", labelID);
+            sprintf(typeinstruction, "TYPE LF@$optype LF@%s", string.string);
+            // check initialization of var
+            PRINT_CODE(write_text, typeinstruction);
+            PRINT_CODE(write_text, "PUSHS LF@$optype");
+            PRINT_CODE(push_string, "");
+            PRINT_CODE(jumpIfNeqS, initialized);
+            PRINT_CODE(write_text, "EXIT int@5");
+            PRINT_CODE(label, initialized);
+            PRINT_CODE(push_operand, string.string);
             PRINT_CODE(write_var, string.string);
             return writeBuiltInSingleParam(symTable);
         } else if (newToken == LEX_FLOAT) {
@@ -372,16 +373,15 @@ bool writeBuiltInParam(node_t *symTable) {
         char typeinstruction[9999];
         unsigned long labelID = getLabel();
         sprintf(initialized, "checkinitializedgood%lu", labelID);
-        sprintf(typeinstruction, "TYPE TF@optype LF@%s", string.string);
-        /* check initialization of var */
-        PRINT_CODE(tmpF, );
-        PRINT_CODE(new_varTF, "optype");
+        sprintf(typeinstruction, "TYPE LF@$optype LF@%s", string.string);
+        // check initialization of var
         PRINT_CODE(write_text, typeinstruction);
-        PRINT_CODE(write_text, "PUSHS TF@optype");
+        PRINT_CODE(write_text, "PUSHS LF@$optype");
         PRINT_CODE(push_string, "");
         PRINT_CODE(jumpIfNeqS, initialized);
         PRINT_CODE(write_text, "EXIT int@5");
         PRINT_CODE(label, initialized);
+        PRINT_CODE(push_operand, string.string);
         PRINT_CODE(write_var, string.string);
     } else if (newToken == LEX_FLOAT) {
         char str[9999];
@@ -687,6 +687,7 @@ bool functionCall(String_t *fName, int *returnType, char scope,
         }
     }
     PRINT_CODE(tmpF, );
+    PRINT_CODE(new_varTF, "$tmpvar");
     node_t funcNode;
     if (fName == NULL) {
         funcNode = TreeFind(funcTable, string.string);
@@ -703,20 +704,113 @@ bool functionCall(String_t *fName, int *returnType, char scope,
     }
     int nOfParams = funcNode->function->nOfParams;
     // loading parameters and comparing data types
+
     for (int i = 0; i < nOfParams; i++) {
         int endChar = (i == nOfParams - 1) ? LEX_RPAR : LEX_COMMA;
-        int resDataType;
-        int parseExpressionRes;
-        if ((parseExpressionRes =
-                 parseExpression(endChar, &resDataType, symTable)) != SUCCESS) {
-            endParser(RUN_ERROR);
+
+        int nextToken = getParsToken();
+
+        if (nextToken == LEX_ID) {
+            PRINT_CODE(push_operand, string.string);
+            char str[9999];
+            unsigned long labelID = getLabel();
+            int expected_type = funcNode->function->params[i]->dataType;
+            if (expected_type == LEX_TYPE_STRING) {
+                sprintf(str, "TYPE TF@$tmpvar LF@%s", string.string);
+                PRINT_CODE(write_text, str);
+                PRINT_CODE(push_operandTF, "$tmpvar");
+                PRINT_CODE(push_string, "string");
+                sprintf(str, "FAIL%lu", labelID);
+                PRINT_CODE(jumpIfEqS, str);
+                PRINT_CODE(write_text, "EXIT int@4");
+                PRINT_CODE(label, str);
+            } else if (expected_type == LEX_TYPE_INT) {
+                sprintf(str, "TYPE TF@$tmpvar LF@%s", string.string);
+                PRINT_CODE(write_text, str);
+                PRINT_CODE(push_operandTF, "$tmpvar");
+                PRINT_CODE(push_string, "int");
+                sprintf(str, "FAIL%lu", labelID);
+                PRINT_CODE(jumpIfEqS, str);
+                PRINT_CODE(write_text, "EXIT int@4");
+                PRINT_CODE(label, str);
+            } else if (expected_type == LEX_TYPE_FLOAT) {
+                sprintf(str, "TYPE TF@$tmpvar LF@%s", string.string);
+                PRINT_CODE(write_text, str);
+                PRINT_CODE(push_operandTF, "$tmpvar");
+                PRINT_CODE(push_string, "float");
+                sprintf(str, "FAIL%lu", labelID);
+                PRINT_CODE(jumpIfEqS, str);
+                PRINT_CODE(write_text, "EXIT int@4");
+                PRINT_CODE(label, str);
+            } else if (expected_type == LEX_TYPE_STRING_OPT) {
+                sprintf(str, "TYPE TF@$tmpvar LF@%s", string.string);
+                PRINT_CODE(write_text, str);
+                PRINT_CODE(push_operandTF, "$tmpvar");
+                PRINT_CODE(push_string, "string");
+                PRINT_CODE(put_OPERATOR, LEX_EQ);
+                PRINT_CODE(push_operandTF, "$tmpvar");
+                PRINT_CODE(push_string, "nil");
+                PRINT_CODE(put_OPERATOR, LEX_EQ);
+                PRINT_CODE(put_OPERATOR, 69);
+                PRINT_CODE(push_bool, "true");
+                sprintf(str, "FAIL%lu", labelID);
+                PRINT_CODE(jumpIfEqS, str);
+                PRINT_CODE(write_text, "EXIT int@4");
+                PRINT_CODE(label, str);
+            } else if (expected_type == LEX_TYPE_INT_OPT) {
+                sprintf(str, "TYPE TF@$tmpvar LF@%s", string.string);
+                PRINT_CODE(write_text, str);
+                PRINT_CODE(push_operandTF, "$tmpvar");
+                PRINT_CODE(push_string, "int");
+                PRINT_CODE(put_OPERATOR, LEX_EQ);
+                PRINT_CODE(push_operandTF, "$tmpvar");
+                PRINT_CODE(push_string, "nil");
+                PRINT_CODE(put_OPERATOR, LEX_EQ);
+                PRINT_CODE(put_OPERATOR, 69);
+                PRINT_CODE(push_bool, "true");
+                sprintf(str, "FAIL%lu", labelID);
+                PRINT_CODE(jumpIfEqS, str);
+                PRINT_CODE(write_text, "EXIT int@4");
+                PRINT_CODE(label, str);
+            } else if (expected_type == LEX_TYPE_FLOAT_OPT) {
+                sprintf(str, "TYPE TF@$tmpvar LF@%s", string.string);
+                PRINT_CODE(write_text, str);
+                PRINT_CODE(push_operandTF, "$tmpvar");
+                PRINT_CODE(push_string, "float");
+                PRINT_CODE(put_OPERATOR, LEX_EQ);
+                PRINT_CODE(push_operandTF, "$tmpvar");
+                PRINT_CODE(push_string, "nil");
+                PRINT_CODE(put_OPERATOR, LEX_EQ);
+                PRINT_CODE(put_OPERATOR, 69);
+                PRINT_CODE(push_bool, "true");
+                sprintf(str, "FAIL%lu", labelID);
+                PRINT_CODE(jumpIfEqS, str);
+                PRINT_CODE(write_text, "EXIT int@4");
+                PRINT_CODE(label, str);
+            }
+        } else if (nextToken == LEX_INT) {
+            PRINT_CODE(push_int, string.string);
+        } else if (nextToken == LEX_STRING) {
+            PRINT_CODE(push_string, string.string);
+        } else if (nextToken == LEX_FLOAT) {
+            char str[99999];
+            char *ptr;
+            double ret;
+            ret = strtod(string.string, &ptr);
+            sprintf(str, "%a", ret);
+            PRINT_CODE(push_float, str);  // float val
         }
+
         PRINT_CODE(new_varTF, funcNode->function->params[i]->ParamID.string);
         // MOVE
         char str[99999];
         sprintf(str, "POPS TF@%s",
                 funcNode->function->params[i]->ParamID.string);
         PRINT_CODE(write_text, str);
+
+        if (getParsToken() != endChar) {
+            endParser(RUN_ERROR);
+        }
     }
     if (nOfParams == 0) {
         if (getParsToken() != LEX_RPAR) {
@@ -769,9 +863,11 @@ bool returnStat(node_t *symTable, node_t functionNode) {
         }
         return true;
     }
+    /*
     if (!parameterDataTypeVerify(functionRetType, resDataType, symTable)) {
         endParser(RUN_ERROR);
     }
+    */
     if (functionNode->function->returnType == LEX_VOID) {
         PRINT_CODE(push_null, );
     }

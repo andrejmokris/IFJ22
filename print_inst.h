@@ -95,7 +95,34 @@
         PRINT_CODE(label, str);                        \
     } while (0)
 
-#define TYPE_CONTROL(_var, _res, _faillabel)                   \
+#define TYPE_CONTROL(_var, _res, _faillabel, _labelID)         \
+    do {                                                       \
+        labelID = _labelID;                                    \
+        IS_NIL(_var, _res);                                    \
+        PRINT_CODE(push_bool, "true");                         \
+        sprintf(str2, "$NOTNUL%ld", labelID);                  \
+        PRINT_CODE(jumpIfNeqS, str2);                          \
+        PRINT_CODE(write_text, "MOVE TF@" _var " int@0");      \
+        sprintf(str2, "$tudytamskip%ld", labelID);             \
+        PRINT_CODE(jump, str2);                                \
+        sprintf(str2, "$NOTNUL%ld", labelID);                  \
+        PRINT_CODE(label, str2);                               \
+        PRINT_CODE(write_text, ("TYPE TF@" _res " TF@" _var)); \
+        PRINT_CODE(push_operandTF, _res);                      \
+        PRINT_CODE(push_string, "string");                     \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);                      \
+        PRINT_CODE(write_text, ("TYPE TF@" _res " TF@" _var)); \
+        PRINT_CODE(push_operandTF, _res);                      \
+        PRINT_CODE(push_string, "bool");                       \
+        PRINT_CODE(put_OPERATOR, LEX_EQ);                      \
+        PRINT_CODE(put_OPERATOR, 69);                          \
+        PRINT_CODE(push_bool, "true");                         \
+        PRINT_CODE(jumpIfEqS, _faillabel);                     \
+        sprintf(str2, "$tudytamskip%ld", labelID);             \
+        PRINT_CODE(label, str2);                               \
+    } while (0)
+
+#define TYPE_CONTROL_NONIL(_var, _res, _faillabel)             \
     do {                                                       \
         PRINT_CODE(write_text, ("TYPE TF@" _res " TF@" _var)); \
         PRINT_CODE(push_operandTF, _res);                      \
@@ -105,11 +132,6 @@
         PRINT_CODE(push_operandTF, _res);                      \
         PRINT_CODE(push_string, "bool");                       \
         PRINT_CODE(put_OPERATOR, LEX_EQ);                      \
-        PRINT_CODE(write_text, ("TYPE TF@" _res " TF@" _var)); \
-        PRINT_CODE(push_operandTF, _res);                      \
-        PRINT_CODE(push_string, "nil");                        \
-        PRINT_CODE(put_OPERATOR, LEX_EQ);                      \
-        PRINT_CODE(put_OPERATOR, 69);                          \
         PRINT_CODE(put_OPERATOR, 69);                          \
         PRINT_CODE(push_bool, "true");                         \
         PRINT_CODE(jumpIfEqS, _faillabel);                     \
@@ -247,7 +269,7 @@
         PRINT_CODE(jump, _str);                \
         sprintf(_str, "$FAIL%ld", _labelID);   \
         PRINT_CODE(label, _str);               \
-        PRINT_CODE(write_text, "EXIT int@53"); \
+        PRINT_CODE(write_text, "EXIT int@57"); \
         sprintf(_str, "$EXIT%ld", _labelID);   \
         PRINT_CODE(label, _str);               \
     } while (0)
