@@ -516,8 +516,8 @@ int get_Token(String_t *str) {
 }
 
 bool checkProlog(String_t *str) {
-    int startLex = get_Token(str);
-    if (startLex != LEX_LE) {
+    int startLex = fgetc(stdin);
+    if (startLex != '<') {
         return false;
     }
     startLex = fgetc(stdin);

@@ -1,7 +1,17 @@
-<?php
+<?php 
 declare(strict_types=1);
-function f() : int {
-  return 5;
+
+function fun(int $x) : int {
+    $x = readi();
+
+    if($x)
+    {
+        return 1;
+    }
+    else
+    {
+        return "a";
+    }
 }
-$res = f();
-write($res, "\n");
+
+fun(2);

@@ -55,7 +55,6 @@ int getParsToken() {
     curToken = get_Token(&string);
     if (curToken == LEX_ERR) {
         endParser(LEX_ERROR);
-        errorExit(LEX_ERROR, "Lexikalna chyba\n");
     }
     return curToken;
 }
@@ -900,7 +899,7 @@ bool returnStat(node_t *symTable, node_t functionNode) {
     char str[9999];
     unsigned long labelID = getLabel();
     int expected_type = functionNode->function->returnType;
-    //PRINT_CODE(write_text, "PUSHFRAME");
+    // PRINT_CODE(write_text, "PUSHFRAME");
     PRINT_CODE(write_text, "CREATEFRAME");
     PRINT_CODE(write_text, "DEFVAR TF@$expRes");
     PRINT_CODE(write_text, "DEFVAR TF@$tmpvar");
@@ -973,7 +972,7 @@ bool returnStat(node_t *symTable, node_t functionNode) {
         PRINT_CODE(label, str);
     }
     PRINT_CODE(write_text, "PUSHS TF@$expRes");
-    //PRINT_CODE(popF, );
+    // PRINT_CODE(popF, );
     PRINT_CODE(popF, );
     PRINT_CODE(write_text, "RETURN\n");
     int functionRetType = functionNode->function->returnType;
@@ -1232,11 +1231,7 @@ int ParserLoop(bool getNext) {
                      LEX_SEMICOL, &resDataType, &globalSymTable)) != SUCCESS) {
                 endParser(parseExpressionRes);
             }
-            if (parseExpressionRes == SUCCESS) {
-                return ParserLoop(true);
-            } else {
-                endParser(SYNTAX_ERROR);
-            }
+            return ParserLoop(true);
     }
     return SUCCESS;
 }
