@@ -196,6 +196,7 @@ bool functionDeclaration() {
     if (TreeInsertNode(&funcTable, funcNode) == NULL) {
         endParser(INTERNAL_ERROR);
     }
+    funcNode->function->hasReturn = false;
     active_first(&list);
     PRINT_CODE(label, string.string);
     PRINT_CODE(pushF, );
@@ -225,6 +226,12 @@ bool functionDeclaration() {
     if (funcNode->function->returnType == LEX_VOID) {
         PRINT_CODE(push_null, );
         PRINT_CODE(write_text, "RETURN\n");
+    } else {
+        if (funcNode->function->hasReturn == false) {
+            printf("Missing Return in function \"%s\"\n",
+                   funcNode->NodeID.string);
+            endParser(RUN_ERROR);
+        }
     }
     PRINT_CODE(write_text, "");
     active_last(&list);
@@ -711,6 +718,11 @@ bool functionCall(String_t *fName, int *returnType, char scope,
         int nextToken = getParsToken();
 
         if (nextToken == LEX_ID) {
+            // check for existence of var in the symtable
+            node_t checkExistence = TreeFind(*symTable, string.string);
+            if (checkExistence == NULL) {
+                endParser(UNDEFVAR_ERROR);
+            }
             PRINT_CODE(push_operand, string.string);
             char str[9999];
             unsigned long labelID = getLabel();
@@ -789,16 +801,32 @@ bool functionCall(String_t *fName, int *returnType, char scope,
                 PRINT_CODE(label, str);
             }
         } else if (nextToken == LEX_INT) {
-            PRINT_CODE(push_int, string.string);
+            if (funcNode->function->params[i]->dataType == LEX_TYPE_INT ||
+                funcNode->function->params[i]->dataType == LEX_TYPE_INT_OPT) {
+                PRINT_CODE(push_int, string.string);
+            } else {
+                endParser(RUN_ERROR);
+            }
         } else if (nextToken == LEX_STRING) {
-            PRINT_CODE(push_string, string.string);
+            if (funcNode->function->params[i]->dataType == LEX_TYPE_STRING ||
+                funcNode->function->params[i]->dataType ==
+                    LEX_TYPE_STRING_OPT) {
+                PRINT_CODE(push_string, string.string);
+            } else {
+                endParser(RUN_ERROR);
+            }
         } else if (nextToken == LEX_FLOAT) {
-            char str[99999];
-            char *ptr;
-            double ret;
-            ret = strtod(string.string, &ptr);
-            sprintf(str, "%a", ret);
-            PRINT_CODE(push_float, str);  // float val
+            if (funcNode->function->params[i]->dataType == LEX_TYPE_FLOAT ||
+                funcNode->function->params[i]->dataType == LEX_TYPE_FLOAT_OPT) {
+                char str[99999];
+                char *ptr;
+                double ret;
+                ret = strtod(string.string, &ptr);
+                sprintf(str, "%a", ret);
+                PRINT_CODE(push_float, str);  // float val
+            } else {
+                endParser(RUN_ERROR);
+            }
         }
 
         PRINT_CODE(new_varTF, funcNode->function->params[i]->ParamID.string);
@@ -840,6 +868,22 @@ bool returnStat(node_t *symTable, node_t functionNode) {
     // push expression
     // return
     // popframe - return val on temp frame
+    if (functionNode != NULL) {
+        functionNode->function->hasReturn = true;
+    }
+
+    if (functionNode != NULL &&
+        functionNode->function->returnType == LEX_VOID) {
+        if (getParsToken() != LEX_SEMICOL) {
+            // to finish
+            endParser(RETURN_ERROR);
+        }
+        PRINT_CODE(push_null, );
+        PRINT_CODE(popF, );
+        PRINT_CODE(write_text, "RETURN\n");
+        return true;
+    }
+
     int resDataType;
     int parseExpressionRes;
     if ((parseExpressionRes =
@@ -851,9 +895,85 @@ bool returnStat(node_t *symTable, node_t functionNode) {
         PRINT_CODE(write_text, "RETURN\n");
         return true;
     }
-    if (functionNode->function->returnType == LEX_VOID) {
-        PRINT_CODE(push_null, );
+
+    // space for return type check
+    char str[9999];
+    unsigned long labelID = getLabel();
+    int expected_type = functionNode->function->returnType;
+    //PRINT_CODE(write_text, "PUSHFRAME");
+    PRINT_CODE(write_text, "CREATEFRAME");
+    PRINT_CODE(write_text, "DEFVAR TF@$expRes");
+    PRINT_CODE(write_text, "DEFVAR TF@$tmpvar");
+    PRINT_CODE(write_text, "POPS TF@$expRes");
+    if (expected_type == LEX_TYPE_STRING) {
+        PRINT_CODE(write_text, "TYPE TF@$tmpvar TF@$expRes");
+        PRINT_CODE(push_operandTF, "$tmpvar");
+        PRINT_CODE(push_string, "string");
+        sprintf(str, "FAIL%lu", labelID);
+        PRINT_CODE(jumpIfEqS, str);
+        PRINT_CODE(write_text, "EXIT int@4");
+        PRINT_CODE(label, str);
+    } else if (expected_type == LEX_TYPE_INT) {
+        PRINT_CODE(write_text, "TYPE TF@$tmpvar TF@$expRes");
+        PRINT_CODE(push_operandTF, "$tmpvar");
+        PRINT_CODE(push_string, "int");
+        sprintf(str, "FAIL%lu", labelID);
+        PRINT_CODE(jumpIfEqS, str);
+        PRINT_CODE(write_text, "EXIT int@4");
+        PRINT_CODE(label, str);
+    } else if (expected_type == LEX_TYPE_FLOAT) {
+        PRINT_CODE(write_text, "TYPE TF@$tmpvar TF@$expRes");
+        PRINT_CODE(push_operandTF, "$tmpvar");
+        PRINT_CODE(push_string, "float");
+        sprintf(str, "FAIL%lu", labelID);
+        PRINT_CODE(jumpIfEqS, str);
+        PRINT_CODE(write_text, "EXIT int@4");
+        PRINT_CODE(label, str);
+    } else if (expected_type == LEX_TYPE_STRING_OPT) {
+        PRINT_CODE(write_text, "TYPE TF@$tmpvar TF@$expRes");
+        PRINT_CODE(push_operandTF, "$tmpvar");
+        PRINT_CODE(push_string, "string");
+        PRINT_CODE(put_OPERATOR, LEX_EQ);
+        PRINT_CODE(push_operandTF, "$tmpvar");
+        PRINT_CODE(push_string, "nil");
+        PRINT_CODE(put_OPERATOR, LEX_EQ);
+        PRINT_CODE(put_OPERATOR, 69);
+        PRINT_CODE(push_bool, "true");
+        sprintf(str, "FAIL%lu", labelID);
+        PRINT_CODE(jumpIfEqS, str);
+        PRINT_CODE(write_text, "EXIT int@4");
+        PRINT_CODE(label, str);
+    } else if (expected_type == LEX_TYPE_INT_OPT) {
+        PRINT_CODE(write_text, "TYPE TF@$tmpvar TF@$expRes");
+        PRINT_CODE(push_operandTF, "$tmpvar");
+        PRINT_CODE(push_string, "int");
+        PRINT_CODE(put_OPERATOR, LEX_EQ);
+        PRINT_CODE(push_operandTF, "$tmpvar");
+        PRINT_CODE(push_string, "nil");
+        PRINT_CODE(put_OPERATOR, LEX_EQ);
+        PRINT_CODE(put_OPERATOR, 69);
+        PRINT_CODE(push_bool, "true");
+        sprintf(str, "FAIL%lu", labelID);
+        PRINT_CODE(jumpIfEqS, str);
+        PRINT_CODE(write_text, "EXIT int@4");
+        PRINT_CODE(label, str);
+    } else if (expected_type == LEX_TYPE_FLOAT_OPT) {
+        PRINT_CODE(write_text, "TYPE TF@$tmpvar TF@$expRes");
+        PRINT_CODE(push_operandTF, "$tmpvar");
+        PRINT_CODE(push_string, "float");
+        PRINT_CODE(put_OPERATOR, LEX_EQ);
+        PRINT_CODE(push_operandTF, "$tmpvar");
+        PRINT_CODE(push_string, "nil");
+        PRINT_CODE(put_OPERATOR, LEX_EQ);
+        PRINT_CODE(put_OPERATOR, 69);
+        PRINT_CODE(push_bool, "true");
+        sprintf(str, "FAIL%lu", labelID);
+        PRINT_CODE(jumpIfEqS, str);
+        PRINT_CODE(write_text, "EXIT int@4");
+        PRINT_CODE(label, str);
     }
+    PRINT_CODE(write_text, "PUSHS TF@$expRes");
+    //PRINT_CODE(popF, );
     PRINT_CODE(popF, );
     PRINT_CODE(write_text, "RETURN\n");
     int functionRetType = functionNode->function->returnType;
@@ -863,11 +983,7 @@ bool returnStat(node_t *symTable, node_t functionNode) {
         }
         return true;
     }
-    /*
-    if (!parameterDataTypeVerify(functionRetType, resDataType, symTable)) {
-        endParser(RUN_ERROR);
-    }
-    */
+
     if (functionNode->function->returnType == LEX_VOID) {
         PRINT_CODE(push_null, );
     }
@@ -1105,7 +1221,7 @@ int ParserLoop(bool getNext) {
         case LEX_EOF:
             return SUCCESS;
         case LEX_EPILOG:
-            if (getParsToken(string) != LEX_EOF) {
+            if (!checkEpilog(&string)) {
                 endParser(SYNTAX_ERROR);
             } else {
                 return SUCCESS;
@@ -1119,7 +1235,7 @@ int ParserLoop(bool getNext) {
             if (parseExpressionRes == SUCCESS) {
                 return ParserLoop(true);
             } else {
-                return SYNTAX_ERROR;
+                endParser(SYNTAX_ERROR);
             }
     }
     return SUCCESS;

@@ -542,3 +542,16 @@ bool checkProlog(String_t *str) {
     }
     return true;
 }
+
+bool checkEpilog(String_t *str) {
+    int startLex = fgetc(stdin);
+    if(startLex == EOF) {
+        return true;
+    } else if(startLex == '\n') {
+        startLex = fgetc(stdin);
+        return startLex == EOF;
+    } else {
+        return false;
+    }
+    return false;
+}

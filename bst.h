@@ -17,6 +17,7 @@ typedef struct FunctionNode {
     int returnType;
     int nOfParams;
     int stackSize;
+    bool hasReturn;
     param_t *params;
     struct TreeNode *symTable;
 } *func_t;
