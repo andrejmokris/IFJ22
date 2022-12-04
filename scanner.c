@@ -50,6 +50,7 @@ int get_Token(String_t *str) {
                         case '{':
                             return LEX_LCRB;
                         case ';':
+                            stringAppend(str, edge_sign);
                             return LEX_SEMICOL;
                         case ',':
                             return LEX_COMMA;
@@ -378,6 +379,7 @@ int get_Token(String_t *str) {
                 }
                 ungetc(edge_sign, stdin);
                 input_state = START_STATE;
+                stringAppend(str, '=');
                 return LEX_ASSIGN;
 
             case NOT_STATE:
@@ -543,7 +545,7 @@ bool checkProlog(String_t *str) {
     return true;
 }
 
-bool checkEpilog(String_t *str) {
+bool checkEpilog() {
     int startLex = fgetc(stdin);
     if(startLex == EOF) {
         return true;

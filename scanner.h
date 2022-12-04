@@ -115,6 +115,6 @@ enum {
 
 int get_Token(String_t *str);
 bool checkProlog(String_t *str);
-bool checkEpilog(String_t *str);
+bool checkEpilog();
 
 #endif

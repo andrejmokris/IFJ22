@@ -11,6 +11,7 @@
 #include "expression.h"
 #include "scanner.h"
 #include "stack.h"
+#include "codeStore.h"
 
 #define SUCCESS_ELSE 1
 #define SUCCESS_NOELSE 2
@@ -33,5 +34,6 @@ bool getFuncParams(node_t funcNode);
 bool getSingleParam(node_t funcNode);
 bool VarAssign(node_t *symTable);
 bool Type();
+int getTokenfromStore();
 
 #endif

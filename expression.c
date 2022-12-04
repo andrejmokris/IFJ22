@@ -521,13 +521,8 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
         return INTERNAL_ERROR;
     }
 
-    int curLex = get_Token(&string);
-    if (curLex == LEX_ERR) {
-        stackDeconstruct(stack);
-        stringDeconstruct(&string);
-        return LEX_ERROR;
-    } else if (curLex == LEX_RPAR &&
-               (endChar == LEX_COMMA || endChar == LEX_RPAR)) {
+    int curLex = getTokenfromStore(&string);
+    if (curLex == LEX_RPAR && (endChar == LEX_COMMA || endChar == LEX_RPAR)) {
         stackDeconstruct(stack);
         stringDeconstruct(&string);
         *resDataType = LEX_VOID;
@@ -561,6 +556,7 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
         } else if (curLex == LEX_ID) {
             node_t curID = TreeFind(*symTable, string.string);
             if (curID == NULL) {
+                printf("STRING: %s\n", string.string);
                 printf("Undefined Variable\n");
                 stackDeconstruct(stack);
                 stringDeconstruct(&string);
@@ -571,7 +567,8 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
                 char typeinstruction[9999];
                 unsigned long labelID = getLabel();
                 sprintf(initialized, "checkinitializedgood%lu", labelID);
-                sprintf(typeinstruction, "TYPE LF@$optype LF@%s", string.string);
+                sprintf(typeinstruction, "TYPE LF@$optype LF@%s",
+                        string.string);
                 // check initialization of var
                 PRINT_CODE(write_text, typeinstruction);
                 PRINT_CODE(write_text, "PUSHS LF@$optype");
@@ -635,7 +632,7 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
             stack->topElement->dataType = dataType;
             stack->topElement->isID = isID;
 
-            curLex = get_Token(&string);
+            curLex = getTokenfromStore(&string);
             if (curLex == LEX_ERR) {
                 stackDeconstruct(stack);
                 stringDeconstruct(&string);
@@ -654,7 +651,7 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
             setTopNoTerm(stack);
         } else if (operation == '=') {
             stackPush(stack, curLex, string);
-            curLex = get_Token(&string);
+            curLex = getTokenfromStore(&string);
             if (curLex == LEX_ERR) {
                 stackDeconstruct(stack);
                 stringDeconstruct(&string);
