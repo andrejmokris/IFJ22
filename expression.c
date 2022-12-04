@@ -548,7 +548,7 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
     int dataType = curLex;
     do {
         bool isID = false;
-        // printStack(stack);
+        //printStack(stack);
         if (curLex == LEX_EOF) {
             stackDeconstruct(stack);
             stringDeconstruct(&string);
@@ -633,11 +633,6 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
             stack->topElement->isID = isID;
 
             curLex = getTokenfromStore(&string);
-            if (curLex == LEX_ERR) {
-                stackDeconstruct(stack);
-                stringDeconstruct(&string);
-                return LEX_ERROR;
-            }
             dataType = curLex;
         } else if (operation == '>') {
             // REDUCING EXPRESSION
@@ -652,11 +647,6 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
         } else if (operation == '=') {
             stackPush(stack, curLex, string);
             curLex = getTokenfromStore(&string);
-            if (curLex == LEX_ERR) {
-                stackDeconstruct(stack);
-                stringDeconstruct(&string);
-                return LEX_ERROR;
-            }
             dataType = curLex;
         }
     } while (endAnalysis == false);

@@ -93,7 +93,23 @@ bool Type() {
 
 // ID = <expr>;
 bool VarAssign(node_t *symTable) {
+    int resDataType;
+    int parseExpressionRes;
     node_t newNode = TreeFind(*symTable, string.string);
+
+    int token = getTokenfromStore(NULL);
+    if (token != LEX_ASSIGN) {
+        store->lastPrinted -= 2;
+        if ((parseExpressionRes = parseExpression(LEX_SEMICOL, &resDataType,
+                                                  symTable)) != SUCCESS) {
+            endParser(parseExpressionRes);
+        } else {
+            return true;
+        }
+    }
+
+    store->lastPrinted -= 2;
+    getTokenfromStore(NULL);
     if (newNode == NULL) {
         if ((newNode = TreeInsert(symTable, 0, string)) == NULL) {
             endParser(INTERNAL_ERROR);
@@ -114,14 +130,9 @@ bool VarAssign(node_t *symTable) {
         new_var(string.string);
         list.string_pos = code.length;
     }
-    int token = getTokenfromStore(NULL);
-    if (token != LEX_ASSIGN && token != LEX_SEMICOL) {
-        return false;
-    } else if (token == LEX_SEMICOL) {
-        return true;
-    }
-    int resDataType;
-    int parseExpressionRes;
+
+    getTokenfromStore(NULL);
+
     if ((parseExpressionRes =
              parseExpression(LEX_SEMICOL, &resDataType, symTable)) != SUCCESS) {
         endParser(parseExpressionRes);
@@ -382,9 +393,11 @@ bool writeBuiltInSingleParam(node_t *symTable) {
             sprintf(str, "WRITE float@%a", ret);
             PRINT_CODE(write_text, str);
             return writeBuiltInSingleParam(symTable);
-        } else {
+        } else if (newToken == LEX_INT || newToken == LEX_STRING) {
             PRINT_CODE(write, string.string);
             return writeBuiltInSingleParam(symTable);
+        } else {
+            endParser(SYNTAX_ERROR);
         }
     } else {
         endParser(SYNTAX_ERROR);
@@ -423,9 +436,11 @@ bool writeBuiltInParam(node_t *symTable) {
         ret = strtod(string.string, &ptr);
         sprintf(str, "WRITE float@%a", ret);
         PRINT_CODE(write_text, str);
-    } else {
+    } else if (newToken == LEX_INT || newToken == LEX_STRING) {
         PRINT_CODE(write, string.string);
         return writeBuiltInSingleParam(symTable);
+    } else {
+        endParser(SYNTAX_ERROR);
     }
     return writeBuiltInSingleParam(symTable);
 }
@@ -875,11 +890,14 @@ bool functionCall(String_t *fName, int *returnType, char scope,
         *returnType = funcNode->function->returnType;
         if (funcNode->function->returnType == LEX_VOID) {
             *returnType = LEX_NULL;
-        } else if (funcNode->function->returnType == LEX_TYPE_INT) {
+        } else if (funcNode->function->returnType == LEX_TYPE_INT ||
+                   funcNode->function->returnType == LEX_TYPE_INT_OPT) {
             *returnType = LEX_INT;
-        } else if (funcNode->function->returnType == LEX_TYPE_FLOAT) {
+        } else if (funcNode->function->returnType == LEX_TYPE_FLOAT ||
+                   funcNode->function->returnType == LEX_TYPE_FLOAT_OPT) {
             *returnType = LEX_FLOAT;
-        } else if (funcNode->function->returnType == LEX_TYPE_STRING) {
+        } else if (funcNode->function->returnType == LEX_TYPE_STRING ||
+                   funcNode->function->returnType == LEX_TYPE_STRING_OPT) {
             *returnType = LEX_STRING;
         }
     }
@@ -910,6 +928,16 @@ bool returnStat(node_t *symTable, node_t functionNode) {
         return true;
     }
 
+    if (functionNode != NULL) {
+        int retType = functionNode->function->returnType;
+        if (retType == LEX_TYPE_FLOAT || retType == LEX_TYPE_INT ||
+            retType == LEX_TYPE_STRING) {
+            if (getTokenfromStore(NULL) == LEX_SEMICOL) {
+                endParser(RETURN_ERROR);
+            }
+            store->lastPrinted--;
+        }
+    }
     int resDataType;
     int parseExpressionRes;
     if ((parseExpressionRes =
@@ -1119,13 +1147,10 @@ bool whileRule(node_t *symTable, node_t functionNode) {
     }
     PRINT_CODE(jump, strStart);
     PRINT_CODE(label, strEnd);
-    // create label whileStartLabelID
-    // list.before_while = NULL;
     if (!wasDefined) {
         list.before_while = NULL;
     }
     return true;
-    // GENERATE INSTRUCTION JUMP BACK ON WHILE START
 }
 
 // statement list
@@ -1134,6 +1159,8 @@ bool whileRule(node_t *symTable, node_t functionNode) {
 bool statementList(bool getNext, node_t *symTable, node_t functionNode) {
     // find if loading next token is necessary
     // mainly due to absence/presence of else statement
+    int resDataType;
+    int parseExpressionRes;
     if (getNext) {
         curToken = getTokenfromStore(NULL);
     }
@@ -1182,7 +1209,15 @@ bool statementList(bool getNext, node_t *symTable, node_t functionNode) {
         case LEX_RCRB:
             return true;
         default:
-            return false;
+            if (curToken == LEX_SEMICOL) {
+                endParser(SYNTAX_ERROR);
+            }
+            store->lastPrinted--;
+            if ((parseExpressionRes = parseExpression(
+                     LEX_SEMICOL, &resDataType, &globalSymTable)) != SUCCESS) {
+                endParser(parseExpressionRes);
+            }
+            return statementList(true, symTable, functionNode);
     }
     return false;
 }
@@ -1254,6 +1289,10 @@ int ParserLoop(bool getNext) {
             }
             break;
         default:
+            if (curToken == LEX_SEMICOL) {
+                endParser(SYNTAX_ERROR);
+            }
+            store->lastPrinted--;
             if ((parseExpressionRes = parseExpression(
                      LEX_SEMICOL, &resDataType, &globalSymTable)) != SUCCESS) {
                 endParser(parseExpressionRes);
@@ -1271,7 +1310,8 @@ bool loadCode() {
     }
     CodeStoreAppend(store, &string, curToken);
     for (size_t i = 0; i < store->elementCount; i++) {
-        //printf("LEX: %d\t%s\n", store->items[i]->lexID, store->items[i]->tokenVal.string);
+        // printf("LEX: %d\t%s\n", store->items[i]->lexID,
+        // store->items[i]->tokenVal.string);
         if (store->items[i]->lexID == LEX_FUNKW) {
             store->lastPrinted = i + 1;
             functionDeclarationTopG();
