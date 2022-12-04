@@ -43,13 +43,11 @@ void initParser() {
 }
 
 int endParser(int errCode) {
-    stringDeconstruct(&string);
     print_code();
     stringDeconstruct(&code);
     TreeDeconstruct(globalSymTable);
     TreeDeconstruct(funcTable);
     dispose_dll(&list);
-
     if (errCode != SUCCESS) {
         errorExit(errCode, "Chyba\n");
     }
@@ -270,52 +268,10 @@ bool functionDeclaration() {
             endParser(RUN_ERROR);
         }
     }
+    PRINT_CODE(write_text, "EXIT int@4");
     PRINT_CODE(write_text, "");
     active_last(&list);
     return res;
-}
-
-// check if function call matches parameter data types
-/* op1 - expected dt   op2 - arriving dt */
-bool parameterDataTypeVerify(int op1, int op2, node_t *symTable) {
-    if (op2 == LEX_ID) {
-        node_t findVar = TreeFind(*symTable, string.string);
-        if (findVar == NULL) {
-            endParser(UNDEFVAR_ERROR);
-        }
-        op2 = findVar->dataType;
-    }
-    if (op1 == LEX_TYPE_STRING_OPT) {
-        if (op2 == LEX_STRING || op2 == LEX_NULL) {
-            return true;
-        } else {
-            return false;
-        }
-    } else if (op1 == LEX_TYPE_STRING && op2 == LEX_STRING) {
-        return true;
-    }
-
-    if (op1 == LEX_TYPE_FLOAT_OPT) {
-        if (op2 == LEX_FLOAT || op2 == LEX_NULL) {
-            return true;
-        } else {
-            return false;
-        }
-    } else if (op1 == LEX_TYPE_FLOAT && op2 == LEX_FLOAT) {
-        return true;
-    }
-
-    if (op1 == LEX_TYPE_INT_OPT) {
-        if (op2 == LEX_INT || op2 == LEX_NULL) {
-            return true;
-        } else {
-            return false;
-        }
-    } else if (op1 == LEX_TYPE_INT && op2 == LEX_INT) {
-        return true;
-    }
-
-    return false;
 }
 
 bool readBuiltIn(int *returnType, int type) {
@@ -1317,6 +1273,7 @@ bool loadCode() {
             functionDeclarationTopG();
         }
     }
+    //stringDeconstruct(&string);
     store->lastPrinted = 0;
     return true;
 }

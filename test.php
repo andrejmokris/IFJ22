@@ -1,9 +1,11 @@
 <?php
 declare(strict_types=1);
 
-function hello() : string {
-    write("Hello world\n");
-    return "This is not good\n";
+function hello(int $x) : ?string {
+    if ($x === 0) {
+        return "kokot\n";
+    }
 }
 
-write(hello);
+$x = hello(0);
+write($x);
