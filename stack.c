@@ -25,7 +25,7 @@ void elementDeconstruct(StackElement *element) {
 }
 
 Stack *initStack(size_t size) {
-    Stack *newStack = malloc(sizeof(Stack) + size * (sizeof(StackElement *)));
+    Stack *newStack = malloc(sizeof(struct stack));
     if (newStack == NULL) {
         return NULL;
     }
