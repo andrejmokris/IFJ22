@@ -489,17 +489,6 @@ int get_Token(String_t *str) {
                 }
                 break;
 
-            case EXPONENT_STATE1:
-                if (isdigit(edge_sign)) {
-                    input_state = EXPONENT_STATE2;
-                    stringAppend(str, edge_sign);
-                    break;
-                } else {
-                    input_state = START_STATE;
-                    return LEX_ERR;
-                }
-                break;
-
             case EXPONENT_STATE2:
                 if (isdigit(edge_sign)) {
                     stringAppend(str, edge_sign);

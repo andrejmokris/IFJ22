@@ -19,27 +19,19 @@
 
 typedef enum {
     START_STATE,
-
     VAR0_STATE,  // variable identifier
     VAR_STATE,
     ID_STATE,       // function, or keyword, variable identifier
     STRING0_STATE,  // String states
-    STRING1_STATE,
-    EMPTY_STRING_STATE,
     STRING_ESCAPE_STATE,  // escape sequences
     STRING_ESCAPE_STATE1,
     STRING_ESCAPE_STATE2,
     COMM_LINE_STATE,  // Comments
     COMM_BLOCK_STATE,
-    COMM_BLOCK_STATE_FIN,
     INT0_STATE,  // Numbers states, int, float, exponents
-    INT1_STATE,
     FLOAT0_STATE,
-    FLOAT1_STATE,
     EXPONENT_STATE0,
-    EXPONENT_STATE1,
     EXPONENT_STATE2,
-    EXPONENT_NUM_STATE,
     SUM_STATE,     // +
     SUB_STATE,     // -
     DIV_STATE,     // *
