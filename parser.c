@@ -10,9 +10,11 @@ node_t globalSymTable;
 node_t funcTable;
 int curToken;
 CodeStore_t store;
-unsigned long labelCounter = 0;
 
-unsigned long getLabel() { return labelCounter++; }
+unsigned long getLabel() {
+    static unsigned long labelCounter = 0;
+    return labelCounter++;
+}
 
 void initParser() {
     StringInit(&string);
@@ -260,7 +262,7 @@ bool functionDeclaration() {
     bool res = statementList(true, &(funcNode->function->symTable), funcNode);
     if (funcNode->function->returnType == LEX_VOID) {
         PRINT_CODE(push_null, );
-        PRINT_CODE(popF,);
+        PRINT_CODE(popF, );
         PRINT_CODE(write_text, "RETURN\n");
     } else {
         if (funcNode->function->hasReturn == false) {
@@ -829,7 +831,7 @@ bool functionCall(String_t *fName, int *returnType, char scope,
             int type = funcNode->function->params[i]->dataType;
             if (type == LEX_TYPE_STRING_OPT || type == LEX_TYPE_FLOAT_OPT ||
                 type == LEX_TYPE_INT_OPT) {
-                    PRINT_CODE(write_text, "PUSHS nil@nil");
+                PRINT_CODE(write_text, "PUSHS nil@nil");
             } else {
                 endParser(RUN_ERROR);
             }
