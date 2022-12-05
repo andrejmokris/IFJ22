@@ -3,7 +3,10 @@
  *
  * File: dynamic_string.c
  *
- * Dynamic string file
+ * Andrej Mokris: xmokri01
+ * Leos Nevoral: xnevor03
+ * Adam Pap: xpapad11
+ *
  */
 
 #include "dynamic_string.h"

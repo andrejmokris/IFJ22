@@ -1,3 +1,13 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * File: bst.h
+ *
+ * Andrej Mokris: xmokri01
+ * Veronika Simkova: xsimko14
+ *
+ */
+
 #ifndef BST_
 #define BST_
 

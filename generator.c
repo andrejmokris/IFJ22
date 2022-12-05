@@ -1,10 +1,12 @@
 /*
  * IFJ 2022 PROJECT
  *
- * File: generator.c
+ * generator.c
  *
+ * Adam Pap: xpapad11
  *
  */
+
 #include "generator.h"
 
 void init_dll(Tinstruction_list *list) {

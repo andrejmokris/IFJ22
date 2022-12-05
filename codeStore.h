@@ -1,3 +1,12 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * File: codestore.c
+ *
+ * Andrej Mokris: xmokri01
+ *
+ */
+
 #ifndef _CODESTORE
 #define _CODESTORE
 

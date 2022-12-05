@@ -1,3 +1,12 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * File: codestore.c
+ *
+ * Andrej Mokris: xmokri01
+ *
+ */
+
 #include "codeStore.h"
 
 CodeStore_t initCodeStore(size_t size) {

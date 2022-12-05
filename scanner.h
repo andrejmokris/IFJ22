@@ -1,9 +1,10 @@
 /*
  * IFJ 2022 PROJECT
  *
- * File: scanner.h
+ * scanner.h
  *
- * Scanner library
+ * Adam Pap: xpapad11
+ *
  */
 
 #ifndef _SCANNER

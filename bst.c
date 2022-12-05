@@ -1,3 +1,13 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * File: bst.c
+ *
+ * Andrej Mokris: xmokri01
+ * Veronika Simkova: xsimko14
+ *
+ */
+
 #include "bst.h"
 
 node_t createNode(int dataType, String_t NodeID) {
@@ -56,7 +66,6 @@ int addParam(node_t node, int dataType, String_t pID) {
     if (newParam == NULL || !StringInit(&paramID)) {
         return INTERNAL_ERROR;
     }
-    // string
     newParam->ParamID = paramID;
     newParam->dataType = dataType;
     if (!stringCopy(&paramID, &pID)) {

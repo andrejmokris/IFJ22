@@ -1,3 +1,12 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * stack.h
+ *
+ * Andrej Mokris: xmokri01
+ *
+ */
+
 #ifndef _STACK
 #define _STACK
 

@@ -1,9 +1,10 @@
 /*
  * IFJ 2022 PROJECT
  *
- * File: generator.h
+ * generator.h
  *
- * Generator library
+ * Adam Pap: xpapad11
+ *
  */
 #ifndef _GENERATOR
 #define _GENERATOR

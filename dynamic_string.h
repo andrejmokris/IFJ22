@@ -1,3 +1,14 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * File: dynamic_string.c
+ *
+ * Andrej Mokris: xmokri01
+ * Leos Nevoral: xnevor03
+ * Adam Pap: xpapad11
+ *
+ */
+
 #ifndef _DYN_STRING
 #define _DYN_STRING
 

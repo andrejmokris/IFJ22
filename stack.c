@@ -1,3 +1,12 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * stack.c
+ *
+ * Andrej Mokris: xmokri01
+ *
+ */
+
 #include "stack.h"
 
 StackElement *createElement(int tokenID, String_t tokenVal) {

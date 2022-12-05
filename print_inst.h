@@ -1,3 +1,14 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * print_inst.h
+ *
+ * Andrej Mokris: xmokri01
+ * Leos Nevoral: xnevor03
+ * Adam Pap: xpapad11
+ *
+ */
+
 #ifndef _CODEGEN
 #define _CODEGEN
 

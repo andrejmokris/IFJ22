@@ -1,3 +1,14 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * print_inst.c
+ *
+ * Andrej Mokris: xmokri01
+ * Leos Nevoral: xnevor03
+ * Adam Pap: xpapad11
+ *
+ */
+
 #include "print_inst.h"
 
 extern Tinstruction_list list;

@@ -1,3 +1,12 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * File: error.c
+ *
+ * Andrej Mokris: xmokri01
+ *
+ */
+
 #include "error.h"
 
 void errorExit(int errorCode, const char *fmt, ...) {

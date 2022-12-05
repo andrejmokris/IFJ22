@@ -1,3 +1,14 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * main.h
+ *
+ * Andrej Mokris: xmokri01
+ * Leos Nevoral: xnevor03
+ * Adam Pap: xpapad11
+ *
+ */
+
 #include "expression.h"
 
 #include "generator.h"

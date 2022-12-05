@@ -1,3 +1,14 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * parser.h
+ *
+ * Andrej Mokris: xmokri01
+ * Veronika Simkova: xsimko14
+ * Leos Nevoral: xnevor03
+ *
+ */
+
 #ifndef parser
 #define parser
 

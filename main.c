@@ -13,7 +13,6 @@
 
 int main() {
     int res = mainParser();
-    //printf("RESULT: %d\n", res);
     if(res == SUCCESS) {
         return 0;
     } else {

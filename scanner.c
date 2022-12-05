@@ -1,8 +1,10 @@
 /*
  * IFJ 2022 PROJECT
  *
- * File: scanner.c
+ * scanner.c
  *
+ * Andrej Mokris: xmokri01
+ * Adam Pap: xpapad11
  *
  */
 #include "scanner.h"
@@ -221,13 +223,10 @@ int get_Token(String_t *str) {
                     escape_seq_hex[1] = (char)edge_sign;
                     escape_seq_hex[2] = '\0';
                     char *ptr_hex_helper;
-                    long hex =
-                        strtol(escape_seq_hex, &ptr_hex_helper,
-                               16);  // convert string literal to long integer
-                    if (hex == 0 ||
-                        hex > 255)  // escape octal sequence \000 is invalid
-                    {
-                        // input_state = START_STATE;
+                    // convert string literal to long integer
+                    long hex = strtol(escape_seq_hex, &ptr_hex_helper, 16);
+                    // escape octal sequence \x00 is invalid
+                    if (hex == 0 || hex > 255) {
                         return LEX_ERR;
                     }
                     if (hex == 10) {
@@ -246,6 +245,11 @@ int get_Token(String_t *str) {
                         stringAppend(str, '\\');
                         stringAppend(str, '0');
                         stringAppend(str, '9');
+                        stringAppend(str, '2');
+                    } else if (hex == 32) {
+                        stringAppend(str, '\\');
+                        stringAppend(str, '0');
+                        stringAppend(str, '3');
                         stringAppend(str, '2');
                     } else {
                         stringAppend(str, hex);
@@ -271,12 +275,10 @@ int get_Token(String_t *str) {
                     escape_seq_oct[2] = edge_sign;
                     char *ptr_octal_helper;
                     escape_seq_oct[3] = '\0';
-                    long octal =
-                        strtol(escape_seq_oct, &ptr_octal_helper,
-                               8);   // convert string literal to long integer
+                    // convert string literal to long integer
+                    long octal = strtol(escape_seq_oct, &ptr_octal_helper, 8);
                     if (octal == 0)  // escape octal sequence \000 is invalid
                     {
-                        // input_state = START_STATE;
                         return LEX_ERR;
                     }
                     if (octal == 10) {
@@ -296,10 +298,14 @@ int get_Token(String_t *str) {
                         stringAppend(str, '0');
                         stringAppend(str, '9');
                         stringAppend(str, '2');
+                    } else if (octal == 32) {
+                        stringAppend(str, '\\');
+                        stringAppend(str, '0');
+                        stringAppend(str, '3');
+                        stringAppend(str, '2');
                     } else {
                         stringAppend(str, octal);
                     }
-                    input_state = STRING0_STATE;
                     input_state = STRING0_STATE;
                 } else {
                     input_state = START_STATE;
@@ -536,9 +542,9 @@ bool checkProlog(String_t *str) {
 
 bool checkEpilog() {
     int startLex = fgetc(stdin);
-    if(startLex == EOF) {
+    if (startLex == EOF) {
         return true;
-    } else if(startLex == '\n') {
+    } else if (startLex == '\n') {
         startLex = fgetc(stdin);
         return startLex == EOF;
     } else {

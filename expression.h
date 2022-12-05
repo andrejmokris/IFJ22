@@ -1,3 +1,12 @@
+/*
+ * IFJ 2022 PROJECT
+ *
+ * File: main.c
+ *
+ * Andrej Mokris: xmokri01
+ *
+ */
+
 #ifndef _EXPRESSION
 #define _EXPRESSION
 
