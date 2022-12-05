@@ -260,6 +260,7 @@ bool functionDeclaration() {
     bool res = statementList(true, &(funcNode->function->symTable), funcNode);
     if (funcNode->function->returnType == LEX_VOID) {
         PRINT_CODE(push_null, );
+        PRINT_CODE(popF,);
         PRINT_CODE(write_text, "RETURN\n");
     } else {
         if (funcNode->function->hasReturn == false) {
@@ -824,6 +825,14 @@ bool functionCall(String_t *fName, int *returnType, char scope,
             } else {
                 endParser(RUN_ERROR);
             }
+        } else if (nextToken == LEX_NULL) {
+            int type = funcNode->function->params[i]->dataType;
+            if (type == LEX_TYPE_STRING_OPT || type == LEX_TYPE_FLOAT_OPT ||
+                type == LEX_TYPE_INT_OPT) {
+                    PRINT_CODE(write_text, "PUSHS nil@nil");
+            } else {
+                endParser(RUN_ERROR);
+            }
         }
 
         PRINT_CODE(new_varTF, funcNode->function->params[i]->ParamID.string);
@@ -989,12 +998,14 @@ bool returnStat(node_t *symTable, node_t functionNode) {
     int functionRetType = functionNode->function->returnType;
     if (functionRetType == resDataType) {
         if (functionNode->function->returnType == LEX_VOID) {
+            PRINT_CODE(popF, );
             PRINT_CODE(push_null, );
         }
         return true;
     }
 
     if (functionNode->function->returnType == LEX_VOID) {
+        PRINT_CODE(popF, );
         PRINT_CODE(push_null, );
     }
     return true;
@@ -1273,7 +1284,7 @@ bool loadCode() {
             functionDeclarationTopG();
         }
     }
-    //stringDeconstruct(&string);
+    // stringDeconstruct(&string);
     store->lastPrinted = 0;
     return true;
 }

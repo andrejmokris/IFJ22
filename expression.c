@@ -158,7 +158,7 @@ int reduceExpression(Stack *stack) {
         cnt++;
     }
     elementDeconstruct(lastPopped);
-
+    char str[99999];
     // i -> E
     if (cnt == 1 && popArr[0]->tokenID == LEX_I) {
         popArr[0]->tokenID = LEX_E;
@@ -167,7 +167,6 @@ int reduceExpression(Stack *stack) {
                 PRINT_CODE(push_int, popArr[0]->tokenVal.string);
             } else if (popArr[0]->dataType == LEX_FLOAT ||
                        popArr[0]->dataType == LEX_EXPONENT) {
-                char str[99999];
                 char *ptr;
                 double ret;
                 ret = strtod(popArr[0]->tokenVal.string, &ptr);
@@ -548,7 +547,7 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
     int dataType = curLex;
     do {
         bool isID = false;
-        //printStack(stack);
+        // printStack(stack);
         if (curLex == LEX_EOF) {
             stackDeconstruct(stack);
             stringDeconstruct(&string);
@@ -580,6 +579,7 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
                 dataType = curID->dataType;
             }
         }
+        // printf("DATATYPE: %d\n", dataType);
         if (dataType == LEX_TYPE_FLOAT) {
             dataType = LEX_FLOAT;
         } else if (dataType == LEX_TYPE_INT) {
@@ -589,7 +589,9 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
         }
         if (dataType == LEX_INT || dataType == LEX_FLOAT ||
             dataType == LEX_STRING || dataType == LEX_BOOL ||
-            dataType == LEX_EXPONENT || dataType == LEX_NULL) {
+            dataType == LEX_EXPONENT || dataType == LEX_NULL ||
+            dataType == LEX_TYPE_STRING_OPT || dataType == LEX_TYPE_INT_OPT ||
+            dataType == LEX_TYPE_FLOAT_OPT) {
             curLex = LEX_I;
         }
         if (curLex == LEX_EOF) {
