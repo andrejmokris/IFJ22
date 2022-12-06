@@ -4,7 +4,10 @@
  * generator.c
  *
  * Adam Pap: xpapad11
- *
+ * 
+ * Double linked list library used from printing out
+ * the generated code in the right order
+ * 
  */
 
 #include "generator.h"

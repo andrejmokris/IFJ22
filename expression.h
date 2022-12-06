@@ -15,7 +15,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bst.h"
+#include "symtable.h"
 #include "error.h"
 #include "parser.h"
 #include "scanner.h"

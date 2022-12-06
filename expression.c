@@ -510,10 +510,10 @@ int reduceExpression(Stack *stack) {
     return SYNTAX_ERROR;
 }
 
+// in case of ending char, end reduction of the 
 int finishReducing(Stack *stack) {
     int res = SUCCESS;
     while (res == SUCCESS && stack->elementCount > 2) {
-        // printStack(stack);
         res = reduceExpression(stack);
     }
     return res;
@@ -543,8 +543,9 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
         *resDataType = LEX_VOID;
         return SUCCESS;
     }
+    
     if (curLex == LEX_FUNID) {
-        if (functionCall(&string, resDataType, 'a', symTable)) {
+        if (functionCall(&string, resDataType, symTable)) {
             stackDeconstruct(stack);
             stringDeconstruct(&string);
             return SUCCESS;
@@ -558,7 +559,6 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
     int dataType = curLex;
     do {
         bool isID = false;
-        // printStack(stack);
         if (curLex == LEX_EOF) {
             stackDeconstruct(stack);
             stringDeconstruct(&string);
@@ -579,7 +579,7 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
                 sprintf(initialized, "checkinitializedgood%lu", labelID);
                 sprintf(typeinstruction, "TYPE LF@$optype LF@%s",
                         string.string);
-                // check initialization of var
+                // check initialization of var in expression
                 PRINT_CODE(write_text, typeinstruction);
                 PRINT_CODE(write_text, "PUSHS LF@$optype");
                 PRINT_CODE(push_string, "");
@@ -590,7 +590,6 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
                 dataType = curID->dataType;
             }
         }
-        // printf("DATATYPE: %d\n", dataType);
         if (dataType == LEX_TYPE_FLOAT) {
             dataType = LEX_FLOAT;
         } else if (dataType == LEX_TYPE_INT) {
@@ -614,9 +613,7 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
         if (curLex > 15) {
             if (curLex == endChar) {
                 int finishRes = finishReducing(stack);
-
                 if (finishRes == SUCCESS) {
-                    // printStack(stack);
                     break;
                 } else {
                     stackDeconstruct(stack);
@@ -629,6 +626,8 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
                 return SYNTAX_ERROR;
             }
         }
+        // get operation from the precendence table
+        // decide on the operation based on the operation
         char operation = table[stack->topNonTerm->tokenID - 1][curLex - 1];
         if (operation == 'X') {
             if (curLex == endChar) {
@@ -640,6 +639,7 @@ int parseExpression(int endChar, int *resDataType, node_t *symTable) {
             }
         }
         if (operation == '<') {
+            // PUSH ON STACK
             stackInsertHandle(stack);
             stackPush(stack, curLex, string);
             stack->topElement->dataType = dataType;

@@ -22,6 +22,7 @@ node_t funcTable;
 int curToken;
 CodeStore_t store;
 
+/* Function to generate unique ID for labels used in generated code */
 unsigned long getLabel() {
     static unsigned long labelCounter = 0;
     return labelCounter++;
@@ -67,6 +68,8 @@ int endParser(int errCode) {
     return errCode;
 }
 
+/* Get token for Lexer and check for lexical error */
+/* In case of LEX_ERROR, call end of the parser */
 int getParsToken() {
     curToken = get_Token(&string);
     if (curToken == LEX_ERR) {
@@ -75,6 +78,7 @@ int getParsToken() {
     return curToken;
 }
 
+/* Load next token from the code store during the syntax analysis */
 int getTokenfromStore(String_t *destString) {
     token_t newToken = store->items[store->lastPrinted];
     curToken = newToken->lexID;
@@ -102,7 +106,8 @@ bool Type() {
     }
 }
 
-// ID = <expr>;
+/* ID = <expr>; */
+/* Create new variable and analyze expression to be assigned to it */
 bool VarAssign(node_t *symTable) {
     int resDataType;
     int parseExpressionRes;
@@ -110,6 +115,8 @@ bool VarAssign(node_t *symTable) {
 
     int token = getTokenfromStore(NULL);
     if (token != LEX_ASSIGN) {
+        // in case of token after id not being =, rewind 2 token and call
+        // expression analysis <expr>;
         store->lastPrinted -= 2;
         if ((parseExpressionRes = parseExpression(LEX_SEMICOL, &resDataType,
                                                   symTable)) != SUCCESS) {
@@ -125,6 +132,8 @@ bool VarAssign(node_t *symTable) {
         if ((newNode = TreeInsert(symTable, 0, string)) == NULL) {
             endParser(INTERNAL_ERROR);
         }
+        // find, where the DEFVAR instruction has to be generated
+        // in case of being in while/if, print it before the outermost while/if
         list_item stash;
         stash = list.active;
         if (list.before_while != NULL) {
@@ -212,16 +221,21 @@ bool getParams(node_t funcNode) {
     return false;
 }
 
-bool functionDeclarationTopG() {
-    // get function id
+/*
+Load function ID and it's parameters during the first run of syntax analysis
+This function is called after the "function" KW is found
+*/
+bool getFunctionHeader() {
     curToken = getTokenfromStore(NULL);
     if (curToken != LEX_FUNID) {
         endParser(SYNTAX_ERROR);
     }
+    // find if the function has already been defined or is builtin function
     if (TreeFind(funcTable, string.string) != NULL || isBuiltIn(&string)) {
         printf("Redefinition of a function\n");
         endParser(SEMANTIC_ERROR);
     }
+    // create new node in function table and insert it
     node_t funcNode = createFuncNode(LEX_FUNID, string);
     if (TreeInsertNode(&funcTable, funcNode) == NULL) {
         endParser(INTERNAL_ERROR);
@@ -232,6 +246,7 @@ bool functionDeclarationTopG() {
     if (getTokenfromStore(NULL) != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
     }
+    // load all params of the function
     if (!getParams(funcNode)) {
         return false;
     }
@@ -251,6 +266,7 @@ bool functionDeclarationTopG() {
     return true;
 }
 
+// function used in the second pass of analysis
 bool functionDeclaration() {
     // get function id
     curToken = getTokenfromStore(NULL);
@@ -267,9 +283,11 @@ bool functionDeclaration() {
     if (getTokenfromStore(NULL) != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
     }
-    while (getTokenfromStore(NULL) != LEX_LCRB)
-        ;
+    // because the header was already checked during the first pass
+    // it can be skipped now and continue to load body of the function
+    while (getTokenfromStore(NULL) != LEX_LCRB);
 
+    // load the body of function using the statement list
     bool res = statementList(true, &(funcNode->function->symTable), funcNode);
     if (funcNode->function->returnType == LEX_VOID) {
         PRINT_CODE(push_null, );
@@ -282,7 +300,10 @@ bool functionDeclaration() {
             endParser(RUN_ERROR);
         }
     }
+    // if the function isn't void, where the return is generated
+    // implicitly, RETURN is missing and errorcode 4 is thrown
     PRINT_CODE(write_text, "EXIT int@4");
+    // generated empty line to make the generated code more readable
     PRINT_CODE(write_text, "");
     active_last(&list);
     return res;
@@ -302,19 +323,6 @@ bool readBuiltIn(int *returnType, int type) {
         *returnType = type;
     }
 
-    list_item stash;
-    stash = list.active;
-    if (list.before_while != NULL) {
-        list.active = list.before_while;
-        insert_before_active_dll(&list, list.string_pos);
-        list.active = stash;
-    } else if (list.before_if != NULL) {
-        list.active = list.before_if;
-        insert_before_active_dll(&list, list.string_pos);
-        list.active = stash;
-    } else {
-        insert_after_active_dll(&list, list.string_pos);
-    }
     PRINT_CODE(tmpF, );
     PRINT_CODE(new_varTF, "a");
     if (type == LEX_STRING) {
@@ -324,15 +332,19 @@ bool readBuiltIn(int *returnType, int type) {
     } else if (type == LEX_FLOAT) {
         PRINT_CODE(write_text, "READ TF@a float");
     }
+    // use stack to pass the result of READ to variable
     PRINT_CODE(push_operandTF, "a");
     return true;
 }
 
+/* recursively load parameters of write function */
 bool writeBuiltInSingleParam(node_t *symTable) {
     int newToken = getTokenfromStore(NULL);
+    // end of parameter list
     if (newToken == LEX_RPAR) {
         return true;
     } else if (newToken == LEX_COMMA) {
+        // when the comma is loaded, next argument must exists
         newToken = getTokenfromStore(NULL);
         if (newToken == LEX_ID) {
             node_t id_node = TreeFind(*symTable, string.string);
@@ -350,6 +362,7 @@ bool writeBuiltInSingleParam(node_t *symTable) {
             PRINT_CODE(write_text, "PUSHS LF@$optype");
             PRINT_CODE(push_string, "");
             PRINT_CODE(jumpIfNeqS, initialized);
+            // end the program, when the var is uninitialized
             PRINT_CODE(write_text, "EXIT int@5");
             PRINT_CODE(label, initialized);
             PRINT_CODE(push_operand, string.string);
@@ -416,7 +429,6 @@ bool writeBuiltInParam(node_t *symTable) {
 }
 
 bool writeBuiltIn(int *returnType, node_t *symTable) {
-    // printf("WRITE CALL\n");
     if (getTokenfromStore(NULL) != LEX_LPAR) {
         endParser(SYNTAX_ERROR);
     }
@@ -626,6 +638,7 @@ bool substringBuiltIn(int *returnType, node_t *symTable) {
     return true;
 }
 
+// function to check in the function is built-in
 bool isBuiltIn(String_t *string) {
     if (!strcmp(string->string, "write") || !strcmp(string->string, "reads") ||
         !strcmp(string->string, "readi") || !strcmp(string->string, "readf") ||
@@ -691,9 +704,8 @@ bool callBuiltIn(int *returnType, String_t *string, node_t *symTable) {
     return false;
 }
 
-bool functionCall(String_t *fName, int *returnType, char scope,
-                  node_t *symTable) {
-    // CREATEFRAME - create a temporary frame
+bool functionCall(String_t *fName, int *returnType, node_t *symTable) {
+    // create a temporary frame
     // prepare params for function call
     // call function
     if (isBuiltIn(fName == NULL ? &string : fName)) {
@@ -721,13 +733,13 @@ bool functionCall(String_t *fName, int *returnType, char scope,
         endParser(SEMANTIC_ERROR);
     }
     int nOfParams = funcNode->function->nOfParams;
+    
     // loading parameters and comparing data types
-
     for (int i = 0; i < nOfParams; i++) {
         int endChar = (i == nOfParams - 1) ? LEX_RPAR : LEX_COMMA;
 
         int nextToken = getTokenfromStore(NULL);
-
+        // also generate TYPE checking for parameters - done dynamically
         if (nextToken == LEX_ID) {
             // check for existence of var in the symtable
             node_t checkExistence = TreeFind(*symTable, string.string);
@@ -1005,7 +1017,6 @@ bool returnStat(node_t *symTable, node_t functionNode) {
         PRINT_CODE(label, str);
     }
     PRINT_CODE(write_text, "PUSHS TF@$expRes");
-    // PRINT_CODE(popF, );
     PRINT_CODE(popF, );
     PRINT_CODE(write_text, "RETURN\n");
     int functionRetType = functionNode->function->returnType;
@@ -1164,8 +1175,7 @@ bool statementList(bool getNext, node_t *symTable, node_t functionNode) {
             }
             break;
         case LEX_FUNID:
-            if (!functionCall(NULL, NULL, functionNode == NULL ? 'g' : 'a',
-                              symTable)) {
+            if (!functionCall(NULL, NULL, symTable)) {
                 return SYNTAX_ERROR;
             } else {
                 return statementList(true, symTable, functionNode);
@@ -1228,7 +1238,7 @@ int ParserLoop(bool getNext) {
                 return ParserLoop(true);
             }
         case LEX_FUNID:
-            if (!functionCall(NULL, NULL, 'g', &globalSymTable)) {
+            if (!functionCall(NULL, NULL, &globalSymTable)) {
                 return SYNTAX_ERROR;
             } else {
                 return ParserLoop(true);
@@ -1290,11 +1300,9 @@ bool loadCode() {
     }
     CodeStoreAppend(store, &string, curToken);
     for (size_t i = 0; i < store->elementCount; i++) {
-        // printf("LEX: %d\t%s\n", store->items[i]->lexID,
-        // store->items[i]->tokenVal.string);
         if (store->items[i]->lexID == LEX_FUNKW) {
             store->lastPrinted = i + 1;
-            functionDeclarationTopG();
+            getFunctionHeader();
         }
     }
     // stringDeconstruct(&string);

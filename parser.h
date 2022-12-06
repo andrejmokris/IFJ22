@@ -17,7 +17,7 @@
 #include <stdlib.h>
 #include <string.h>
 
-#include "bst.h"
+#include "symtable.h"
 #include "error.h"
 #include "expression.h"
 #include "scanner.h"
@@ -35,7 +35,7 @@ int ParserLoop(bool getNext);
 unsigned long getLabel();
 bool statementList(bool getNext, node_t *symTable, node_t funcNode);
 int ifRule(node_t *symTable, node_t funcNode);
-bool functionCall(String_t *fName, int *returnType, char scope, node_t *symTable);
+bool functionCall(String_t *fName, int *returnType, node_t *symTable);
 bool returnStat(node_t *symTable, node_t funcNode);
 bool writeBuiltIn(int *returnType, node_t *symTable);
 bool isBuiltIn();

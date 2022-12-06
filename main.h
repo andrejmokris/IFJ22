@@ -22,7 +22,7 @@
 #include "expression.h"
 #include "scanner.h"
 #include "stack.h"
-#include "bst.h"
+#include "symtable.h"
 #include "parser.h"
 
 #endif
