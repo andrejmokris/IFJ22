@@ -1,8 +1,0 @@
-<?php
-declare(strict_types=1);
-$f = intval(3.14159);
-if($f === 3) {
-    write("GOOD\n");
-} else {
-    write("BAD\n");
-}

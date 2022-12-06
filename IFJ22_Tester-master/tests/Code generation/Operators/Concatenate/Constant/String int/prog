@@ -1,4 +1,0 @@
-<?php
-declare(strict_types=1);
-$x = "hello" . 1;
-write($x, "\n");

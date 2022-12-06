@@ -1,8 +1,0 @@
-<?php
-declare(strict_types=1);
-$f = boolval(true);
-if($f === true) {
-    write("GOOD\n");
-} else {
-    write("BAD\n");
-}

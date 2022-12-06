@@ -1,7 +1,0 @@
-<?php
-declare(strict_types=1);
-for ($i = 0; $i < 3 ;) {
-    write($i, "\n");
-    $i = $i + 1;
-}
-write("GOOD\n");

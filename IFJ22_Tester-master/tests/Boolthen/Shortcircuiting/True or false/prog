@@ -1,8 +1,0 @@
-<?php
-declare(strict_types=1);
-function writeTrue(string $s) : boolean {
-    write($s);
-    return true;
-}
-
-writeTrue("GOOD\n") || write("BAD\n");

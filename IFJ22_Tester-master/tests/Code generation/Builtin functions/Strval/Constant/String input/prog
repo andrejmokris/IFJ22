@@ -1,8 +1,0 @@
-<?php
-declare(strict_types=1);
-$f = strval("some string");
-if($f === "some string") {
-    write("GOOD\n");
-} else {
-    write("BAD\n");
-}
